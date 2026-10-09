@@ -26,7 +26,10 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <li><a href="#p2">P2：直接复制层间紧凑数据</a></li>
 <li><a href="#p3npu-ram">P3：NPU 配置及数据处理代码在 RAM 中运行</a></li>
 <li><a href="#_2">开发板复测方法</a></li>
-<li><a href="#_3">后续轮次的依据</a></li>
+<li><a href="#_3">后续轮次的依据</a><ul>
+<li><a href="#p3">P3 后的实板统计反馈</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -114,5 +117,45 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 python review_20261003/npu_integration_20261009/verify_integration.py
 </code></pre>
 <h2 id="_3">后续轮次的依据</h2>
+<h3 id="p3">P3 后的实板统计反馈</h3>
+<p>用户本次提供 1000 个样本，150 MHz，统计已冻结、拒绝输出为 0；未同时提供测试 Vin、完整输出、超时计数及已加载库的身份，因此与旧数据的比较仍需核对测试条件。</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th style="text-align: right;">优化前平均 μs</th>
+<th style="text-align: right;">本次平均 μs</th>
+<th style="text-align: right;">降低</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>提交调用经过时间</td>
+<td style="text-align: right;">74.51849</td>
+<td style="text-align: right;">59.97135</td>
+<td style="text-align: right;">19.52%</td>
+</tr>
+<tr>
+<td>启动至最终输出完成</td>
+<td style="text-align: right;">253.16562</td>
+<td style="text-align: right;">141.68356</td>
+<td style="text-align: right;">44.04%</td>
+</tr>
+<tr>
+<td>启动至后台发现完成</td>
+<td style="text-align: right;">254.99263</td>
+<td style="text-align: right;">143.43584</td>
+<td style="text-align: right;">43.75%</td>
+</tr>
+<tr>
+<td>端到端</td>
+<td style="text-align: right;">268.50494</td>
+<td style="text-align: right;">149.05829</td>
+<td style="text-align: right;">44.49%</td>
+</tr>
+</tbody>
+</table>
+<p>按现有两组数据，端到端改善约 1.80 倍，但仍为此前 FPU 的 28.69056 μs 的 5.20 倍。最终完成到后台发现平均仅差 1.75229 μs，改善后台轮询无法解释剩余约 120 μs 的差距；而提交调用本身已接近 60 μs，需要继续检查首层数据处理、参数/指令装载和配置。</p>
+<p><code>npuSubmit</code> 和 <code>npuCompletion</code> 共用启动时间点，前者包含在后者之内，不能相加；两项均可能包含中断占用。下一次应在级别 3 下启用 <code>--detail-profile</code> 获取 <code>g_nnNpuDetail</code>，同时补记 Vin、输出、超时计数和库清单，以区分装载、配置、层间处理与各层启动到完成中断的耗时；详细计时版本仅用于定位，正式提速结论仍用关闭详细计时的版本。</p>
 <p>当前先交付不改变模型数学含义的 P0～P3。收到新一轮开发板的分段统计及完整输出后，再决定是否缓存指令或调整模型；指令缓存需要核对各层指令的差异、覆盖方式与复位失效条件，不能仅因为代码尺寸相同就复用。</p>
-<p>目前量化模型在 92.2～92.5 V 仍存在已记录的无效输出；上述优化不会消除量化误差，因而仍不允许用于功率闭环。提高精度、开放功率控制以及判断优化后是否快于 FPU，均需另外的数值与实板验收。</p><footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：db3bac8de8de38c15e0a874deb2a5c65edbff2cbbe10285c79f1ff7130c0cff7</footer></main></div></body></html>
+<p>目前量化模型在 92.2～92.5 V 仍存在已记录的无效输出；上述优化不会消除量化误差，因而仍不允许用于功率闭环。提高精度、开放功率控制以及判断优化后是否快于 FPU，均需另外的数值与实板验收。</p><footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：550651c942404220314f84057e9ad1263d5d231e550e1b836fab4edb6f49ee82</footer></main></div></body></html>
