@@ -143,28 +143,7 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_14_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
   static void* sid_13_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_12_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_11_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -185,6 +164,20 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
+  static void* sid_7_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_16_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
   static void* sid_6_let;
 #ifdef __cplusplus
 } // extern "C"
@@ -192,14 +185,7 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_8_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_3_let;
+  static void* sid_12_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -220,7 +206,7 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_7_let;
+  static void* sid_8_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -234,14 +220,28 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_16_let;
+  static void* sid_2_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_2_let;
+  static void* sid_14_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_11_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_3_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -554,21 +554,21 @@ TVM_DLL void tvmgen_default_IRQHandlerHelper() {
 switch(tinie_curr_layer) {
 case 0:
    sid_15_let = (&(global_workspace_1_var[16]));
-   sid_14_let = (&(global_workspace_1_var[0]));
    sid_13_let = (&(global_workspace_1_var[16]));
-   sid_12_let = (&(global_workspace_1_var[0]));
-   sid_11_let = (&(global_workspace_1_var[16]));
    sid_10_let = (&(global_workspace_1_var[32]));
    sid_9_let = (&(global_workspace_1_var[0]));
+   sid_7_let = (&(global_workspace_1_var[32]));
+   sid_16_let = (&(global_workspace_1_var[0]));
    sid_6_let = (&(global_workspace_1_var[0]));
-   sid_8_let = (&(global_workspace_1_var[16]));
-   sid_3_let = (&(global_workspace_1_var[32]));
+   sid_12_let = (&(global_workspace_1_var[0]));
    sid_5_let = (&(global_workspace_1_var[32]));
    sid_4_let = (&(global_workspace_1_var[0]));
-   sid_7_let = (&(global_workspace_1_var[32]));
+   sid_8_let = (&(global_workspace_1_var[16]));
    sid_1_let = (&(global_workspace_1_var[16]));
-   sid_16_let = (&(global_workspace_1_var[0]));
    sid_2_let = (&(global_workspace_1_var[0]));
+   sid_14_let = (&(global_workspace_1_var[0]));
+   sid_11_let = (&(global_workspace_1_var[16]));
+   sid_3_let = (&(global_workspace_1_var[32]));
   tvmgen_default_fused_reshape_multiply_add_floor_clip_cast_reshape(features_buffer_var, sid_1_let, global_const_workspace_0_var, global_workspace_1_var);
   tvmgen_default_fused_tinie_c28_pack(sid_1_let, sid_2_let, global_const_workspace_0_var, global_workspace_1_var);
   tvmgen_default_ti_npu_convolve1x1NHWC_0(sid_2_let, sid_3_let, global_const_workspace_0_var, global_workspace_1_var);

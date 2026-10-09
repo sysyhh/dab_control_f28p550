@@ -162,6 +162,21 @@ static void write_configMMR(TINIE_layer_t *layer)
 }
 
 
+
+#pragma FUNC_ALWAYS_INLINE(dab_npu_load_words)
+static int32_t dab_npu_load_words(volatile uint32_t* destination, const uint32_t* source, uint32_t count) {
+    /* 保留 TI 的隔一个 32 位位置写入规则；按原顺序写四项，减少循环判断。 */
+    while (count >= 4U) {
+        destination[0] = source[0];
+        destination[2] = source[1];
+        destination[4] = source[2];
+        destination[6] = source[3];
+        source += 4; destination += 8; count -= 4U;
+    }
+    /* 处理不足四项的尾部，禁止越界读或写相邻保留位置。 */
+    while (count != 0U) { *destination = *source++; destination += 2; --count; }
+    return 0;
+}
 void TINIE_setup(TINIE_layer_t *layer)
 {
 
@@ -170,10 +185,7 @@ void TINIE_setup(TINIE_layer_t *layer)
 #endif
     // Step 1 - write to PARAMS memory
     volatile uint32_t *params = (uint32_t *) (TINIE_BASE_ADDR + TINIE_PARAMS_OFS);
-    for (int i = 0; i < layer->num_params; i++)
-    {
-        params[i * 2] = layer->params[i];
-    }
+    dab_npu_load_words(params, layer->params, layer->num_params);
 
 
 #if DAB_NPU_DETAIL_PROFILE
@@ -185,10 +197,7 @@ void TINIE_setup(TINIE_layer_t *layer)
 #endif
     // Step 2 - write to INS memory
     volatile uint32_t *ins = (uint32_t *) (TINIE_BASE_ADDR + TINIE_INS_MEM_OFS);
-    for (int i = 0; i < layer->num_ins; i++)
-    {
-        ins[i * 2] = layer->ins[i];
-    }
+    dab_npu_load_words(ins, layer->ins, layer->num_ins);
 
 
 #if DAB_NPU_DETAIL_PROFILE

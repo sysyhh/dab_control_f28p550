@@ -4,7 +4,7 @@
   "real_ti_nnc_library": true,
   "ti_nnc": "2.1.0",
   "hardware_stages": 4,
-  "library_sha256": "a46d6eefc2ae12d0b37eb6a1693df32f26d5b5e2a4b098b364aa10a0d252c44f",
+  "library_sha256": "8c096076191a17df01dbfc357b14084fd5a5a87ddd255aec1d00179408cd393e",
   "final_output_timestamp_hook": true,
   "builds": [
     "CPU1_LAUNCHXL_NPU_FLASH",
@@ -125,12 +125,12 @@
     ".cproject": "ec9d0f648e323e9550951b5a8a027375d59d41d96b2c525560da73efe1eab469"
   },
   "forced_nn_recompile": true,
-  "optimization_level": 3,
+  "optimization_level": 4,
   "detail_profile": false,
   "npu_ram_runtime": {
-    "load": "0x80008",
+    "load": "0x808f0",
     "run": "0x9000",
-    "c28_words": 823,
+    "c28_words": 1083,
     "capacity_words": 2048
   },
   "power_control_approved": false,

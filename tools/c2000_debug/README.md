@@ -86,13 +86,17 @@ python tools/c2000_debug/benchmark_nn.py --backend fpu --label fpu_flash --repea
 python tools/c2000_debug/benchmark_nn.py --backend npu --label p3_release --repeats 3
 ```
 
-需要分段统计时，先按照应用文档用 `compile_dab_npu.py --optimization-level 3 --detail-profile` 生成库，再执行 NPU 命令，将 label 改为 `p3_profile`。测试脚本自动 Build、加载、连续运行 1000 ms 后暂停，读取全部 `g_nnTiming`、`g_nnNpuDetail` 标量和输出；一次测量中途不暂停，三轮均重新加载程序。
+需要分段统计时，先按照应用文档用 `compile_dab_npu.py --optimization-level 4 --detail-profile` 生成库，再执行 NPU 命令，将 label 改为 `p4_profile`；指定级别 3 可重建此前版本。测试脚本自动 Build、加载、连续运行 1000 ms 后暂停，读取全部 `g_nnTiming`、`g_nnNpuDetail` 标量和输出；一次测量中途不暂停，三轮均重新加载程序。
 
 每轮核对样本、预热、冻结、拒绝、超时、待机和四路 PWM 关断；NPU 还核对详细计时开关、各层调用次数及 Vin=90 V 的预期输出。原始 CLI 结果、加载文件 SHA-256、源文件校验值、模型清单和整理后的统计保存在 `benchmarks/<时间>_<label>/`，失败结果同样保留，但不能作为速度结果。
+
+统计入口始终传入 `--rebuild-nn`，强制重新编译 `dab_nn.c` 并重新链接，避免复制恢复旧模型文件后因时间戳较旧而继续加载前一个模型版本。读取后仍检查详细计时开关与库清单一致，模式不符判为失败，不纳入成绩。
 
 正式速度使用关闭详细计时的库。本文统计扩展没有修改控制算法，也没有解决 NPU 量化误差；三种版本的实板统计及分析见应用的 `docs/NPU_optimization_log_zh.html`，开发板实际输出是读取结果，非电脑模拟。
 
 总验收见 [nn_benchmark_verification.json](nn_benchmark_verification.json)。离线复核使用 `python tools/c2000_debug/verify_benchmarks.py <summary.json> ...`，会核对存档的原始快照、整理结果、计数换算、样本数和 PWM 关断状态；不把电脑运行时间当作实板性能。
+
+P4 展开装载循环的七轮成功实板测试见 [p4_benchmark_verification.json](p4_benchmark_verification.json)。构建恢复的回归检查可运行 `python tools/c2000_debug/test_rebuild_nn.py`，无需开发板。
 
 ## 原型文件
 

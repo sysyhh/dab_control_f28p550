@@ -86,3 +86,28 @@ def instrument_driver(code, enabled):
     code=code.replace('    write_configMMR(layer);','    write_configMMR(layer);'+trace('DAB_NN_traceEnd(DAB_NPU_REGISTERS)'))
     code=function(code,'TINIE_start',lambda body:trace('DAB_NN_traceBegin(DAB_NPU_WAIT0 + tinie_curr_layer - 1)')+body)
     return '#define DAB_NPU_DETAIL_PROFILE '+str(int(enabled))+'\n#include "dab_npu_trace.h"\nextern volatile int32_t tinie_curr_layer;\n'+code
+
+def load_unroll(code):
+    """Preserve every volatile MMIO write and its stride, amortize loop control."""
+    for target,field in [('params','params'),('ins','ins')]:
+        old=(f'    for (int i = 0; i < layer->num_{field}; i++)\n'
+             '    {\n'+f'        {target}[i * 2] = layer->{field}[i];\n'+'    }')
+        if code.count(old)!=1: raise RuntimeError('Unexpected TI loading loop: '+field)
+        code=code.replace(old,f'    dab_npu_load_words({target}, layer->{field}, layer->num_{field});')
+    helper='''
+#pragma FUNC_ALWAYS_INLINE(dab_npu_load_words)
+static int32_t dab_npu_load_words(volatile uint32_t* destination, const uint32_t* source, uint32_t count) {
+    /* 保留 TI 的隔一个 32 位位置写入规则；按原顺序写四项，减少循环判断。 */
+    while (count >= 4U) {
+        destination[0] = source[0];
+        destination[2] = source[1];
+        destination[4] = source[2];
+        destination[6] = source[3];
+        source += 4; destination += 8; count -= 4U;
+    }
+    /* 处理不足四项的尾部，禁止越界读或写相邻保留位置。 */
+    while (count != 0U) { *destination = *source++; destination += 2; --count; }
+    return 0;
+}
+'''
+    return code.replace('void TINIE_setup(TINIE_layer_t *layer)',helper+'void TINIE_setup(TINIE_layer_t *layer)',1)

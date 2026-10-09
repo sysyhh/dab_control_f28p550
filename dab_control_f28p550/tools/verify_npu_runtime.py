@@ -9,7 +9,7 @@ from patch_npu_runtime import IDENTITY
 APP=Path(__file__).resolve().parents[1]
 
 def extract(code,name,rename):
-    match=re.search(r'TVM_DLL int32_t '+re.escape(name)+r'\([^;{}]*\)\s*\{',code)
+    match=re.search(r'(?:TVM_DLL|static) int32_t '+re.escape(name)+r'\([^;{}]*\)\s*\{',code)
     if not match: raise RuntimeError('Missing function '+name)
     depth=1; end=match.end()
     while depth:
@@ -67,6 +67,18 @@ for(words=8;words<=16;words+=8) for(value=0;value<65536;++value) {
  assert(now[0]==0xA55A && now[words+1]==0xA55A);
  copy_words(now+1,now+1,(uint16_t)words); assert(memcmp(old,now,sizeof(old))==0);
 } puts("PASS: generated packed copy versus original unpack/pack; all 65536 word values; 8/16 words; boundary guards"); }
+'''
+    driver=(args.generated/'dab_tinie_c28.c').read_text(encoding='utf-8')
+    if 'int32_t dab_npu_load_words(' in driver:
+        code+=extract(driver,'dab_npu_load_words','load_words')+'\n'
+        body+='''{ uint32_t src[516],old[1034],now[1034]; unsigned n,j;
+for(n=0;n<=516;++n) {
+ for(j=0;j<516;++j) src[j]=0xAC128765U^(j*0x019DE1F3U);
+ for(j=0;j<1034;++j) old[j]=now[j]=0xA5A5A5A5U;
+ for(j=0;j<n;++j) old[1+j*2]=src[j];
+ load_words(now+1,src,n);
+ assert(memcmp(old,now,sizeof(now))==0);
+} puts("PASS: real generated loading helper; lengths 0..516; all tails; MMIO stride and untouched guards"); }
 '''
     body+='return 0;}\n'
     with tempfile.TemporaryDirectory(prefix='dab_npu_verify_') as directory:

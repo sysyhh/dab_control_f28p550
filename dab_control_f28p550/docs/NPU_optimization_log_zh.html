@@ -25,6 +25,10 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <li><a href="#p1">P1：消除隐藏层间重复浮点运算</a></li>
 <li><a href="#p2">P2：直接复制层间紧凑数据</a></li>
 <li><a href="#p3npu-ram">P3：NPU 配置及数据处理代码在 RAM 中运行</a></li>
+<li><a href="#p4">P4：参数与指令装载循环展开</a><ul>
+<li><a href="#p4_1">P4 自动实板结果</a></li>
+</ul>
+</li>
 <li><a href="#_2">开发板复测方法</a></li>
 <li><a href="#_3">后续轮次的依据</a><ul>
 <li><a href="#2026-10-09">自动实板统计（2026-10-09）</a></li>
@@ -101,6 +105,88 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <p>默认生成级别提升为 <code>--optimization-level 3</code>。使用独立 <code>.dab_npu_ramfunc</code>，Flash 保存代码镜像，<code>DAB_NN_init()</code> 在 NPU 初始化前复制到 LS2；NPU 配置、启动、中断、首末层数据处理及层间复制在此区域运行，数据、权重、输入输出与 GS1 工作区位置不变。</p>
 <p>普通版本链接结果：运行地址 <code>0x9000</code>，使用 <code>0x337</code> 个 16 位存储单元，即 823/2048 单元，代码镜像 1646 字节。反汇编已检查初始化路径使用正确的 Flash 源地址、LS2 目标地址和复制长度；实际脱离调试器的上电启动以及运行收益仍需开发板验证。</p>
 <p>原有 LS0/LS1 的控制、保护和 FPU RAM 代码继续单独分配，详细计时版本也要检查 LS2 未超出容量。构建检查读取新生成的 map 文件，核对主要函数运行地址和 GS1 工作区位置，并确认已删除的隐藏层转换未被链接。</p>
+<h2 id="p4">P4：参数与指令装载循环展开</h2>
+<p>当前生成脚本默认使用 <code>--optimization-level 4</code>。将参数和指令的逐项装载改为每次处理四项，再单独处理不足四项的尾部；仍加载全部数据，不缓存、不跳过任何层，保持原 TI 运行库的写入次序、32 位数据宽度及隔一个 32 位位置写入的地址间隔。</p>
+<p>生成脚本检查原有两段循环必须完整匹配，避免将补丁套到不相容的 TI 运行库。装载辅助函数强制内联，继续在 LS2 中运行；修改仅减少循环控制开销，不改变模型、量化常量、NPU 计算及中断处理方式。</p>
+<p>软件验证提取实际生成的装载函数，对长度 0～516 的每一种情况逐一比较原循环结果，覆盖所有尾部情况，并核对未使用间隔与两端边界保持原值。TI 编译和链接检查继续确认 LS2 容量、函数地址与 GS1 工作区。</p>
+<h3 id="p4_1">P4 自动实板结果</h3>
+<p>Vin=90 V、预热 10 次、正式 1000 次，普通和详细计时版本各完成三轮独立加载测试。P4 普通版本三轮的端到端平均值均为 107.47151 μs，较 P3 普通版本的 149.07457 μs 降低约 27.91%；恢复普通库后另外重新加载复测，作为最终交付检查。</p>
+<table>
+<thead>
+<tr>
+<th>普通版本统计项</th>
+<th style="text-align: right;">P3 μs</th>
+<th style="text-align: right;">P4 μs</th>
+<th style="text-align: right;">耗时降低</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>提交调用</td>
+<td style="text-align: right;">59.53495</td>
+<td style="text-align: right;">43.56228</td>
+<td style="text-align: right;">26.83%</td>
+</tr>
+<tr>
+<td>输出完成</td>
+<td style="text-align: right;">141.76094</td>
+<td style="text-align: right;">99.91755</td>
+<td style="text-align: right;">29.52%</td>
+</tr>
+<tr>
+<td>端到端</td>
+<td style="text-align: right;">149.07457</td>
+<td style="text-align: right;">107.47151</td>
+<td style="text-align: right;">27.91%</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>详细计时分段</th>
+<th style="text-align: right;">P3 μs</th>
+<th style="text-align: right;">P4 μs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>四层参数装载合计</td>
+<td style="text-align: right;">55.69861</td>
+<td style="text-align: right;">29.98538</td>
+</tr>
+<tr>
+<td>四层指令装载合计</td>
+<td style="text-align: right;">42.27066</td>
+<td style="text-align: right;">22.58032</td>
+</tr>
+<tr>
+<td>四层寄存器配置合计</td>
+<td style="text-align: right;">9.38047</td>
+<td style="text-align: right;">10.28604</td>
+</tr>
+<tr>
+<td>输入量化</td>
+<td style="text-align: right;">14.80689</td>
+<td style="text-align: right;">15.12477</td>
+</tr>
+<tr>
+<td>四层启动至完成中断合计</td>
+<td style="text-align: right;">22.43979</td>
+<td style="text-align: right;">17.89835</td>
+</tr>
+<tr>
+<td>端到端</td>
+<td style="text-align: right;">175.01425</td>
+<td style="text-align: right;">124.47202</td>
+</tr>
+</tbody>
+</table>
+<p>装载两项的详细计时合计由 97.96927 μs 降至 52.56570 μs，确认本轮优化命中了主要耗时。其他分段仍包含中断响应与抢占，随运行时序变化而变化，不能将等待时间变化解释为 NPU 运算本身变快；详细计时版本仍不用于正式速度比较。</p>
+<p>所有成功轮次均为 1000 个正式样本、10 次预热、无拒绝或超时、待机且四路功率 PWM 关断。两种 P4 版本输出均与 P3 的 <code>[0.4375,0.25,0,1]</code> 一致，详细计时调用次数不变、<code>invalidPairs=0</code>；本轮的板上数值检查限于 Vin=90 V，全范围精度验收仍未完成。</p>
+<p>相对同条件 FPU 的 28.71550 μs，P4 端到端仍约为 3.74 倍。下一步可评估装载源常量移到 RAM、减少固定输入的重复量化，以及带严格失效条件的指令复用；本轮尚未实施这些改动，也未开放功率闭环。</p>
+<p>本轮共七轮成功实板测试，原始数据与检查索引见 <a href="../../tools/c2000_debug/p4_benchmark_verification.json">P4 实板验收报告</a>。恢复模型时曾因复制保留旧时间戳而未重新链接，详细计时开关检查将该轮拒绝，未计入成绩；统计工具现已强制重新编译 NN 并重新链接，再次实板验证成功。</p>
+<p><code>python tools/c2000_debug/test_rebuild_nn.py</code> 可离线复现旧时间戳跳过构建的情形，并验证强制编译失败时不会加载旧程序。最终交付为 P4 普通库，<code>detail_profile=false</code>，板上也已加载该版本并暂停。</p>
 <h2 id="_2">开发板复测方法</h2>
 <ol>
 <li>使用 <code>CPU1_LAUNCHXL_NPU_FLASH</code>，保持 <code>DAB_AUTO_START=0</code>、<code>DAB_BOARD_CONFIG_CONFIRMED=0</code>，连接 USB 即可做 NN 基准测试。基准测试用指定的 Vin，仍须确认程序处于停止状态；功率输出批准标记继续为 0。</li>
@@ -109,7 +195,7 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <li>每一级记录生成清单中的 <code>optimization_level</code>、<code>detail_profile</code>、库 SHA-256、测试 Vin、<code>g_nnTiming</code>、<code>g_nnLastOutput</code>、<code>g_nnTimeoutCount</code> 及故障状态。应完成 1000 个正式样本、拒绝输出及超时均为 0；同一输入的四项输出应与级别 0 一致。</li>
 <li>对照同一输入、相同中断与外设条件下各级的 <code>npuSubmit</code>、<code>npuCompletion</code>、<code>endToEnd</code> 的平均/最小/最大值，再与相同条件的 FPU 比较。各步骤包含中断响应或抢占，不能将完成时间当作裸 NPU 周期。</li>
 </ol>
-<p>在 <code>ccs_projects</code> 目录执行以下命令，N 替换为 0、1、2 或 3：</p>
+<p>在 <code>ccs_projects</code> 目录执行以下命令，N 替换为 0、1、2、3 或 4；当前默认级别为 4：</p>
 <pre><code class="language-powershell">review_20261003/npu_integration_20261009/python310/python.exe dab_control_f28p550/tools/compile_dab_npu.py --optimization-level N
 </code></pre>
 <p>定位剩余耗时时，在相同命令末尾加 <code>--detail-profile</code>，Build 并复测，保存 <code>g_nnNpuDetail</code>。<code>invalidPairs</code> 应为 0；四层启动/完成各一次，参数/指令/寄存器各四次，级别 2/3 的隐藏层转换不再有样本，紧凑数据复制计入 stage[1]；分段统计涉及计时调用，须与不带详细计时的正式成绩区分。</p>
@@ -273,5 +359,5 @@ python review_20261003/npu_integration_20261009/verify_integration.py
 </table>
 <p>按现有两组数据，端到端改善约 1.80 倍，但仍为此前 FPU 的 28.69056 μs 的 5.20 倍。最终完成到后台发现平均仅差 1.75229 μs，改善后台轮询无法解释剩余约 120 μs 的差距；而提交调用本身已接近 60 μs，需要继续检查首层数据处理、参数/指令装载和配置。</p>
 <p><code>npuSubmit</code> 和 <code>npuCompletion</code> 共用启动时间点，前者包含在后者之内，不能相加；两项均可能包含中断占用。下一次应在级别 3 下启用 <code>--detail-profile</code> 获取 <code>g_nnNpuDetail</code>，同时补记 Vin、输出、超时计数和库清单，以区分装载、配置、层间处理与各层启动到完成中断的耗时；详细计时版本仅用于定位，正式提速结论仍用关闭详细计时的版本。</p>
-<p>当前已交付不改变模型数学含义的 P0～P3，并完成上述自动实板统计。下一轮优先依据装载耗时检查指令与参数路径；指令缓存需要核对各层指令的差异、覆盖方式与复位失效条件，不能仅因为代码尺寸相同就复用。</p>
-<p>目前量化模型在 92.2～92.5 V 仍存在已记录的无效输出；上述优化不会消除量化误差，因而仍不允许用于功率闭环。提高精度、开放功率控制以及判断优化后是否快于 FPU，均需另外的数值与实板验收。</p><footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：65f832a2ccb7b55eb04f919c0b5d18d2cd44464d1a4965d7a894c16b0b300d16</footer></main></div></body></html>
+<p>当前已交付不改变模型数学含义的 P0～P4，并完成自动实板统计。后续继续评估常量读取、固定输入量化和指令复用；指令缓存需要核对各层指令的差异、覆盖方式与复位失效条件，不能仅因为代码尺寸相同就复用。</p>
+<p>目前量化模型在 92.2～92.5 V 仍存在已记录的无效输出；上述优化不会消除量化误差，因而仍不允许用于功率闭环。提高精度、开放功率控制以及判断优化后是否快于 FPU，均需另外的数值与实板验收。</p><footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：4e60590cb9e296f0e6f01b28b667a2a46288e5e2e8a89054ce598b1b80d0667b</footer></main></div></body></html>

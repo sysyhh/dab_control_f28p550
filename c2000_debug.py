@@ -42,6 +42,8 @@ def main():
     parser.add_argument('--ccs', type=Path, default=Path(os.environ.get('CCS_ROOT', 'E:/Software_Download/ti/ccs2020/ccs')))
     parser.add_argument('--project', type=Path, default=ROOT / 'dab_control_f28p550')
     parser.add_argument('--build-dir', default='CPU1_RAM', help='Existing CCS-generated build directory')
+    parser.add_argument('--rebuild-nn', action='store_true',
+                        help='Force NN recompile/relink after restoring a generated model archive or contract')
     parser.add_argument('--ccxml', type=Path)
     parser.add_argument('--expr', action='append', help='Read scalar GEL expression; repeat for multiple expressions')
     parser.add_argument('--register', action='append', help='Register name; PC is always included')
@@ -73,7 +75,14 @@ def main():
             if not item.is_file():
                 raise FileNotFoundError(str(item))
         result.update(ccs=str(ccs), project=str(project), build_dir=str(build_dir), ccxml=str(ccxml))
-        rc = execute([make, '-j', '8', 'all'], build_dir, run_dir / 'build.log', 180)
+        build_command = [make, '-j', '8']
+        if args.rebuild_nn:
+            if not (project / 'dab_nn.c').is_file():
+                raise FileNotFoundError('rebuild-nn requires dab_nn.c in the selected project')
+            # A restored archive/header may have older timestamps than the .out.
+            # Recompiling this consumer also forces relink with the current archive.
+            build_command += ['-W', '../dab_nn.c']
+        rc = execute(build_command + ['all'], build_dir, run_dir / 'build.log', 180)
         result['build'] = 'PASS' if rc == 0 and out.is_file() else 'FAIL'
         if result['build'] != 'PASS':
             raise RuntimeError('Build failed; see build.log. No program loaded.')

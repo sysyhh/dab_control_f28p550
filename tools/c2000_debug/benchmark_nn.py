@@ -51,7 +51,7 @@ def main():
     expressions += [f'g_nnNpuDetail.stage[{i}].{f}' for i in range(12) for f in FIELDS]
     try:
         for index in range(args.repeats):
-            command = [sys.executable, str(ROOT/'c2000_debug.py'), '--run-test', '--build-dir',
+            command = [sys.executable, str(ROOT/'c2000_debug.py'), '--run-test', '--rebuild-nn', '--build-dir',
                        'CPU1_LAUNCHXL_NPU_FLASH' if args.backend == 'npu' else 'CPU1_LAUNCHXL_FLASH',
                        '--run-ms', str(args.run_ms), '--samples', '1', '--timeout-ms', '60000']
             for expression in expressions: command += ['--expr', expression]

@@ -21,8 +21,8 @@ def main():
     parser.add_argument("--sdk", type=Path, default=Path("E:/Software_Download/ti/c2000/C2000Ware_DigitalPower_SDK_5_05_01_00/c2000ware"))
     parser.add_argument("--out", type=Path, default=APP / "model/generated/npu")
     parser.add_argument("--detail-profile", action="store_true", help="Enable intrusive stage timing; off for performance comparison")
-    parser.add_argument("--optimization-level", type=int, choices=range(4), default=3,
-                        help="0: original; 1: hidden identity; 2: packed transitions; 3: RAM runtime")
+    parser.add_argument("--optimization-level", type=int, choices=range(5), default=4,
+                        help="0: original; 1: hidden identity; 2: packed transitions; 3: RAM runtime; 4: unrolled loads")
     args = parser.parse_args()
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from prepare_npu_conv import prepare
@@ -79,7 +79,7 @@ def main():
         "  tvmgen_default_finished = 1;",
         "  DAB_NN_noteNpuCompletion(); /* Final output is ready; stamp before publication. */\n  tvmgen_default_finished = 1;")
     (output / "lib1.reference.c").write_text(code, encoding="utf-8", newline="\n")
-    from patch_npu_runtime import instrument, instrument_driver, hidden_identity, packed_transitions, ram_functions
+    from patch_npu_runtime import instrument, instrument_driver, hidden_identity, packed_transitions, ram_functions, load_unroll
     if args.optimization_level >= 1:
         code = hidden_identity(code, (output / "lib0.c").read_text())
     if args.optimization_level >= 2:
@@ -103,6 +103,8 @@ def main():
     subprocess.run(rebuild + [str(runtime)], cwd=output, env=env, check=True, capture_output=True)
     driver = output / "dab_tinie_c28.c"
     driver_code=instrument_driver((root / "3rdparty/tinie-api/hard/src/tinie_c28.c").read_text(), args.detail_profile)
+    if args.optimization_level >= 4:
+        driver_code=load_unroll(driver_code)
     if args.optimization_level >= 3:
         driver_code=ram_functions(driver_code,["TINIE_setup","TINIE_start","write_configMMR","TINIE_clearInterruptACK"])
     driver.write_text(driver_code, encoding="utf-8", newline="\n")
