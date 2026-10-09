@@ -55,6 +55,8 @@ def main():
                        'CPU1_LAUNCHXL_NPU_FLASH' if args.backend == 'npu' else 'CPU1_LAUNCHXL_FLASH',
                        '--run-ms', str(args.run_ms), '--samples', '1', '--timeout-ms', '60000']
             for expression in expressions: command += ['--expr', expression]
+            if args.backend == 'npu' and report['model_manifest'].get('optimization_level',0) >= 5:
+                command.append('--verify-npu-const')
             process = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, encoding='utf-8', timeout=240)
             (report_dir/f'run_{index+1}.json').write_text(process.stdout, encoding='utf-8', newline='\n')
             raw = json.loads(process.stdout)
@@ -91,6 +93,8 @@ def main():
                 for s in statistics)
             if args.backend == 'fpu': checks['forward_samples'] = timing['fpuForward']['samples'] == 1000
             if args.backend == 'npu':
+                if report['model_manifest'].get('optimization_level',0) >= 5:
+                    checks['ram_constants_match_flash'] = raw.get('model_constant_copy',{}).get('matches') is True
                 checks['detail_mode_matches_library'] = bool(detail['instrumented']) == report['model_manifest']['detail_profile']
                 checks['completion_samples'] = timing['npuCompletion']['samples'] == 1000
                 checks['known_vin90_output'] = [values[f'g_nnLastOutput[{i}]'] for i in range(4)] == [.4375,.25,0.,1.]

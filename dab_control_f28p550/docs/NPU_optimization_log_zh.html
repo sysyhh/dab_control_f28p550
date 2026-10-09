@@ -29,8 +29,13 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <li><a href="#p4_1">P4 自动实板结果</a></li>
 </ul>
 </li>
-<li><a href="#_2">开发板复测方法</a></li>
-<li><a href="#_3">后续轮次的依据</a><ul>
+<li><a href="#p5-ram2026-10-10">P5：装载源常量放入 RAM（2026-10-10）</a><ul>
+<li><a href="#_2">实板结果</a></li>
+<li><a href="#_3">剩余事项</a></li>
+</ul>
+</li>
+<li><a href="#_4">开发板复测方法</a></li>
+<li><a href="#_5">后续轮次的依据</a><ul>
 <li><a href="#2026-10-09">自动实板统计（2026-10-09）</a></li>
 <li><a href="#p3">P3 后的实板统计反馈</a></li>
 </ul>
@@ -187,15 +192,99 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <p>相对同条件 FPU 的 28.71550 μs，P4 端到端仍约为 3.74 倍。下一步可评估装载源常量移到 RAM、减少固定输入的重复量化，以及带严格失效条件的指令复用；本轮尚未实施这些改动，也未开放功率闭环。</p>
 <p>本轮共七轮成功实板测试，原始数据与检查索引见 <a href="../../tools/c2000_debug/p4_benchmark_verification.json">P4 实板验收报告</a>。恢复模型时曾因复制保留旧时间戳而未重新链接，详细计时开关检查将该轮拒绝，未计入成绩；统计工具现已强制重新编译 NN 并重新链接，再次实板验证成功。</p>
 <p><code>python tools/c2000_debug/test_rebuild_nn.py</code> 可离线复现旧时间戳跳过构建的情形，并验证强制编译失败时不会加载旧程序。最终交付为 P4 普通库，<code>detail_profile=false</code>，板上也已加载该版本并暂停。</p>
-<h2 id="_2">开发板复测方法</h2>
+<h2 id="p5-ram2026-10-10">P5：装载源常量放入 RAM（2026-10-10）</h2>
+<p>四层参数、四组配置及两份指令表共 10 个常量对象放入 <code>.dab_npu_const</code>，Flash 保存镜像，运行地址为 LS3 的 <code>0x9800</code>。当前共占 1592 个 C28 存储单元（3184 字节），占 LS3 的 77.73%，剩余 456 个单元；<code>DAB_NN_init()</code> 在启用 NPU 前复制一次，四层的参数、指令和配置装载次数保持不变，不依赖上次推理留下的内容。</p>
+<p>生成脚本支持 <code>--optimization-level 5</code>，默认改为 5；<code>lib2.flash_reference.c</code> 保存添加常量放置指令前的代码。软件检查确认 <code>lib2.c</code> 去掉这 10 条放置指令后与参考完全相同，并再次验证真实生成 C 的全部隐藏层数值、全部打包字值、装载长度 0～516、尾项和存储边界。</p>
+<h3 id="_2">实板结果</h3>
+<p>条件为同一 LAUNCHXL-F28P55X、Vin=90 V、预热 10 次、正式 1000 次、计时期间连续运行。普通库与详细计时库各重新加载测试三轮，恢复普通库后强制重编译 NN 并重新链接，再测试一轮；七轮均成功，共 7000 个正式样本。</p>
+<table>
+<thead>
+<tr>
+<th>普通版本指标</th>
+<th style="text-align: right;">P4 μs</th>
+<th style="text-align: right;">P5 μs</th>
+<th style="text-align: right;">降低</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>提交调用</td>
+<td style="text-align: right;">43.56228</td>
+<td style="text-align: right;">41.53429</td>
+<td style="text-align: right;">4.66%</td>
+</tr>
+<tr>
+<td>最终输出完成</td>
+<td style="text-align: right;">99.91755</td>
+<td style="text-align: right;">96.05240</td>
+<td style="text-align: right;">3.87%</td>
+</tr>
+<tr>
+<td>端到端</td>
+<td style="text-align: right;">107.47151</td>
+<td style="text-align: right;">102.89487</td>
+<td style="text-align: right;">4.26%</td>
+</tr>
+</tbody>
+</table>
+<p>P5 普通版三轮及恢复后的一轮端到端平均均为 102.89487 μs；这些重复结果只说明本次固定输入和运行条件下结果可重复，不代表其他输入、独立上电或不同中断负载的情况。与 P3 的 149.07457 μs 相比降低约 30.98%，仍为同条件 FPU 28.71550 μs 的约 3.58 倍。</p>
+<table>
+<thead>
+<tr>
+<th>详细计时分段</th>
+<th style="text-align: right;">P4 μs</th>
+<th style="text-align: right;">P5 μs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>四层参数装载合计</td>
+<td style="text-align: right;">29.98538</td>
+<td style="text-align: right;">27.94138</td>
+</tr>
+<tr>
+<td>四层指令装载合计</td>
+<td style="text-align: right;">22.58032</td>
+<td style="text-align: right;">21.46308</td>
+</tr>
+<tr>
+<td>四层寄存器配置合计</td>
+<td style="text-align: right;">10.28604</td>
+<td style="text-align: right;">8.75276</td>
+</tr>
+<tr>
+<td>输入量化</td>
+<td style="text-align: right;">15.12477</td>
+<td style="text-align: right;">14.50189</td>
+</tr>
+<tr>
+<td>四层启动至完成中断合计</td>
+<td style="text-align: right;">17.89835</td>
+<td style="text-align: right;">17.70328</td>
+</tr>
+<tr>
+<td>端到端</td>
+<td style="text-align: right;">124.47202</td>
+<td style="text-align: right;">121.03644</td>
+</tr>
+</tbody>
+</table>
+<p>参数和指令装载合计减少约 3.16 μs，与常量读取加快的预期一致；各分段包含中断抢占和计时开销，不能用某段的全部变化推断硬件裸运算速度。详细计时仍明显增加端到端耗时，正式成绩采用普通库。</p>
+<p>七轮均逐项核对 Flash 镜像与 RAM 中的全部 1592 个常量单元，结果完全一致；读取发生在计时结束后，不影响统计。调试工具通过 <code>session.symbols.getAddress()</code> 读取链接器符号；初次尝试因表达式不能对链接器符号求地址而在统计后的校验环节失败，该轮未计入成绩。</p>
+<p>所有成功轮次均无输出拒绝、超时或故障，待机且四路功率 PWM 的 OST 锁定，输出仍为 <code>[0.4375,0.25,0,1]</code>。详细计时的调用次数仍为 <code>[1,4,1,0,4,4,4,1,1,1,1,1]</code>、<code>invalidPairs=0</code>；验收索引与原始快照见 <a href="../../tools/c2000_debug/p5_benchmark_verification.json">P5 实板验收报告</a>。</p>
+<h3 id="_3">剩余事项</h3>
+<p>当前交付为级别 5 普通库，<code>detail_profile=false</code>，板上已加载同版本并暂停。启动复制已在反复加载、复位和初始化后通过完整镜像比较；未做脱离调试器的断电再上电测试，该项仍需后续开发板实验。</p>
+<p>装载源放入 RAM 的收益有限，详细计时中参数和指令装载仍合计约 49.40 μs。后续重点是核对各层指令是否相同、指令写入长度和覆盖区域，以及复位后的失效条件，再评估安全的指令复用；固定填零输入的量化处理也可单独评估，不承诺未经实测的收益。</p>
+<p>Vin=90 V 的一致性检查不能替代全范围精度验收；92.2～92.5 V 的已知量化输出问题仍存在，功率控制批准标记仍为 0。模型或存储分配改变后，须重新检查 LS3 容量、复制长度、库清单和板上镜像一致性。</p>
+<h2 id="_4">开发板复测方法</h2>
 <ol>
 <li>使用 <code>CPU1_LAUNCHXL_NPU_FLASH</code>，保持 <code>DAB_AUTO_START=0</code>、<code>DAB_BOARD_CONFIG_CONFIRMED=0</code>，连接 USB 即可做 NN 基准测试。基准测试用指定的 Vin，仍须确认程序处于停止状态；功率输出批准标记继续为 0。</li>
-<li>每次重新生成库后都在 CCS 完整 Build、重新加载，并从初始化运行；P3 必须经过初始化复制，不能直接跳转到主循环。</li>
+<li>每次重新生成库后都在 CCS 完整 Build、重新加载，并从初始化运行；级别 3～5 必须经过代码/常量初始化复制，不能直接跳转到主循环。</li>
 <li>设置 <code>g_nnBenchmarkVin=90.0f</code>、<code>g_nnBenchmarkIterations=1000</code>、<code>g_nnBenchmarkWarmup=10</code>，最后设置 <code>g_nnBenchmarkRequested=true</code>。运行至 <code>g_nnBenchmarkState=2</code> 且统计冻结后读取，期间不打断点。</li>
 <li>每一级记录生成清单中的 <code>optimization_level</code>、<code>detail_profile</code>、库 SHA-256、测试 Vin、<code>g_nnTiming</code>、<code>g_nnLastOutput</code>、<code>g_nnTimeoutCount</code> 及故障状态。应完成 1000 个正式样本、拒绝输出及超时均为 0；同一输入的四项输出应与级别 0 一致。</li>
 <li>对照同一输入、相同中断与外设条件下各级的 <code>npuSubmit</code>、<code>npuCompletion</code>、<code>endToEnd</code> 的平均/最小/最大值，再与相同条件的 FPU 比较。各步骤包含中断响应或抢占，不能将完成时间当作裸 NPU 周期。</li>
 </ol>
-<p>在 <code>ccs_projects</code> 目录执行以下命令，N 替换为 0、1、2、3 或 4；当前默认级别为 4：</p>
+<p>在 <code>ccs_projects</code> 目录执行以下命令，N 替换为 0、1、2、3、4 或 5；当前默认级别为 5：</p>
 <pre><code class="language-powershell">review_20261003/npu_integration_20261009/python310/python.exe dab_control_f28p550/tools/compile_dab_npu.py --optimization-level N
 </code></pre>
 <p>定位剩余耗时时，在相同命令末尾加 <code>--detail-profile</code>，Build 并复测，保存 <code>g_nnNpuDetail</code>。<code>invalidPairs</code> 应为 0；四层启动/完成各一次，参数/指令/寄存器各四次，级别 2/3 的隐藏层转换不再有样本，紧凑数据复制计入 stage[1]；分段统计涉及计时调用，须与不带详细计时的正式成绩区分。</p>
@@ -203,7 +292,7 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <pre><code class="language-powershell">python dab_control_f28p550/tools/verify_npu_runtime.py
 python review_20261003/npu_integration_20261009/verify_integration.py
 </code></pre>
-<h2 id="_3">后续轮次的依据</h2>
+<h2 id="_5">后续轮次的依据</h2>
 <h3 id="2026-10-09">自动实板统计（2026-10-09）</h3>
 <p>复用 <code>tools/c2000_debug</code> 的 CCS Scripting / XDS110 框架，增加 <code>benchmark_nn.py</code>；分别对 FPU FLASH、P3 普通 NPU FLASH、P3 详细计时 NPU FLASH 完成三轮测试，每轮重新加载程序并连续运行，测量中不打断点。三组均为 Vin=90 V、预热 10 次、正式 1000 次；各组的三轮平均耗时一致，但这些重复结果不代表已覆盖其他输入或运行条件。</p>
 <table>
@@ -359,5 +448,5 @@ python review_20261003/npu_integration_20261009/verify_integration.py
 </table>
 <p>按现有两组数据，端到端改善约 1.80 倍，但仍为此前 FPU 的 28.69056 μs 的 5.20 倍。最终完成到后台发现平均仅差 1.75229 μs，改善后台轮询无法解释剩余约 120 μs 的差距；而提交调用本身已接近 60 μs，需要继续检查首层数据处理、参数/指令装载和配置。</p>
 <p><code>npuSubmit</code> 和 <code>npuCompletion</code> 共用启动时间点，前者包含在后者之内，不能相加；两项均可能包含中断占用。下一次应在级别 3 下启用 <code>--detail-profile</code> 获取 <code>g_nnNpuDetail</code>，同时补记 Vin、输出、超时计数和库清单，以区分装载、配置、层间处理与各层启动到完成中断的耗时；详细计时版本仅用于定位，正式提速结论仍用关闭详细计时的版本。</p>
-<p>当前已交付不改变模型数学含义的 P0～P4，并完成自动实板统计。后续继续评估常量读取、固定输入量化和指令复用；指令缓存需要核对各层指令的差异、覆盖方式与复位失效条件，不能仅因为代码尺寸相同就复用。</p>
-<p>目前量化模型在 92.2～92.5 V 仍存在已记录的无效输出；上述优化不会消除量化误差，因而仍不允许用于功率闭环。提高精度、开放功率控制以及判断优化后是否快于 FPU，均需另外的数值与实板验收。</p><footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：4e60590cb9e296f0e6f01b28b667a2a46288e5e2e8a89054ce598b1b80d0667b</footer></main></div></body></html>
+<p>当前已交付不改变模型数学含义的 P0～P5，并完成自动实板统计。后续继续评估固定输入量化和指令复用；指令缓存需要核对各层指令的差异、覆盖方式与复位失效条件，不能仅因为代码尺寸相同就复用。</p>
+<p>目前量化模型在 92.2～92.5 V 仍存在已记录的无效输出；上述优化不会消除量化误差，因而仍不允许用于功率闭环。提高精度、开放功率控制以及判断优化后是否快于 FPU，均需另外的数值与实板验收。</p><footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：5e71845c81f6452252308bd3f895091c376b9d253f9686716c372a5b9a36ae83</footer></main></div></body></html>

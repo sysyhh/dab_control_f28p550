@@ -4,7 +4,7 @@
   "real_ti_nnc_library": true,
   "ti_nnc": "2.1.0",
   "hardware_stages": 4,
-  "library_sha256": "8c096076191a17df01dbfc357b14084fd5a5a87ddd255aec1d00179408cd393e",
+  "library_sha256": "89c0fb072c2b9b131239eba50310626d949151ef4f89c20d8b616f912538a2fe",
   "final_output_timestamp_hook": true,
   "builds": [
     "CPU1_LAUNCHXL_NPU_FLASH",
@@ -118,14 +118,14 @@
   "ccs_settings_and_artifact_hashes_checked": true,
   "document_links_and_source_hashes_checked": true,
   "application_sources_sha256": {
-    "dab_nn.c": "89463f111e56beb50379852d661f9d09ede8ba19d1a41897cae0083fbe939003",
+    "dab_nn.c": "87347fbb96bed6959a2673503c718c113b7c5ec58f4821fd608bf6460bc6c771",
     "dab_nn.h": "3eb808759b4b6101f2542625349db0e2ad56f8fcc092fe14ef154769b1d424cd",
     "dab_control.c": "6262851df386d39ded0877152847fcad3b7985be3a11119af53f6189ad2a0f86",
     "dab_control.h": "2f6f9df460b2836a64f2ef2a3af841b38ba1b244fca771d05f2749f31c8c9ceb",
     ".cproject": "ec9d0f648e323e9550951b5a8a027375d59d41d96b2c525560da73efe1eab469"
   },
   "forced_nn_recompile": true,
-  "optimization_level": 4,
+  "optimization_level": 5,
   "detail_profile": false,
   "npu_ram_runtime": {
     "load": "0x808f0",
@@ -133,6 +133,12 @@
     "c28_words": 1083,
     "capacity_words": 2048
   },
+  "npu_ram_constants": {
+    "load": "0xa0000",
+    "run": "0x9800",
+    "c28_words": 1592,
+    "capacity_words": 2048
+  },
   "power_control_approved": false,
-  "board_numeric_and_timing_validation": "pending"
+  "board_numeric_and_timing_validation": "tracked separately in tools/c2000_debug/*_benchmark_verification.json; full-range hardware precision pending"
 }

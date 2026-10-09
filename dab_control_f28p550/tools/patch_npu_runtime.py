@@ -62,6 +62,16 @@ def ram_functions(code, names):
             raise RuntimeError('Missing RAM function '+name)
     return '\n'.join(f'#pragma CODE_SECTION({name}, ".dab_npu_ramfunc")' for name in names)+'\n'+code
 
+def ram_constants(code):
+    # 仅改变 CPU 读取常量的位置；每层向 NPU 的完整装载流程保持原样。
+    arrays=re.findall(r'static const uint32_t (PWCONV_(?:PARAMS|MMR)(?:_\d+)?)\[\]',code)
+    headers=sorted(set(re.findall(r'#include "hard/ins_asm/(PWCONV_\w+_INS)\.h"',code)))
+    if (sum(name.startswith('PWCONV_PARAMS') for name in arrays)!=4 or
+            sum(name.startswith('PWCONV_MMR') for name in arrays)!=4 or len(headers)!=2):
+        raise RuntimeError('Unexpected constant layout; expected 4 parameter/4 MMR arrays and 2 instruction tables')
+    names=arrays+headers
+    return '\n'.join(f'#pragma DATA_SECTION({name}, ".dab_npu_const")' for name in names)+'\n'+code,names
+
 def instrument(code, enabled):
     names=re.findall(r'\b(tvmgen_default_fused_\w+)\([^;{}]*\)\s*\{',code)
     for name in names:

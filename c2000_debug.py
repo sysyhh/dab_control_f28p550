@@ -44,6 +44,7 @@ def main():
     parser.add_argument('--build-dir', default='CPU1_RAM', help='Existing CCS-generated build directory')
     parser.add_argument('--rebuild-nn', action='store_true',
                         help='Force NN recompile/relink after restoring a generated model archive or contract')
+    parser.add_argument('--verify-npu-const', action='store_true', help='Compare the LS3 model constants with their Flash load image')
     parser.add_argument('--ccxml', type=Path)
     parser.add_argument('--expr', action='append', help='Read scalar GEL expression; repeat for multiple expressions')
     parser.add_argument('--register', action='append', help='Register name; PC is always included')
@@ -95,6 +96,7 @@ def main():
                            expressions=args.expr or DEFAULT_EXPRESSIONS,
                            registers=list(dict.fromkeys(['PC'] + (args.register or []))),
                            memory_registers=PWM_TRIP_REGISTERS,
+                           verify_npu_const=args.verify_npu_const,
                            run_ms=args.run_ms, samples=args.samples, timeout_ms=args.timeout_ms)
             request_file = run_dir / 'request.json'
             request_file.write_text(json.dumps(request, indent=2), encoding='utf-8')

@@ -69,6 +69,11 @@ for(words=8;words<=16;words+=8) for(value=0;value<65536;++value) {
 } puts("PASS: generated packed copy versus original unpack/pack; all 65536 word values; 8/16 words; boundary guards"); }
 '''
     driver=(args.generated/'dab_tinie_c28.c').read_text(encoding='utf-8')
+    kernel=(args.generated/'lib2.c').read_text(encoding='utf-8')
+    if '.dab_npu_const' in kernel:
+        stripped=re.sub(r'#pragma DATA_SECTION\([^\n]+\)\n','',kernel)
+        assert stripped==(args.generated/'lib2.flash_reference.c').read_text(encoding='utf-8')
+        print('PASS: RAM constant placement only adds directives; kernel and constant data unchanged')
     if 'int32_t dab_npu_load_words(' in driver:
         code+=extract(driver,'dab_npu_load_words','load_words')+'\n'
         body+='''{ uint32_t src[516],old[1034],now[1034]; unsigned n,j;

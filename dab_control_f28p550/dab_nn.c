@@ -17,6 +17,9 @@
 #include "model/generated/npu/dab_npu_contract.h"
 #if defined(__TI_COMPILER_VERSION__) && DAB_NPU_RAM_RUNTIME
 extern uint16_t DabNpuLoadStart, DabNpuLoadSize, DabNpuRunStart;
+#if DAB_NPU_RAM_CONSTANTS
+extern uint16_t DabNpuConstLoadStart, DabNpuConstLoadSize, DabNpuConstRunStart;
+#endif
 #endif
 #else
 #ifndef DAB_NPU_FLOAT_IO_CONFIRMED
@@ -429,6 +432,10 @@ void DAB_NN_init(void)
     // C28 的 memcpy 长度按 16 位存储单元计；链接器符号的地址给出镜像长度。
     // 先完成复制再注册/启动 NPU，保证普通 Flash 上电启动同样有效。
     memcpy(&DabNpuRunStart, &DabNpuLoadStart, (size_t)&DabNpuLoadSize);
+#if DAB_NPU_RAM_CONSTANTS
+    // 常量只在初始化时复制一次；四层仍逐次装载到 NPU 自身的参数/指令存储区。
+    memcpy(&DabNpuConstRunStart, &DabNpuConstLoadStart, (size_t)&DabNpuConstLoadSize);
+#endif
 #endif
     TI_NPU_init(); // 仅真实模型分支初始化硬件；需要 DAB 专用头文件、模型库及完成通知。
 #endif

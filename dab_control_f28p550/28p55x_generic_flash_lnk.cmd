@@ -63,6 +63,13 @@ SECTIONS
    ramgs1 : > RAMGS1
    .rodata.tvm : > FLASH_BANK1, ALIGN(8)
    .bss.noinit.tvm : > RAMGS1, ALIGN(8), TYPE = NOINIT
+   // 权重、指令和配置常量在 LS3 读取；Flash 镜像在初始化时完整复制。
+   .dab_npu_const : {} LOAD = FLASH_BANK1,
+                      RUN = RAMLS3,
+                      LOAD_START(DabNpuConstLoadStart),
+                      LOAD_SIZE(DabNpuConstLoadSize),
+                      RUN_START(DabNpuConstRunStart),
+                      ALIGN(8)
    // NPU 热点代码使用独立 LS2；Flash 保存镜像，DAB_NN_init 在启用 NPU 前复制。
    .dab_npu_ramfunc : {} LOAD = FLASH_BANK0,
                         RUN = RAMLS2,

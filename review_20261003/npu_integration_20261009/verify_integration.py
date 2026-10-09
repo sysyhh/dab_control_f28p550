@@ -43,6 +43,7 @@ assert re.search(r"\.bss.noinit.tvm\s+\*?\s*\d+\s+0000e000\s+00000060",maptext)
 assert "DAB_NN_noteNpuCompletion" in maptext and "mod.a : lib2.obj" in maptext
 assert "g_nnLastOutput" in maptext
 ram=None
+ram_constants=None
 if manifest.get("optimization_level",0)>=3:
     section=re.search(r'\.dab_npu_ramfunc\s+\*?\s+0\s+([0-9a-f]+)\s+([0-9a-f]+)\s+RUN ADDR = ([0-9a-f]+)',maptext)
     assert section, "Missing NPU RAM section"
@@ -52,6 +53,13 @@ if manifest.get("optimization_level",0)>=3:
         assert re.search(r'0\s+00009[0-7][0-9a-f]{2}\s+'+name+r'\s',maptext),name
     assert 'fused_cast_cast_multiply_nn_relu_multiply_add_floor_clip_cast' not in maptext
     ram={"load":hex(load),"run":hex(run),"c28_words":size,"capacity_words":2048}
+if manifest.get("optimization_level",0)>=5:
+    section=re.search(r'\.dab_npu_const\s+\*?\s+0\s+([0-9a-f]+)\s+([0-9a-f]+)\s+RUN ADDR = ([0-9a-f]+)',maptext)
+    assert section, "Missing NPU RAM constants"
+    load,size,run=[int(v,16) for v in section.groups()]
+    assert 0xA0000<=load<0xC0000 and run==0x9800 and 0<size<=0x800
+    assert len(manifest['ram_constant_symbols'])==10
+    ram_constants={"load":hex(load),"run":hex(run),"c28_words":size,"capacity_words":2048}
 logs=["dab16_test.log","timing_regression.log","followup_regression.log","legacy_npu_regression.log"]
 passes=[]
 for name in logs:
@@ -88,7 +96,8 @@ report={"date":"2026-10-09","ccs_configuration":"CPU1_LAUNCHXL_NPU_FLASH",
         "application_sources_sha256":{name:sha(APP/name) for name in ("dab_nn.c","dab_nn.h","dab_control.c","dab_control.h",".cproject")},
         "forced_nn_recompile":True,
         "optimization_level":manifest.get("optimization_level",0),
-        "detail_profile":manifest.get("detail_profile",False),"npu_ram_runtime":ram,
-        "power_control_approved":False,"board_numeric_and_timing_validation":"pending"}
+        "detail_profile":manifest.get("detail_profile",False),"npu_ram_runtime":ram,"npu_ram_constants":ram_constants,
+        "power_control_approved":False,
+        "board_numeric_and_timing_validation":"tracked separately in tools/c2000_debug/*_benchmark_verification.json; full-range hardware precision pending"}
 (HERE/"verification.json").write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding="utf-8",newline="\n")
 print("PASS: real library hashes, four hardware stages, final completion hook, GS1 placement, two TI builds, host regressions, model comparison, CCS settings, document links")

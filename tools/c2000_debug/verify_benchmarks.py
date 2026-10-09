@@ -34,6 +34,9 @@ def main():
                 assert item['minTicks'] <= item['totalTicks']/item['samples'] <= item['maxTicks']
                 assert abs(item['meanUs']-item['totalTicks']/item['samples']/150)<.001
             if report['backend']=='npu':
+                if report['model_manifest'].get('optimization_level',0)>=5:
+                    copy=raw['model_constant_copy']
+                    assert copy['matches'] and copy['first_mismatch']==-1 and 0<copy['words']<=2048 and copy['run']==0x9800
                 assert run['output']==[.4375,.25,0,1]
                 assert timing['npuCompletion']['samples']==1000
                 assert bool(detail['instrumented'])==report['model_manifest']['detail_profile']

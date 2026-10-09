@@ -28,10 +28,22 @@
   "hardware_stages": 4,
   "completion_hook": "after final output dequantization, before finished=1",
   "detail_profile": false,
-  "optimization_level": 4,
-  "runtime_sha256": "076b6e88f5d821dead0e8a6edee1cf29d67fa0a1f5435af261ce403a5760db7a",
+  "optimization_level": 5,
+  "ram_constant_symbols": [
+    "PWCONV_PARAMS",
+    "PWCONV_MMR",
+    "PWCONV_PARAMS_1",
+    "PWCONV_MMR_1",
+    "PWCONV_PARAMS_2",
+    "PWCONV_MMR_2",
+    "PWCONV_PARAMS_3",
+    "PWCONV_MMR_3",
+    "PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS",
+    "PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS"
+  ],
+  "runtime_sha256": "efbecd217a93b78969497b3104d9f2013d0c7671ac17d19aa3648919bb2538cd",
   "driver_sha256": "33c489cdf2719ad4f418a40c25ab457ac8d9279173366a8c923ba3c660f1e55a",
-  "kernel_sha256": "22532c1596f13022a216d2a12835d0ad370ee66a033b15c250ed2e573710fb11",
-  "library_sha256": "8c096076191a17df01dbfc357b14084fd5a5a87ddd255aec1d00179408cd393e",
+  "kernel_sha256": "ded6080e24ff5636ad8447e6336c8869fc2a3c659a8fc56a52aab1298d570bff",
+  "library_sha256": "89c0fb072c2b9b131239eba50310626d949151ef4f89c20d8b616f912538a2fe",
   "header_sha256": "932b5658528fd69dc4872f8e8b86426992209857558b62859f002c80d28c0153"
 }

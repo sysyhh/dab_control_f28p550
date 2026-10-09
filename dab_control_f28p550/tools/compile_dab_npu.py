@@ -21,8 +21,8 @@ def main():
     parser.add_argument("--sdk", type=Path, default=Path("E:/Software_Download/ti/c2000/C2000Ware_DigitalPower_SDK_5_05_01_00/c2000ware"))
     parser.add_argument("--out", type=Path, default=APP / "model/generated/npu")
     parser.add_argument("--detail-profile", action="store_true", help="Enable intrusive stage timing; off for performance comparison")
-    parser.add_argument("--optimization-level", type=int, choices=range(5), default=4,
-                        help="0: original; 1: hidden identity; 2: packed transitions; 3: RAM runtime; 4: unrolled loads")
+    parser.add_argument("--optimization-level", type=int, choices=range(6), default=5,
+                        help="0: original; 1: hidden identity; 2: packed transitions; 3: RAM runtime; 4: unrolled loads; 5: RAM constants")
     args = parser.parse_args()
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from prepare_npu_conv import prepare
@@ -79,7 +79,8 @@ def main():
         "  tvmgen_default_finished = 1;",
         "  DAB_NN_noteNpuCompletion(); /* Final output is ready; stamp before publication. */\n  tvmgen_default_finished = 1;")
     (output / "lib1.reference.c").write_text(code, encoding="utf-8", newline="\n")
-    from patch_npu_runtime import instrument, instrument_driver, hidden_identity, packed_transitions, ram_functions, load_unroll
+    from patch_npu_runtime import instrument, instrument_driver, hidden_identity, packed_transitions, ram_functions, load_unroll, ram_constants
+    constant_symbols=[]
     if args.optimization_level >= 1:
         code = hidden_identity(code, (output / "lib0.c").read_text())
     if args.optimization_level >= 2:
@@ -89,7 +90,11 @@ def main():
         names=re.findall(r'\b(tvmgen_default_\w+|dab_npu_copy_words|tinie_sublayer_IRQHandler)\([^;{}]*\)\s*\{',code)
         code=ram_functions(code,names)
         kernels=re.findall(r'\b(tvmgen_default_ti_npu_\w+)\([^;{}]*\)\s*\{',kernel)
-        (output / "lib2.c").write_text(ram_functions(kernel,kernels),encoding="utf-8", newline="\n")
+        kernel=ram_functions(kernel,kernels)
+        (output / "lib2.flash_reference.c").write_text(kernel,encoding="utf-8",newline="\n")
+        if args.optimization_level >= 5:
+            kernel,constant_symbols=ram_constants(kernel)
+        (output / "lib2.c").write_text(kernel,encoding="utf-8", newline="\n")
     runtime.write_text(code, encoding="utf-8", newline="\n")
     import tvm
     root = Path(tvm.__file__).parent
@@ -126,6 +131,7 @@ def main():
                 "hardware_stages": 4, "completion_hook": "after final output dequantization, before finished=1",
                 "detail_profile": args.detail_profile,
                 "optimization_level": args.optimization_level,
+                "ram_constant_symbols": constant_symbols,
                 "runtime_sha256": sha(runtime), "driver_sha256": sha(driver),
                 "kernel_sha256": sha(output / "lib2.c"),
                 "library_sha256": sha(output / "mod.a"), "header_sha256": sha(header)}
@@ -136,7 +142,7 @@ def main():
         "#define DAB_NPU_MIN_VIN 90.0f\n#define DAB_NPU_MAX_VIN 140.0f\n"
         "#define DAB_NPU_POWER_CONTROL_APPROVED 0\n#endif\n", encoding="utf-8", newline="\n")
     contract=output / "dab_npu_contract.h"
-    contract.write_text(contract.read_text().replace("#endif", f"#define DAB_NPU_DETAIL_PROFILE {int(args.detail_profile)}\n#define DAB_NPU_RAM_RUNTIME {int(args.optimization_level >= 3)}\n#endif"), encoding="utf-8", newline="\n")
+    contract.write_text(contract.read_text().replace("#endif", f"#define DAB_NPU_DETAIL_PROFILE {int(args.detail_profile)}\n#define DAB_NPU_RAM_RUNTIME {int(args.optimization_level >= 3)}\n#define DAB_NPU_RAM_CONSTANTS {int(args.optimization_level >= 5)}\n#endif"), encoding="utf-8", newline="\n")
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8", newline="\n")
     print(json.dumps(manifest, indent=2))
 

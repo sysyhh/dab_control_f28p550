@@ -45,6 +45,22 @@ try {
         result.samples.push({ index: i, values, pc: session.registers.read('PC') });
         result.variables = values;
     }
+    if (request.verify_npu_const) {
+        result.stage = 'verify_constants';
+        // 链接器符号直接给出地址/长度；通过符号表读取，避免表达式求地址报错。
+        // 只在本轮统计结束后比较镜像，不影响推理期间的计时。
+        const load = session.symbols.getAddress('DabNpuConstLoadStart');
+        const run = session.symbols.getAddress('DabNpuConstRunStart');
+        const words = Number(session.symbols.getAddress('DabNpuConstLoadSize'));
+        if (run !== 0x9800n || load < 0x80000n || load >= 0xc0000n || !(words > 0 && words <= 2048))
+            throw new Error('Unexpected model constant load/run bounds');
+        const flash = session.memory.read(load, words, 16);
+        const ram = session.memory.read(run, words, 16);
+        const mismatch = flash.findIndex((value, index) => value !== ram[index]);
+        result.model_constant_copy = { load, run, words, matches: mismatch === -1, first_mismatch: mismatch };
+        if (flash.length !== words || ram.length !== words || mismatch !== -1)
+            throw new Error('Model RAM constants differ from Flash image');
+    }
     for (const register of request.registers) {
         try { result.registers[register] = session.registers.read(register); }
         catch (e) { result.errors.push({ stage: 'register', register, message: String(e) }); }
