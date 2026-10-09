@@ -1,0 +1,67 @@
+#[version = "0.0.5"]
+def @main(%features: Tensor[(1, 16), float32] /* ty=Tensor[(1, 16), float32] span=/oss_5/Add.features:0:0 */) -> Tensor[(1, 1, 1, 4), float32] {
+  %0 = add(%features, meta[relay.Constant][0] /* ty=Tensor[(1, 1, 1, 1), float32] span=Identity_24.oss_5.offset:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_5/Add:0:0 */;
+  %1 = multiply(%0, meta[relay.Constant][1] /* ty=Tensor[(1, 1, 1, 1), float32] span=Identity_20.oss_5.mult:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_5/Mul:0:0 */;
+  %2 = multiply(%1, meta[relay.Constant][2] /* ty=Tensor[(1, 1, 1, 1), float32] span=Identity_22.oss_5.shift_mult:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_5/Mul_1:0:0 */;
+  %3 = floor(%2) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_5/Floor:0:0 */;
+  %4 = clip(%3, a_min=-128f, a_max=127f) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_5/Clip:0:0 */;
+  %5 = reshape(%4, newshape=[-1, 16]) /* ty=Tensor[(1, 16), float32] span=/fc1/fc1.0/MatMul:0:0 */;
+  %6 = nn.dense(%5, meta[relay.Constant][3] /* ty=Tensor[(32, 16), float32] span=/fc1/fc1.0/MatMul:0:0 */, units=None, out_dtype="float32") /* ty=Tensor[(1, 32), float32] span=/fc1/fc1.0/MatMul:0:0 */;
+  %7 = reshape(%6, newshape=[1, 1, 1, 32]) /* ty=Tensor[(1, 1, 1, 32), float32] span=/fc1/fc1.0/MatMul:0:0 */;
+  %8 = nn.bias_add(%7, meta[relay.Constant][4] /* ty=Tensor[(32), float32] */, axis=3) /* ty=Tensor[(1, 1, 1, 32), float32] */;
+  %9 = multiply(%8, meta[relay.Constant][5] /* ty=Tensor[(1, 32), float32] span=/fc1/fc1.1/Mul.fc1.1.mult:0:0 */) /* ty=Tensor[(1, 1, 1, 32), float32] span=/fc1/fc1.1/Mul:0:0 */;
+  %10 = multiply(%9, meta[relay.Constant][6] /* ty=Tensor[(1, 32), float32] span=/fc1/fc1.1/Mul_1.fc1.1.shift_mult:0:0 */) /* ty=Tensor[(1, 1, 1, 32), float32] span=/fc1/fc1.1/Mul_1:0:0 */;
+  %11 = floor(%10) /* ty=Tensor[(1, 1, 1, 32), float32] span=/fc1/fc1.1/Floor:0:0 */;
+  %12 = clip(%11, a_min=0f, a_max=255f) /* ty=Tensor[(1, 1, 1, 32), float32] span=/fc1/fc1.1/Clip:0:0 */;
+  %13 = multiply(%12, 0.015625f /* ty=float32 span=/identity_multiplymodule_9/identity_multiplymodule_9.1/Constant:0:0 */) /* ty=Tensor[(1, 1, 1, 32), float32] span=/identity_multiplymodule_9/identity_multiplymodule_9.1/Mul:0:0 */;
+  %14 = nn.relu(%13) /* ty=Tensor[(1, 1, 1, 32), float32] span=/Relu:0:0 */;
+  %15 = add(%14, meta[relay.Constant][7] /* ty=Tensor[(1, 1, 1, 1), float32] span=Identity_24:0:0 */) /* ty=Tensor[(1, 1, 1, 32), float32] span=/oss_6/Add:0:0 */;
+  %16 = multiply(%15, meta[relay.Constant][8] /* ty=Tensor[(1, 1, 1, 1), float32] span=Identity_23:0:0 */) /* ty=Tensor[(1, 1, 1, 32), float32] span=/oss_6/Mul:0:0 */;
+  %17 = multiply(%16, meta[relay.Constant][9] /* ty=Tensor[(1, 1, 1, 1), float32] span=Identity_22:0:0 */) /* ty=Tensor[(1, 1, 1, 32), float32] span=/oss_6/Mul_1:0:0 */;
+  %18 = floor(%17) /* ty=Tensor[(1, 1, 1, 32), float32] span=/oss_6/Floor:0:0 */;
+  %19 = clip(%18, a_min=0f, a_max=255f) /* ty=Tensor[(1, 1, 1, 32), float32] span=/oss_6/Clip:0:0 */;
+  %20 = reshape(%19, newshape=[-1, 32]) /* ty=Tensor[(1, 32), float32] span=/fc2/fc2.0/MatMul:0:0 */;
+  %21 = nn.dense(%20, meta[relay.Constant][10] /* ty=Tensor[(16, 32), float32] span=/fc2/fc2.0/MatMul:0:0 */, units=None, out_dtype="float32") /* ty=Tensor[(1, 16), float32] span=/fc2/fc2.0/MatMul:0:0 */;
+  %22 = reshape(%21, newshape=[1, 1, 1, 16]) /* ty=Tensor[(1, 1, 1, 16), float32] span=/fc2/fc2.0/MatMul:0:0 */;
+  %23 = nn.bias_add(%22, meta[relay.Constant][11] /* ty=Tensor[(16), float32] */, axis=3) /* ty=Tensor[(1, 1, 1, 16), float32] */;
+  %24 = multiply(%23, meta[relay.Constant][12] /* ty=Tensor[(1, 16), float32] span=Identity_25.fc2.1.mult:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/fc2/fc2.1/Mul:0:0 */;
+  %25 = multiply(%24, meta[relay.Constant][13] /* ty=Tensor[(1, 16), float32] span=/fc2/fc2.1/Mul_1.fc2.1.shift_mult:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/fc2/fc2.1/Mul_1:0:0 */;
+  %26 = floor(%25) /* ty=Tensor[(1, 1, 1, 16), float32] span=/fc2/fc2.1/Floor:0:0 */;
+  %27 = clip(%26, a_min=0f, a_max=255f) /* ty=Tensor[(1, 1, 1, 16), float32] span=/fc2/fc2.1/Clip:0:0 */;
+  %28 = multiply(%27, 0.0078125f /* ty=float32 span=/identity_multiplymodule_10/identity_multiplymodule_10.1/Constant:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/identity_multiplymodule_10/identity_multiplymodule_10.1/Mul:0:0 */;
+  %29 = nn.relu(%28) /* ty=Tensor[(1, 1, 1, 16), float32] span=/Relu_1:0:0 */;
+  %30 = add(%29, meta[relay.Constant][14] /* ty=Tensor[(1, 1, 1, 1), float32] span=/oss_7/Add.oss_7.offset:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_7/Add:0:0 */;
+  %31 = multiply(%30, meta[relay.Constant][15] /* ty=Tensor[(1, 1, 1, 1), float32] span=Identity_21:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_7/Mul:0:0 */;
+  %32 = multiply(%31, meta[relay.Constant][16] /* ty=Tensor[(1, 1, 1, 1), float32] span=/oss_7/Mul_1.oss_7.shift_mult:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_7/Mul_1:0:0 */;
+  %33 = floor(%32) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_7/Floor:0:0 */;
+  %34 = clip(%33, a_min=0f, a_max=255f) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_7/Clip:0:0 */;
+  %35 = reshape(%34, newshape=[-1, 16]) /* ty=Tensor[(1, 16), float32] span=/fc3/fc3.0/MatMul:0:0 */;
+  %36 = nn.dense(%35, meta[relay.Constant][17] /* ty=Tensor[(16, 16), float32] span=/fc3/fc3.0/MatMul:0:0 */, units=None, out_dtype="float32") /* ty=Tensor[(1, 16), float32] span=/fc3/fc3.0/MatMul:0:0 */;
+  %37 = reshape(%36, newshape=[1, 1, 1, 16]) /* ty=Tensor[(1, 1, 1, 16), float32] span=/fc3/fc3.0/MatMul:0:0 */;
+  %38 = nn.bias_add(%37, meta[relay.Constant][18] /* ty=Tensor[(16), float32] */, axis=3) /* ty=Tensor[(1, 1, 1, 16), float32] */;
+  %39 = multiply(%38, meta[relay.Constant][19] /* ty=Tensor[(1, 16), float32] span=Identity_25:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/fc3/fc3.1/Mul:0:0 */;
+  %40 = multiply(%39, meta[relay.Constant][20] /* ty=Tensor[(1, 16), float32] span=/fc3/fc3.1/Mul_1.fc3.1.shift_mult:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/fc3/fc3.1/Mul_1:0:0 */;
+  %41 = floor(%40) /* ty=Tensor[(1, 1, 1, 16), float32] span=/fc3/fc3.1/Floor:0:0 */;
+  %42 = clip(%41, a_min=0f, a_max=255f) /* ty=Tensor[(1, 1, 1, 16), float32] span=/fc3/fc3.1/Clip:0:0 */;
+  %43 = multiply(%42, 0.00390625f /* ty=float32 span=/identity_multiplymodule_11/identity_multiplymodule_11.1/Constant:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/identity_multiplymodule_11/identity_multiplymodule_11.1/Mul:0:0 */;
+  %44 = nn.relu(%43) /* ty=Tensor[(1, 1, 1, 16), float32] span=/Relu_2:0:0 */;
+  %45 = add(%44, meta[relay.Constant][21] /* ty=Tensor[(1, 1, 1, 1), float32] span=/oss_8/Add.oss_8.offset:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_8/Add:0:0 */;
+  %46 = multiply(%45, meta[relay.Constant][22] /* ty=Tensor[(1, 1, 1, 1), float32] span=Identity_20:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_8/Mul:0:0 */;
+  %47 = multiply(%46, meta[relay.Constant][23] /* ty=Tensor[(1, 1, 1, 1), float32] span=/oss_8/Mul_1.oss_8.shift_mult:0:0 */) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_8/Mul_1:0:0 */;
+  %48 = floor(%47) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_8/Floor:0:0 */;
+  %49 = clip(%48, a_min=0f, a_max=255f) /* ty=Tensor[(1, 1, 1, 16), float32] span=/oss_8/Clip:0:0 */;
+  %50 = reshape(%49, newshape=[-1, 16]) /* ty=Tensor[(1, 16), float32] span=/fc4/fc4.0/MatMul:0:0 */;
+  %51 = nn.dense(%50, meta[relay.Constant][24] /* ty=Tensor[(4, 16), float32] span=/fc4/fc4.0/MatMul:0:0 */, units=None, out_dtype="float32") /* ty=Tensor[(1, 4), float32] span=/fc4/fc4.0/MatMul:0:0 */;
+  %52 = reshape(%51, newshape=[1, 1, 1, 4]) /* ty=Tensor[(1, 1, 1, 4), float32] span=/fc4/fc4.0/MatMul:0:0 */;
+  %53 = nn.bias_add(%52, meta[relay.Constant][25] /* ty=Tensor[(4), float32] */, axis=3) /* ty=Tensor[(1, 1, 1, 4), float32] */;
+  %54 = multiply(%53, meta[relay.Constant][26] /* ty=Tensor[(1, 4), float32] span=/fc4/fc4.1/Mul.fc4.1.mult:0:0 */) /* ty=Tensor[(1, 1, 1, 4), float32] span=/fc4/fc4.1/Mul:0:0 */;
+  %55 = multiply(%54, meta[relay.Constant][27] /* ty=Tensor[(1, 4), float32] span=/fc4/fc4.1/Mul_1.fc4.1.shift_mult:0:0 */) /* ty=Tensor[(1, 1, 1, 4), float32] span=/fc4/fc4.1/Mul_1:0:0 */;
+  %56 = floor(%55) /* ty=Tensor[(1, 1, 1, 4), float32] span=/fc4/fc4.1/Floor:0:0 */;
+  %57 = clip(%56, a_min=-128f, a_max=127f) /* ty=Tensor[(1, 1, 1, 4), float32] span=/fc4/fc4.1/Clip:0:0 */;
+  multiply(%57, 0.015625f /* ty=float32 span=/identity_multiplymodule_12/identity_multiplymodule_12.1/Constant:0:0 */) /* ty=Tensor[(1, 1, 1, 4), float32] span=/identity_multiplymodule_12/identity_multiplymodule_12.1/Mul:0:0 */
+}
+
+/* For debugging purposes the metadata section has been omitted.
+ * If you would like to see the full metadata section you can set the 
+ * option to `True` when invoking `astext`. 
+ */

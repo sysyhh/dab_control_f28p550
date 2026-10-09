@@ -1,0 +1,112 @@
+{
+  "structure": [
+    16,
+    32,
+    16,
+    16,
+    4
+  ],
+  "copied_from": [
+    3,
+    29,
+    12,
+    6,
+    4
+  ],
+  "padding": "leading rows and columns hold dab_nn.c weights; every added weight and bias is zero",
+  "float_input_contract": "[-0.5, Vin/140, 0.285714, then 13 zeros]",
+  "quant_input_contract": {
+    "features[1]": "Vin/25 - 4.6",
+    "other_features": 0,
+    "folded_constants": [
+      -0.5,
+      0.285714
+    ],
+    "unsaturated_vin": [
+      90,
+      140
+    ]
+  },
+  "float_vs_dab_nn_vin_90_140": {
+    "samples": 51,
+    "max_abs": [
+      7.748603820800781e-07,
+      3.5762786865234375e-07,
+      3.241002559661865e-07,
+      5.960464477539062e-07
+    ],
+    "max_phase_counts": [
+      0.0018834564834833145,
+      0.0009008380002342165,
+      0.0008906011353246868
+    ],
+    "max_period_counts": 0.0014901161193847656
+  },
+  "float_vs_dab_nn_vin_20_140": {
+    "samples": 121,
+    "max_abs": [
+      7.748603820800781e-07,
+      3.5762786865234375e-07,
+      3.762543201446533e-07,
+      5.960464477539062e-07
+    ],
+    "max_phase_counts": [
+      0.0018834564834833145,
+      0.0009320183307863772,
+      0.001069702790118754
+    ],
+    "max_period_counts": 0.0014901161193847656
+  },
+  "folded_float_vs_dab_nn_vin_90_140": {
+    "samples": 51,
+    "max_abs": [
+      4.76837158203125e-07,
+      1.7881393432617188e-07,
+      1.564621925354004e-07,
+      3.5762786865234375e-07
+    ]
+  },
+  "folded_float_vs_dab_nn_vin_20_140": {
+    "samples": 121,
+    "max_abs": [
+      4.76837158203125e-07,
+      4.76837158203125e-07,
+      5.997717380523682e-07,
+      3.5762786865234375e-07
+    ]
+  },
+  "float_vs_screenshot_labels_max_abs": [
+    0.0032124221324920654,
+    0.00027740001678466797,
+    0.000231083482503891,
+    0.004062056541442871
+  ],
+  "quantization": {
+    "method": "TINPUTinyMLPTQFxModule",
+    "weight_activation_bits": 8,
+    "activation_scale": "per-tensor, symmetric, power-of-two",
+    "output_int": false,
+    "calibration": "Vin 90..140 V step 1 V, features[1]=Vin/25-4.6, other features 0",
+    "onnx": "dab_npu_tinpu_ptq.onnx",
+    "max_abs_vs_dab_nn": [
+      0.025504589080810547,
+      0.028975188732147217,
+      0.025174826383590698,
+      0.03358644247055054
+    ],
+    "median_abs_vs_dab_nn": [
+      0.012486159801483154,
+      0.007573634386062622,
+      0.0001475512981414795,
+      0.006783127784729004
+    ],
+    "max_phase_counts": [
+      67.06167602539062,
+      76.56661224365234,
+      66.27668762207031
+    ],
+    "max_period_counts": 83.96610260009766,
+    "worst_vin": 129.0,
+    "within_one_pwm_count": false
+  }
+}

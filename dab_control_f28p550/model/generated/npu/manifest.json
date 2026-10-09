@@ -1,0 +1,32 @@
+{
+  "model": "dab_npu_tinpu_conv.onnx",
+  "model_sha256": "502716d85fb9872aa234e7fd2ca234b013f3ce92a3762a472d3ea7f3c79a9a08",
+  "ti_mcu_nnc": "2.1.0",
+  "target": "c, ti-npu",
+  "cgt": "E:\\Software_Download\\ti\\ccs2020\\ccs\\tools\\compiler\\ti-cgt-c2000_22.6.2.LTS",
+  "sdk": "E:\\Software_Download\\ti\\c2000\\C2000Ware_DigitalPower_SDK_5_05_01_00\\c2000ware",
+  "cross_options": "--abi=eabi -O3 --opt_for_speed=5 --c99 -v28 -ml -mt --gen_func_subsections --float_support=fpu32 -IE:/Software_Download/ti/ccs2020/ccs/tools/compiler/ti-cgt-c2000_22.6.2.LTS/include -IE:/Software_Download/ti/c2000/C2000Ware_DigitalPower_SDK_5_05_01_00/c2000ware/driverlib/f28p55x/driverlib -IE:/Software_Download/ti/c2000/C2000Ware_DigitalPower_SDK_5_05_01_00/c2000ware/device_support/f28p55x/common/include -I.",
+  "input_shape": [
+    1,
+    16
+  ],
+  "output_shape": [
+    1,
+    1,
+    1,
+    4
+  ],
+  "io_dtype": "float32",
+  "input": "features[1]=Vin/25-4.6; all other features zero; Vin 90..140 V",
+  "output_order": [
+    "D1",
+    "D0",
+    "D2",
+    "T"
+  ],
+  "power_control_approved": false,
+  "hardware_stages": 4,
+  "completion_hook": "after final output dequantization, before finished=1",
+  "library_sha256": "43ef130d7832bf16ffeb8803054333e97f40c2a27a6eda8c1ef89adb8650d1f9",
+  "header_sha256": "932b5658528fd69dc4872f8e8b86426992209857558b62859f002c80d28c0153"
+}

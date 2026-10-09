@@ -1,0 +1,45 @@
+/**
+ * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
+ * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
+ * @cliArgs --device "F28P55x" --part "F28P55x_100PZ" --package "100PZ" --context "system" --product "C2000WARE@5.04.00.00"
+ * @v2CliArgs --device "TMS320F28P550SJ" --package "100PZ" --variant "TMS320F28P550SJ9" --context "system" --product "C2000WARE@5.04.00.00"
+ * @versions {"tool":"1.26.0+4350"}
+ */
+
+/**
+ * Import the modules used in this configuration.
+ */
+const gpio  = scripting.addModule("/driverlib/gpio.js", {}, false);
+const gpio1 = gpio.addInstance();
+const gpio2 = gpio.addInstance();
+const gpio3 = gpio.addInstance();
+const gpio4 = gpio.addInstance();
+
+/**
+ * GPIO Assignments
+ */
+// LED1 (Heartbeat)
+gpio1.$name             = "myLED1";
+gpio1.direction         = "GPIO_DIR_MODE_OUT";
+gpio1.writeInitialValue = true;
+gpio1.initialValue      = 1;
+gpio1.gpioPin.$assign   = "A17, B17, C17, GPIO20";
+
+// LED2 (Fault indicator)
+gpio2.$name             = "myLED2";
+gpio2.direction         = "GPIO_DIR_MODE_OUT";
+gpio2.writeInitialValue = true;
+gpio2.initialValue      = 1; // 板载 LED5 低有效，初始熄灭。
+gpio2.gpioPin.$assign   = "A18, B18, C18, GPIO21";
+
+// GPIO61 (Oscilloscope timing benchmark)
+gpio3.$name             = "myDebugPin";
+gpio3.direction         = "GPIO_DIR_MODE_OUT";
+gpio3.writeInitialValue = true;
+gpio3.initialValue      = 0;
+gpio3.gpioPin.$assign   = "GPIO61";
+
+// GPIO60 (Hardware comparator trip input)
+gpio4.$name             = "myTripPin";
+gpio4.direction         = "GPIO_DIR_MODE_IN";
+gpio4.gpioPin.$assign   = "GPIO60";

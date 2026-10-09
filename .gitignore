@@ -1,0 +1,13 @@
+/.theia/
+/review_20261003/
+/dab_control_f28p550/CPU1*/
+/dab_control_f28p550/syscfg/
+**/__pycache__/
+*.obj
+*.exe
+*.out
+*.map
+*.d
+*.d_raw
+*.log
+*.bak

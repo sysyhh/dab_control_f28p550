@@ -1,0 +1,335 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DAB NPU 接入与开发板核对</title><style>
+:root{--ink:#203648;--muted:#526b7d;--blue:#1766a4;--line:#d7e2eb;--panel:#f1f6fb}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{margin:0;background:#f8fafc;color:var(--ink);font:16px/1.8 'Microsoft YaHei','Noto Sans CJK SC',sans-serif}
+.shell{display:grid;grid-template-columns:290px minmax(0,1fr);max-width:1500px;margin:auto}
+nav{position:sticky;top:0;height:100vh;overflow:auto;padding:26px 20px;border-right:1px solid var(--line);background:var(--panel)}
+.brand{font-size:20px;font-weight:700;line-height:1.5;margin-bottom:14px}.badge{font-size:12px;background:#fff1db;color:#795524;padding:4px 8px;border-radius:4px}
+nav ul{list-style:none;padding-left:0}nav li{margin:6px 0}nav li li{font-size:13px;padding-left:13px}nav a{color:#294d69;text-decoration:none;display:block;line-height:1.6;padding:3px 0}nav a:hover{color:var(--blue);text-decoration:underline}
+main{min-width:0;padding:42px 48px 75px;background:white}h1{font-size:32px;line-height:1.5;margin:0 0 20px}h2{font-size:25px;padding-top:22px;margin:40px 0 18px;border-top:2px solid var(--line);line-height:1.6}h3{font-size:20px;margin-top:30px}
+p{margin:15px 0}a{color:var(--blue);text-underline-offset:3px}strong{color:#183f61}code{font-family:Consolas,monospace;font-size:.9em;background:#eef3f8;padding:2px 4px;border-radius:3px;overflow-wrap:anywhere}
+pre{background:#edf3f8;border-left:4px solid #739bbd;padding:18px;overflow:auto;font-size:14px;line-height:1.7}pre code{background:transparent;padding:0;overflow-wrap:normal}
+.table-scroll{overflow-x:auto;margin:20px 0}table{width:100%;border-collapse:collapse;min-width:580px;font-size:14px;line-height:1.75}th,td{padding:10px 12px;border:1px solid var(--line);vertical-align:top}th{background:#e9f2fa;text-align:left}tbody tr:nth-child(even){background:#f8fbfe}td code{font-size:12px}
+img{display:block;width:100%;max-width:1100px;height:auto;margin:25px auto;border:1px solid var(--line);border-radius:12px}
+li{margin:8px 0}footer{margin-top:45px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}button{border:1px solid #bdd0e0;border-radius:5px;background:white;color:#284a65;padding:7px 12px;cursor:pointer;font:inherit;font-size:13px}button:hover{background:#e3eef8}
+input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:inherit;font-size:14px}#search-status{font-size:12px;min-height:22px;color:#526b7d}.search-hit{background:#ffe9a0;border-radius:3px;color:inherit}.search-current{background:#ffca56;outline:2px solid #b7791f}
+@media(max-width:1000px){.shell{grid-template-columns:245px minmax(0,1fr)}main{padding:32px 24px}nav{padding:20px 14px}}
+@media(max-width:740px){.shell{display:block}nav{position:relative;height:auto;max-height:420px;border-right:0;border-bottom:1px solid var(--line)}main{padding:25px 17px}h1{font-size:26px}h2{font-size:22px}}
+@media print{body{background:white;font:10pt/1.6 'Microsoft YaHei',sans-serif}.shell{display:block}nav{display:none}main{padding:0}h1{font-size:20pt}h2{font-size:15pt;break-after:avoid}h3{font-size:12pt;break-after:avoid}.table-scroll{overflow:visible}table{min-width:0;font-size:9pt}th,td{padding:5px}tr{break-inside:avoid}pre,img{break-inside:avoid}a{color:#203648;text-decoration:none}.search-hit,.search-current{background:none;outline:none}}
+</style></head><body><div class="shell"><nav aria-label="文档目录"><div class="brand">DAB NPU 接入与开发板核对</div><div class="toc">
+<ul>
+<li><a href="#dab-npu">DAB NPU 模型接入与开发板核对</a><ul>
+<li><a href="#1">1. 当前交付范围</a></li>
+<li><a href="#2">2. 模型与输入输出</a></li>
+<li><a href="#3">3. 文件和内存</a></li>
+<li><a href="#4-ccs">4. 在 CCS 中运行</a></li>
+<li><a href="#5">5. 换输入与核对数值</a></li>
+<li><a href="#6">6. 怎样比较耗时</a></li>
+<li><a href="#7">7. 重新生成模型库</a></li>
+<li><a href="#8">8. 剩余验收与精度改进</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><a href="DAB_F28P550_guide_zh.html">返回上手说明</a></p><p><a href="NPU_integration_guide_zh.md">Markdown 原稿</a></p></nav><main><h1 id="dab-npu">DAB NPU 模型接入与开发板核对</h1>
+<h2 id="1">1. 当前交付范围</h2>
+<p>新增 <code>CPU1_LAUNCHXL_NPU_FLASH</code>，已用 TI MCU NNC 2.1.0 和 C2000 CGT 22.6.2.LTS 生成并链接真实 DAB 模型库。四层主要矩阵计算使用 NPU，输入准备、层间数据转换和最终 FLOAT32 输出还原仍由 CPU 完成；实际开发板输出与耗时尚待核对。</p>
+<p><strong>当前模型仅用于数值核对和耗时测试，禁止启动功率输出。</strong> 原因是 INT8 量化精度尚不足，不是板卡配置未确认；即使把板确认和自动启动宏置 1，<code>DAB_Control_start()</code> 也会返回拒绝码 7。原 <code>CPU1_LAUNCHXL_FLASH</code> 继续使用 FPU，其板确认、自动启动和保护门限没有被本次接入改动。</p>
+<h2 id="2">2. 模型与输入输出</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>FPU 基准</th>
+<th>当前 NPU 候选</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>网络</td>
+<td>3→29→12→6→4</td>
+<td>补齐为 16→32→16→16→4</td>
+</tr>
+<tr>
+<td>输入</td>
+<td><code>[-0.5, Vin/140, 0.285714]</code></td>
+<td>FLOAT32 <code>[1,16]</code>；除第 1 项外全部为零</td>
+</tr>
+<tr>
+<td>第 1 项</td>
+<td><code>Vin/140</code></td>
+<td><code>Vin/25 - 4.6</code>，索引从 0 开始</td>
+</tr>
+<tr>
+<td>常量输入</td>
+<td>每次准备</td>
+<td>已折入第一层权重/偏置，不再重复输入</td>
+</tr>
+<tr>
+<td>内部运算</td>
+<td>FLOAT32</td>
+<td>INT8 权重与激活，整数累加及缩放</td>
+</tr>
+<tr>
+<td>输出</td>
+<td>FLOAT32 <code>[1,4]</code></td>
+<td>FLOAT32 <code>[1,1,1,4]</code>，内存连续四个 float</td>
+</tr>
+<tr>
+<td>输出顺序</td>
+<td>D1、D0、D2、T</td>
+<td>相同，不能调换 D0 和 D2</td>
+</tr>
+<tr>
+<td>检查范围</td>
+<td>保留原有逻辑</td>
+<td>只接受 Vin 90～140 V；这不是原模型完整训练域声明</td>
+</tr>
+</tbody>
+</table>
+<p>原候选 ONNX 使用 <code>MatMul</code>。TI NNC 2.1.0 的 C28 路径编译该文件时会生成 CPU 计算循环，即使头文件带有 NPU 宏，也不能据此认为矩阵计算使用 NPU。因此新增 <code>prepare_npu_conv.py</code>，将四层等价改写为 1×1 <code>Conv</code> 并调整数据排列，保持已有量化参数和权重数值。</p>
+<p>90～140 V、步长 0.1 V 的 501 组 ONNX Runtime 对照中，改写前后的输出差为 <strong>0</strong>。<code>compile_dab_npu.py</code> 还检查生成代码有四个硬件阶段，防止以后模型修改后悄悄退回 CPU；这项检查不能替代开发板验证。</p>
+<h2 id="3">3. 文件和内存</h2>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model/dab_npu_tinpu_ptq.onnx</code></td>
+<td>原 INT8 候选，保留用于追踪和对照</td>
+</tr>
+<tr>
+<td><code>model/dab_npu_tinpu_conv.onnx</code></td>
+<td>等价 1×1 Conv 表达，供 TI NNC 编译</td>
+</tr>
+<tr>
+<td><code>model/dab_npu_conv_validation.json</code></td>
+<td>501 组等价对照、FLOAT 基准误差和六组核对值</td>
+</tr>
+<tr>
+<td><code>model/generated/npu/mod.a</code></td>
+<td>实际 C28/NPU 模型库；普通 CCS Build 直接使用它</td>
+</tr>
+<tr>
+<td><code>model/generated/npu/tvmgen_default.h</code></td>
+<td>TI 生成的输入输出和运行函数声明</td>
+</tr>
+<tr>
+<td><code>model/generated/npu/dab_npu_contract.h</code></td>
+<td>经生成头文件检查后写入的维度、范围和禁止功率控制标记</td>
+</tr>
+<tr>
+<td><code>model/generated/npu/lib0.c</code>～<code>lib2.c</code></td>
+<td>模型及运行代码，保留供检查；已从 CCS 自动编译源文件中排除</td>
+</tr>
+<tr>
+<td><code>model/generated/npu/manifest.json</code></td>
+<td>编译版本、选项、模型和库的 SHA-256 摘要</td>
+</tr>
+</tbody>
+</table>
+<p>CCS 仅链接 <code>mod.a</code>，不要再次把 <code>lib0.c</code>～<code>lib2.c</code> 添加到编译，否则会重复定义符号。不要把电弧识别例程的库替换进来。</p>
+<p>链接检查确认 <code>.bss.noinit.tvm</code> 位于 GS1，起始地址 <code>0xE000</code>，当前占 <code>0x60</code> 个 C28 地址单位，即 192 字节；GS1 总共 <code>0x2000</code> 个地址单位。<code>.rodata.tvm</code> 位于 FLASH_BANK1 的 <code>0xA0000</code>；其他模型常量和代码由链接文件放入 FLASH，不能只用 <code>.rodata.tvm</code> 大小代表整个模型占用。</p>
+<p>输入、输出和描述对象保持到任务结束。<code>TI_NPU_init()</code> 开启 NPU 时钟和中断源；生成运行库注册并处理 NPU 中断，不额外注册另一个中断函数覆盖它。主循环一次只允许一项任务，完成后检查输出，再发布完整四项缓存。</p>
+<h2 id="4-ccs">4. 在 CCS 中运行</h2>
+<ol>
+<li>刷新项目，在 Build Configurations 中选择 <strong><code>CPU1_LAUNCHXL_NPU_FLASH</code></strong>；若列表未更新，关闭并重新打开项目，使 CCS 重新读取 <code>.cproject</code>。</li>
+<li>执行 Build，确认编译命令有 <code>DAB_USE_HARDWARE_NPU</code>、<code>DAB_NPU_DAB16_MODEL</code>，链接命令包含 <code>model/generated/npu/mod.a</code>。该配置另外定义 <code>DAB_AUTO_START=0</code>、<code>DAB_BOARD_CONFIG_CONFIRMED=0</code>，无需改动公共头文件。</li>
+<li>加载此配置的 <code>CPU1_LAUNCHXL_NPU_FLASH/dab_control_f28p550.out</code>，完整复位并运行初始化；不能只切换配置后继续运行先前的 FPU 程序。</li>
+<li>导入 <a href="NN_timing_CCS_watch.txt">CCS 观察变量</a>。当前源码保留已有的启动即请求测试设置，默认 Vin=90 V、预热 10 次、正式 1000 次；连续运行到完成后暂停查看。</li>
+<li>应看到下表；如果未自动开始，可按下一节手动提交。测量期间不要单步或暂停，因为 Timer2 在调试暂停时继续运行。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>观察项</th>
+<th>成功预期</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>g_dabState</code></td>
+<td>1，待机</td>
+</tr>
+<tr>
+<td><code>g_nnBenchmarkState</code></td>
+<td>2，正式样本完成</td>
+</tr>
+<tr>
+<td><code>g_nnBenchmarkCompleted</code></td>
+<td>1000</td>
+</tr>
+<tr>
+<td><code>g_nnBenchmarkWarmupCompleted</code></td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>g_nnTiming.backend</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>g_nnTiming.frozen</code></td>
+<td>true</td>
+</tr>
+<tr>
+<td><code>g_nnTiming.npuCompletion.samples</code></td>
+<td>1000</td>
+</tr>
+<tr>
+<td><code>g_nnTiming.npuObserved.samples</code></td>
+<td>1000</td>
+</tr>
+<tr>
+<td><code>g_nnTiming.fpuForward.samples</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>g_nnTimeoutCount</code>、<code>g_nnTiming.rejectedOutputs</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>g_nnLastOutput</code></td>
+<td>Vin=90 V 时离线预期 <code>[0.4375, 0.25, 0, 1]</code>，需要实板核对</td>
+</tr>
+</tbody>
+</table>
+<p><code>g_nnLastOutput</code> 供只读观察。不要在 CCS 中改写输出、忙标志、完成标志或故障标志来绕过检查；运行代码应通过 <code>DAB_NN_getOutput()</code> 取得带有效性检查的完整结果。</p>
+<h2 id="5">5. 换输入与核对数值</h2>
+<p>每组测试只接受一次参数快照；上一组结束后编辑以下变量，最后提交请求：</p>
+<pre><code class="language-c">g_nnBenchmarkIterations = 1000;
+g_nnBenchmarkWarmup = 10;
+g_nnBenchmarkVin = 100.0f;
+g_nnBenchmarkRequested = true;
+</code></pre>
+<p>下表是 ONNX Runtime 的候选模型输出，<strong>不是板上实测</strong>。先逐组检查这六个点；实板应与候选模型一致，随后再与同输入的 FPU 结果比较误差。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Vin/V</th>
+<th style="text-align: right;">D1</th>
+<th style="text-align: right;">D0</th>
+<th style="text-align: right;">D2</th>
+<th style="text-align: right;">T</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">0.4375</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.484375</td>
+<td style="text-align: right;">0.09375</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.09375</td>
+</tr>
+<tr>
+<td style="text-align: right;">110</td>
+<td style="text-align: right;">0.484375</td>
+<td style="text-align: right;">0.109375</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.015625</td>
+</tr>
+<tr>
+<td style="text-align: right;">120</td>
+<td style="text-align: right;">0.390625</td>
+<td style="text-align: right;">0.09375</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.859375</td>
+</tr>
+<tr>
+<td style="text-align: right;">130</td>
+<td style="text-align: right;">0.625</td>
+<td style="text-align: right;">0.21875</td>
+<td style="text-align: right;">0.125</td>
+<td style="text-align: right;">0.96875</td>
+</tr>
+<tr>
+<td style="text-align: right;">140</td>
+<td style="text-align: right;">0.84375</td>
+<td style="text-align: right;">0.203125</td>
+<td style="text-align: right;">0.09375</td>
+<td style="text-align: right;">1.15625</td>
+</tr>
+</tbody>
+</table>
+<p>Vin 超出 90～140 V 的测试请求返回拒绝码 4，不启动 NPU。当前 501 点对照还发现 <strong>92.2、92.3、92.4、92.5 V</strong> 的候选输出超过已有相位合理性范围；这些输入预计会触发 NN 故障并使测试失败，保留该行为，不放宽保护来获得计时结果。故障后需完整复位再测试，晚完成不解除锁定。</p>
+<h2 id="6">6. 怎样比较耗时</h2>
+<p>NPU 库在最后一层完成、CPU 输出还原之后，先调用 <code>DAB_NN_noteNpuCompletion()</code> 记录 Timer2，再发布 <code>tvmgen_default_finished=1</code>。该改动由编译脚本自动重复生成，不能在重新编译模型时遗漏。</p>
+<table>
+<thead>
+<tr>
+<th>统计项</th>
+<th>当前准确含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>npuSubmit</code></td>
+<td>运行函数调用，包括首次数据准备和首层启动；不能表示完整前向计算</td>
+</tr>
+<tr>
+<td><code>npuCompletion</code></td>
+<td>开始提交至最终 FLOAT32 输出准备完成，包含四层 NPU、CPU 转换和中断响应</td>
+</tr>
+<tr>
+<td><code>npuObserved</code></td>
+<td>开始提交至后台发现完成，还包含后台查询延迟</td>
+</tr>
+<tr>
+<td><code>endToEnd</code></td>
+<td>输入准备至有效结果发布，优先用于比较应用得到结果的耗时</td>
+</tr>
+</tbody>
+</table>
+<p>切回 <code>CPU1_LAUNCHXL_FLASH</code> 后，按 <a href="NN_timing_guide_zh.html">计时说明</a>测相同 Vin、预热和样本数，保存 FPU/NPU 两份 <code>g_nnTiming</code>，用 <code>tools/compare_nn_timing.py</code> 比较。两个配置的应用代码均为 O2；生成模型库为 O3，FPU 前向在 RAM，NPU 运行库代码在 FLASH，这些差别应随结果记录。</p>
+<p>两种实现的网络尺寸和数值精度不同，因此结果表示当前两条实现路径的耗时比较，不能表述为同等精度下的纯硬件加速比。所有统计包含期间的中断占用，<code>npuCompletion</code> 也不是裸 NPU 运算周期；小网络不保证更快。</p>
+<h2 id="7">7. 重新生成模型库</h2>
+<p>普通 CCS 编译不需要 Python、PyTorch 或重新量化，交付的 <code>mod.a</code> 已可链接。只有修改候选模型或重新生成库时，才需 Python 3.10、<code>ti_mcu_nnc==2.1.0</code>、<code>numpy==1.26.4</code>、<code>onnx==1.16.2</code>、<code>onnxruntime==1.20.1</code> 及 TI 编译器/SDK。</p>
+<p>本机已准备隔离的 Python 3.10 环境，在 <code>ccs_projects</code> 目录执行：</p>
+<pre><code class="language-powershell">review_20261003/npu_integration_20261009/python310/python.exe dab_control_f28p550/tools/compile_dab_npu.py
+</code></pre>
+<p>编译器和 SDK 默认使用本机现有 E 盘路径，可用 <code>--cgt</code>、<code>--sdk</code> 指定其他安装位置；TI 工具路径不能包含空格。脚本执行等价转换、501 点对照、TI NNC 编译、维度和硬件阶段检查、完成时间钩子写入及库更新，并保存清单。它不会重新训练模型，也不会把模型标记为已通过功率控制验收。</p>
+<h2 id="8">8. 剩余验收与精度改进</h2>
+<p>本地已通过真实 TI 模型编译、NPU/FPU FLASH 链接、501 点转换等价对照，以及输入适配、范围、异步任务、计时、超时与启动禁止测试。电脑上的接口替身只验证程序逻辑，不能证明开发板实际执行时间或硬件数值。</p>
+<p>与 FLOAT ONNX 基准比较时，501 点最大绝对误差依次约为 <code>[0.0488685, 0.0370852, 0.0269486, 0.0488721]</code>。以基础周期 2500 估算，相位误差约 <code>[133,101,74]</code> 个计数、周期误差约 123 个计数；估算未替代完整 PWM 参数包对照，明显不满足一个计数的精度目标。先前 51 个整数电压点报告的误差更小，是因为较稀疏的点没有覆盖这些量化转换位置。</p>
+<table>
+<thead>
+<tr>
+<th>待完成项</th>
+<th>通过条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>实板候选模型核对</td>
+<td>六组输出与上表核对，再扫完整检查范围，保存 NPU 与 ONNX/FPU 差异</td>
+</tr>
+<tr>
+<td>实板计时</td>
+<td>成功完成 1000 个样本，完成时间、后台发现时间、端到端时间齐全且无超时</td>
+</tr>
+<tr>
+<td>中断与保护并发</td>
+<td>ADC 数据持续更新，控制期限和故障检查有效，停止及超时后无缓冲区覆盖</td>
+</tr>
+<tr>
+<td>提高量化精度</td>
+<td>补齐真实代表性数据和训练定义，评估量化感知训练、输出缩放和网络调整，再比较完整 PWM 参数包</td>
+</tr>
+<tr>
+<td>允许功率控制</td>
+<td>数值、参数边界、最小脉宽、完整板上保护验收完成后，专门审阅并修改批准标记；不能仅改板确认宏</td>
+</tr>
+</tbody>
+</table>
+<p>官方依据：<a href="https://software-dl.ti.com/mctools/nnc/mcu/v2.1.0/installing.html">TI NNC 安装说明</a>、<a href="https://software-dl.ti.com/mctools/nnc/mcu/v2.1.0/compiling.html">TI NNC 编译与 CCS 集成</a>。本项目的真实硬件分配还通过本地生成的 <code>lib1.c</code>、<code>lib2.c</code> 和最终链接文件核对。</p><footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：37c785a385e9129055653326c45007a5b1189ee6fd13979fdc83d87ab65eec66</footer></main></div></body></html>
