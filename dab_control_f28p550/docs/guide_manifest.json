@@ -1,8 +1,8 @@
 {
-  "date": "2026-10-09",
+  "date": "2026-10-10",
   "source": "DAB_F28P550_guide_zh.md",
   "source_sha256": "0c7e1d388a8c5a90cfb8fcdd1cfa8f869a45ed8dc9523f6018db38b82da23ca6",
-  "html_sha256": "b0435c9fc94e05731bd2fb0851ecce561e713c1bf84adb44f022af8fa3890995",
+  "html_sha256": "a34c543caac754758a8c7440ede4c2c8de8d2b0fd138a1c89ba654c7b1cb67df",
   "renderer": "Python-Markdown 3.10.2",
   "offline_assets": [
     "assets/runtime.svg",

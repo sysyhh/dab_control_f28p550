@@ -47,6 +47,7 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <p><a href="DAB_F28P550_guide_zh.html">返回上手说明</a></p><p><a href="NPU_optimization_log_zh.md">Markdown 原稿</a></p></nav><main><h1 id="npu">NPU 耗时优化记录</h1>
 <p>所有轮次保留功率输出禁止、1 ms 超时和现有输出检查。软件验证通过表示构建及程序逻辑通过，实际耗时和硬件输出仍须开发板复测。</p>
 <p>已提交历史：基线 <code>8344686</code>、P0 <code>aeb8cd4</code>、P1 <code>1bd4abe</code>、P2 <code>ef9a527</code>。后续提交通过项目根目录下 <code>git log --oneline</code> 查看；不必切换历史版本即可用下述选项逐级复测。</p>
+<p>2026-10-10 的 <a href="NPU_performance_reflection_20261010_zh.html">性能复盘与后续方向</a>结合 P5 数据、当前模型和 TI 官方案例，讨论平台开销、补齐、量化精度及是否值得继续优化；<a href="NPU_external_evidence_20261010_zh.html">外部证据核对</a>保存直接来源与比较限制。</p>
 <h2 id="_1">基线</h2>
 <p>优化前 Git 提交：<code>8344686</code>。用户提供的 1000 个板上样本：FPU 端到端平均 28.69056 μs，NPU 端到端平均 268.50498 μs，NPU 完成平均 253.16565 μs、提交平均 74.51850 μs；对应测试输入未随该组统计提供，复测时需补记 Vin。</p>
 <h2 id="p0">P0：可关闭的分段计时</h2>
@@ -449,4 +450,4 @@ python review_20261003/npu_integration_20261009/verify_integration.py
 <p>按现有两组数据，端到端改善约 1.80 倍，但仍为此前 FPU 的 28.69056 μs 的 5.20 倍。最终完成到后台发现平均仅差 1.75229 μs，改善后台轮询无法解释剩余约 120 μs 的差距；而提交调用本身已接近 60 μs，需要继续检查首层数据处理、参数/指令装载和配置。</p>
 <p><code>npuSubmit</code> 和 <code>npuCompletion</code> 共用启动时间点，前者包含在后者之内，不能相加；两项均可能包含中断占用。下一次应在级别 3 下启用 <code>--detail-profile</code> 获取 <code>g_nnNpuDetail</code>，同时补记 Vin、输出、超时计数和库清单，以区分装载、配置、层间处理与各层启动到完成中断的耗时；详细计时版本仅用于定位，正式提速结论仍用关闭详细计时的版本。</p>
 <p>当前已交付不改变模型数学含义的 P0～P5，并完成自动实板统计。后续继续评估固定输入量化和指令复用；指令缓存需要核对各层指令的差异、覆盖方式与复位失效条件，不能仅因为代码尺寸相同就复用。</p>
-<p>目前量化模型在 92.2～92.5 V 仍存在已记录的无效输出；上述优化不会消除量化误差，因而仍不允许用于功率闭环。提高精度、开放功率控制以及判断优化后是否快于 FPU，均需另外的数值与实板验收。</p><footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：5e71845c81f6452252308bd3f895091c376b9d253f9686716c372a5b9a36ae83</footer></main></div></body></html>
+<p>目前量化模型在 92.2～92.5 V 仍存在已记录的无效输出；上述优化不会消除量化误差，因而仍不允许用于功率闭环。提高精度、开放功率控制以及判断优化后是否快于 FPU，均需另外的数值与实板验收。</p><footer>2026-10-10 · 离线文档；Vin=90 V 实板计时已核对；NPU 全范围精度仍待验收。<br>来源 SHA-256：357fb3341ab2dc135507cfe0990a23c7d66da823d0f7c85fbe91bf43498f55db</footer></main></div></body></html>

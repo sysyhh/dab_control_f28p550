@@ -1,0 +1,240 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NPU 性能复盘与后续方向</title><style>
+:root{--ink:#203648;--muted:#526b7d;--blue:#1766a4;--line:#d7e2eb;--panel:#f1f6fb}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{margin:0;background:#f8fafc;color:var(--ink);font:16px/1.8 'Microsoft YaHei','Noto Sans CJK SC',sans-serif}
+.shell{display:grid;grid-template-columns:290px minmax(0,1fr);max-width:1500px;margin:auto}
+nav{position:sticky;top:0;height:100vh;overflow:auto;padding:26px 20px;border-right:1px solid var(--line);background:var(--panel)}
+.brand{font-size:20px;font-weight:700;line-height:1.5;margin-bottom:14px}.badge{font-size:12px;background:#fff1db;color:#795524;padding:4px 8px;border-radius:4px}
+nav ul{list-style:none;padding-left:0}nav li{margin:6px 0}nav li li{font-size:13px;padding-left:13px}nav a{color:#294d69;text-decoration:none;display:block;line-height:1.6;padding:3px 0}nav a:hover{color:var(--blue);text-decoration:underline}
+main{min-width:0;padding:42px 48px 75px;background:white}h1{font-size:32px;line-height:1.5;margin:0 0 20px}h2{font-size:25px;padding-top:22px;margin:40px 0 18px;border-top:2px solid var(--line);line-height:1.6}h3{font-size:20px;margin-top:30px}
+p{margin:15px 0}a{color:var(--blue);text-underline-offset:3px}strong{color:#183f61}code{font-family:Consolas,monospace;font-size:.9em;background:#eef3f8;padding:2px 4px;border-radius:3px;overflow-wrap:anywhere}
+pre{background:#edf3f8;border-left:4px solid #739bbd;padding:18px;overflow:auto;font-size:14px;line-height:1.7}pre code{background:transparent;padding:0;overflow-wrap:normal}
+.table-scroll{overflow-x:auto;margin:20px 0}table{width:100%;border-collapse:collapse;min-width:580px;font-size:14px;line-height:1.75}th,td{padding:10px 12px;border:1px solid var(--line);vertical-align:top}th{background:#e9f2fa;text-align:left}tbody tr:nth-child(even){background:#f8fbfe}td code{font-size:12px}
+img{display:block;width:100%;max-width:1100px;height:auto;margin:25px auto;border:1px solid var(--line);border-radius:12px}
+li{margin:8px 0}footer{margin-top:45px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}button{border:1px solid #bdd0e0;border-radius:5px;background:white;color:#284a65;padding:7px 12px;cursor:pointer;font:inherit;font-size:13px}button:hover{background:#e3eef8}
+input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:inherit;font-size:14px}#search-status{font-size:12px;min-height:22px;color:#526b7d}.search-hit{background:#ffe9a0;border-radius:3px;color:inherit}.search-current{background:#ffca56;outline:2px solid #b7791f}
+@media(max-width:1000px){.shell{grid-template-columns:245px minmax(0,1fr)}main{padding:32px 24px}nav{padding:20px 14px}}
+@media(max-width:740px){.shell{display:block}nav{position:relative;height:auto;max-height:420px;border-right:0;border-bottom:1px solid var(--line)}main{padding:25px 17px}h1{font-size:26px}h2{font-size:22px}}
+@media print{body{background:white;font:10pt/1.6 'Microsoft YaHei',sans-serif}.shell{display:block}nav{display:none}main{padding:0}h1{font-size:20pt}h2{font-size:15pt;break-after:avoid}h3{font-size:12pt;break-after:avoid}.table-scroll{overflow:visible}table{min-width:0;font-size:9pt}th,td{padding:5px}tr{break-inside:avoid}pre,img{break-inside:avoid}a{color:#203648;text-decoration:none}.search-hit,.search-current{background:none;outline:none}}
+</style></head><body><div class="shell"><nav aria-label="文档目录"><div class="brand">NPU 性能复盘与后续方向</div><div class="toc">
+<ul>
+<li><a href="#npu">NPU 耗时复盘与后续方向</a><ul>
+<li><a href="#1">1. 判断</a></li>
+<li><a href="#2">2. 当前时间主要在哪里</a></li>
+<li><a href="#3">3. 哪些属于平台开销，哪些属于当前选择</a></li>
+<li><a href="#4">4. 量化和模型设计的实质问题</a></li>
+<li><a href="#5">5. 与同类项目是否同量级</a></li>
+<li><a href="#6-fpu">6. 能否超过当前 FPU</a></li>
+<li><a href="#7">7. 建议的有限验证与停止条件</a></li>
+<li><a href="#8">8. 本轮核对方法</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><a href="DAB_F28P550_guide_zh.html">返回上手说明</a></p><p><a href="NPU_performance_reflection_20261010_zh.md">Markdown 原稿</a></p></nav><main><h1 id="npu">NPU 耗时复盘与后续方向</h1>
+<p>日期：2026-10-10。代码基线：<code>b04537d</code>（P5）；本轮仅研究、核对已有数据和补充说明，不重新加载开发板、不修改固件或模型。</p>
+<h2 id="1">1. 判断</h2>
+<p><strong>当前较慢由小网络的使用开销、为了部署而扩大网络、以及生成代码效率共同造成，不能把 102.89 μs 认定为 F28P55x 的硬件下限。</strong> 也没有证据表明当前已经发生 NPU 未执行、时钟误分频、未完成常量复制等功能错误；四层硬件调用、完成中断、普通版输出与 RAM 镜像都已有实板检查。</p>
+<p>与此同时，量化模型存在已确认的精度不足。它与运行速度是两个需要分别解决的问题：减少复制时间不会改善量化分辨率；采用低精度模型获得较短时间，也不能直接证明控制应用受益。</p>
+<p><strong>建议保留 FPU 作为当前控制基准，将下一阶段目标改为“验证 NPU 是否值得采用”，而非预设 NPU 最终必胜。</strong> 新工具链、较少补齐、较少层数以及混合计算有验证价值，但持续只调整复制循环，现有证据不足以支持最终低于 FPU 的承诺。</p>
+<h2 id="2">2. 当前时间主要在哪里</h2>
+<p>数据来自 <a href="../../tools/c2000_debug/p5_benchmark_verification.json">P5 验收索引</a>和 <a href="../../tools/c2000_debug/benchmarks/20261009_225422_fpu_flash/summary.json">FPU 实板对照</a>，均为 Vin=90 V、10 次预热、1000 次正式推理。当前普通版平均：FPU 前向 23.59093 μs、端到端 28.71550 μs；NPU 输出完成 96.05240 μs、端到端 102.89487 μs。</p>
+<table>
+<thead>
+<tr>
+<th>P5 详细计时内容</th>
+<th style="text-align: right;">平均 μs</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>四层参数装载</td>
+<td style="text-align: right;">27.94138</td>
+<td>CPU 向 NPU 写入权重、偏置等参数</td>
+</tr>
+<tr>
+<td>四层指令装载</td>
+<td style="text-align: right;">21.46308</td>
+<td>每层重新写入指令，即使部分相同</td>
+</tr>
+<tr>
+<td>四层寄存器配置</td>
+<td style="text-align: right;">8.75276</td>
+<td>设置运算和输入输出地址</td>
+</tr>
+<tr>
+<td>输入量化</td>
+<td style="text-align: right;">14.50189</td>
+<td>16 项都做浮点缩放、取整和限幅，15 项恒为零</td>
+</tr>
+<tr>
+<td>打包与层间复制</td>
+<td style="text-align: right;">2.92607</td>
+<td>CPU 整理各层数据</td>
+</tr>
+<tr>
+<td>最后拆包</td>
+<td style="text-align: right;">0.61333</td>
+<td>还原输出存储格式</td>
+</tr>
+<tr>
+<td>四层启动到完成中断</td>
+<td style="text-align: right;">17.70328</td>
+<td>包含硬件执行、等待及中断响应，不能视为裸运算时间</td>
+</tr>
+<tr>
+<td>输出还原为 float</td>
+<td style="text-align: right;">0.42000</td>
+<td>已很短，优先优化它意义有限</td>
+</tr>
+<tr>
+<td>详细计时版端到端</td>
+<td style="text-align: right;">121.03644</td>
+<td>比普通版多 18.14156 μs</td>
+</tr>
+</tbody>
+</table>
+<p>参数和指令装载合计约 49.40 μs，占<strong>详细计时版</strong>端到端约 40.82%。由此可以确认数据与指令装载值得关注，但不能直接拿这些分段数值从普通版的 102.89 μs 中相减，更不能把余数称为硬件下限。</p>
+<p>普通版最后完成到后台发现平均约 1.81 μs，最小端到端仍为 101.19 μs；单纯提高轮询频率缺乏足以消除约 74 μs 差距的依据。最小值同样包含软件和中断，不能替代独立的硬件测量。</p>
+<p>源码依据：<a href="../model/generated/npu/dab_tinie_c28.c">装载与配置</a>、<a href="../model/generated/npu/lib1.c">四层执行及输入转换</a>、<a href="../dab_nn.c">应用计时</a>。NPU 时钟配置为 <code>SYSCTL_NPUCLK_DIV_1</code>；本轮未重新测量实际时钟，因而只能确认源码没有主动降频。</p>
+<h2 id="3">3. 哪些属于平台开销，哪些属于当前选择</h2>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>已有证据</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>小网络要付出配置、传输与完成处理成本</td>
+<td>本地四层装载与中断流程；TI 官方小型正弦模型也有 NPU 慢于 CPU 的案例</td>
+<td>平台使用成本真实存在，但当前流程的每次写入不一定都不可消除</td>
+</tr>
+<tr>
+<td>参数每层覆盖 NPU 的同一装载区</td>
+<td>当前 <code>TINIE_setup()</code> 从相同基址写入每层不同参数</td>
+<td>当前执行方式需要不同层参数；不能仅“初始化一次”就跳过其他层的装载</td>
+</tr>
+<tr>
+<td>相同指令反复装载</td>
+<td>前三层使用同一指令表，第四层使用另一表；每次推理全部装载</td>
+<td>有减少重复的空间，但跨推理、复位、其他模型使用以及覆盖长度必须有失效规则</td>
+</tr>
+<tr>
+<td>通道过度补齐</td>
+<td>FPU 3→29→12→6→4，当前 NPU 16→32→16→16→4</td>
+<td>属于先跑通时的保守选择，应重新按实际 PWCONV 约束核对，并非已证明的最小尺寸</td>
+</tr>
+<tr>
+<td>输入输出仍采用 float 接口</td>
+<td>输入仍对 16 项量化，输出仍还原 float</td>
+<td>支持通用接口的代价；只保留实际变化项或整数接口值得独立验证</td>
+</tr>
+<tr>
+<td>生成代码与版本</td>
+<td>当前 NNC 2.1.0；官方 2.1.1 专门优化了 F28P55x setup</td>
+<td>不能继续将旧生成代码的装载效率视为平台不可改变的性质</td>
+</tr>
+<tr>
+<td>CPU 抢占与异步执行</td>
+<td>当前计时包含控制/PWM 中断，NPU 每层完成后由 CPU 启动下一层</td>
+<td>单次等待、CPU 占用及控制期限是不同指标，尚缺完整对照</td>
+</tr>
+</tbody>
+</table>
+<p>FPU 网络矩阵乘加总数为 <code>3×29 + 29×12 + 12×6 + 6×4 = 531</code>；当前补齐网络为 <code>16×32 + 32×16 + 16×16 + 16×4 = 1344</code>，约为 2.53 倍。这是矩阵形状对应的计算量，不是精确 NPU 指令数；当前完整装载也没有根据零权重自动跳过的逻辑。</p>
+<p>四层参数数组合计每次写入 506 个 32 位值，分别为 208、168、104、26；此外还有指令、配置与转换。面对只有 531 次浮点乘加的小网络，这些额外工作很容易抵消加速器的乘加优势；不能用芯片宣称的峰值算力直接除以 531 来预测应用耗时。</p>
+<p>官方 PWCONV 规则及本地 <code>config_pwconv.py</code> 要求输入输出通道为 4 的倍数，不是所有层都必须至少 16。<code>4→32→12→8→4</code> 的矩阵乘加为 640，仅作为较少补齐的研究候选；它尚未编译、未量化核对、未实板测量，不能声明可直接替换或预报收益。<a href="https://software-dl.ti.com/mctools/nnc/mcu/v2.1.0/layer_patterns.html">TI NNC 2.1.0 Layer Patterns</a>、<a href="https://software-dl.ti.com/C2000/esd/mcu_ai/user_guide/devices/npu_guidelines.html">TI NPU Guidelines</a></p>
+<p>关于 FC 需要作准确区分：官方文档列出 FC 支持，不能表述成“F28P55x 不支持全连接”。本地 NNC 2.1.0 的 <code>tinie.py</code> 第 916～918 行在 C28 默认选择 <code>TINIE_fullyConnected</code> 软件实现，其内部测试开关可选择硬件分支；当前 Conv 改写解决了本地默认路径问题，但不是唯一可能的表达，也不证明它最优。该开关被源代码明确标为 TI internal testing，不建议当作已支持的生产选项直接启用。</p>
+<h2 id="4">4. 量化和模型设计的实质问题</h2>
+<p>当前路径是对既有权重做补齐、常量折叠、通道缩放和 PTQ；校准采用 90～140 V、步长 1 V 的 51 点，没有针对 NPU 重新训练。它是合理的迁移实验起点，但不是已经完成控制精度设计的模型。<a href="../tools/expand_and_quantize_npu.py">生成脚本</a></p>
+<p>已保存的 501 点、步长 0.1 V 对照发现 92.2～92.5 V 存在无效候选输出，最大输出误差约为 <code>[0.04887,0.03709,0.02695,0.04887]</code>。<a href="../model/dab_npu_conv_validation.json">数值报告</a></p>
+<p>更直接的结构性证据是末层输出按 <code>int8 × 0.015625</code> 还原，四项值的间隔为 1/64；仅 T 的相邻量化格点，在基础周期 2500 时就相差约 39.06 个计数。若保持目前文档中“一个 PWM 计数”的目标，单纯增加校准点或做 QAT 无法改变<strong>固定输出量化格点</strong>本身；float 返回类型也不会补回已经丢失的信息。</p>
+<p>因此后续数值方案应评估输出缩放/偏移、残差输出、部分层使用 CPU float 或重新设计模型，并对四项输出及最终 PWM 参数共同验收。QAT 可改善误差分配，但不保证解决当前末层分辨率问题；采用 2/4 位权重也不能因为理论传输较少就视为适合本控制任务。</p>
+<h2 id="5">5. 与同类项目是否同量级</h2>
+<p>最接近的公开资料是 TI 的 F28P55x 正弦回归 MLP，而不是大型分类网络：</p>
+<table>
+<thead>
+<tr>
+<th>TI 正弦模型隐藏宽度</th>
+<th style="text-align: right;">CPU 单次 μs</th>
+<th style="text-align: right;">NPU 单次 μs</th>
+<th>现象</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>16</td>
+<td style="text-align: right;">22.3</td>
+<td style="text-align: right;">25.2</td>
+<td>小模型 NPU 稍慢</td>
+</tr>
+<tr>
+<td>64</td>
+<td style="text-align: right;">270.6</td>
+<td style="text-align: right;">214.6</td>
+<td>NPU 获得一定收益</td>
+</tr>
+<tr>
+<td>128</td>
+<td style="text-align: right;">1012</td>
+<td style="text-align: right;">711.6</td>
+<td>较大模型 NPU 收益增加</td>
+</tr>
+</tbody>
+</table>
+<p>数据来自 <a href="https://www.ti.com/lit/pdf/sdaa185">TI SDAA185 §13.1～13.2</a>，已核对 PDF 第 32 页表格。官方 64 宽例子是 1→64→64→1；它与本项目层数、精度和部署条件不同，且表中未完整列出时钟、存储位置、中断和计时边界，CPU 列也不能认定等同本项目手写 FPU。</p>
+<p>因此当前约 103 μs 属于同平台公开案例覆盖的数十至数百微秒范围，没有慢到足以凭时间认定硬件使用错误；但官方小模型 25.2 μs 也说明 103 μs 不是该平台的统一最低耗时。它不能证明本项目性能已经合理，更不能用另一个模型的 25.2 μs 保证本项目一定能达到。</p>
+<p>TI 官方 <code>grid_stability</code> 的 F28P55x NPU 相对 CPU 有约 4 倍收益，但 CNN 分类模型与这里的小 MLP 不同；<code>induction_motor_speed_prediction</code> 的 9.45 μs 则属于 F29H85x，不能引用成 F28P55x NPU 成绩。更多条件与直接来源见 <a href="NPU_external_evidence_20261010_zh.html">外部证据核对</a>。</p>
+<h2 id="6-fpu">6. 能否超过当前 FPU</h2>
+<p><strong>有研究希望，但目前无法承诺；保持当前四层补齐模型，仅继续小幅调整装载代码，证据并不乐观。</strong> 从普通版 102.89487 μs 降到 FPU 28.71550 μs，需要再减少约 72.09% 的端到端时间；P5 只有 4.26% 的收益不能外推成后续轮次也会持续有足够收益。</p>
+<p>较有价值的机会包括较少补齐、减少硬件层数、减少参数/指令装载、整数输入以及 NNC 的 setup 改进。特别是 <a href="https://software-dl.ti.com/mctools/nnc/mcu/v2.1.1/release-notes.html">NNC 2.1.1 release notes</a>明确提到 F28P55x NPU setup 优化；当前尚未实测，且可能与 P4/P5 已做优化重叠，不能先把收益相加。</p>
+<p><a href="https://software-dl.ti.com/mctools/nnc/mcu/users_guide/release-notes.html">NNC 2.1.2 release notes</a>又要求应用链接使用 C2000Ware 26.0 或更新。当前基于 DigitalPower SDK 5.05.01.00 所带较旧 C2000Ware，升级应放在独立环境中核对生成代码、接口、链接及实板结果，而非直接替换已验证库。</p>
+<p>当前还没有测出 CPU 实际占用和每次 NPU 中断最长持续时间。NPU 异步执行可以让 CPU 做其他工作，但参数装载、输入转换和层间推进仍由 CPU 完成；即使最终耗时没有胜过 FPU，也需量化 CPU 占用收益后才能判断是否值得采用。</p>
+<p>FPU 也还可以评估固定输入折叠、编译优化或更适合单变量函数的实现；所以超过“今天的手写 FPU”与超过“同等精度下较优的 CPU 实现”应明确区分。</p>
+<h2 id="7">7. 建议的有限验证与停止条件</h2>
+<table>
+<thead>
+<tr>
+<th>优先级</th>
+<th>要回答的问题</th>
+<th>可执行的验证与判定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>工具链是否贡献了大量可避免开销</td>
+<td>独立环境对照当前 P5 与新版 NNC，保存卸载摘要、每层装载数量、源码差异和库摘要；同条件连续 1000 次测试，比较普通版端到端与最大值</td>
+</tr>
+<tr>
+<td>2</td>
+<td>103 μs 中有多少由控制任务和完成处理造成</td>
+<td>保留现有保护，在不输出功率的专用测试中分离外设负载与推理；同时测 CPU 占用、NPU 中断长度和控制期限，隔离结果只用于诊断，正式验收恢复原条件</td>
+</tr>
+<tr>
+<td>3</td>
+<td>当前 16 通道补齐是否必要</td>
+<td>用较少补齐候选进行浮点等价、量化参考和编译硬件卸载核对；只有全部通过后才实板扫输入并测时</td>
+</tr>
+<tr>
+<td>4</td>
+<td>当前输出量化是否满足应用</td>
+<td>明确允许的相位、周期和最终 PWM 误差；比较 FPU、量化软件参考和板上输出，覆盖量化跳变点，不放宽保护来取得计时成绩</td>
+</tr>
+<tr>
+<td>5</td>
+<td>是否值得重构网络或采用混合计算</td>
+<td>将通过精度验收的较浅模型或 NPU/CPU 混合路径与同精度 CPU 比较；同时看延迟、CPU 占用、最坏中断及维护成本</td>
+</tr>
+</tbody>
+</table>
+<p>整数输入的 <a href="https://software-dl.ti.com/mctools/nnc/mcu/v2.1.0/compiling.html#performance-options">TI 官方 <code>skip_normalize</code> 选项</a>是可评估手段，但应用仍要负责正确的缩放、取整、限幅和输入存储格式；不能只是删掉原来的量化步骤。参数/指令复用也必须先有复位和模型切换后的失效规则。</p>
+<p>停止条件应是工程目标而不是轮数：如果已验证版本在满足同等精度、控制期限后既不比 FPU 快，也没有明显 CPU 占用收益，就停止为本小网络继续深改运行库，保留 FPU。若只有改变精度才能更快，应明确这是精度与速度交换，不列为同等质量下的 NPU 加速。</p>
+<h2 id="8">8. 本轮核对方法</h2>
+<p>执行 <code>python dab_control_f28p550/tools/analyze_npu_reflection.py</code> 重算矩阵规模、每层参数写入数量、分段占比、目标差距和输出量化间隔，并检查所用归档及当前库摘要。<a href="NPU_reflection_evidence_20261010.json">机器可读核对结果</a></p>
+<p>执行 <code>python tools/c2000_debug/verify_benchmarks.py &lt;summary.json&gt; ...</code> 可复核所引用的 FPU 和 P5 原始快照；本轮未新增实板计时。外部来源、未确认条件及版本差异另存于 <a href="NPU_external_evidence_20261010_zh.html">外部证据核对</a>。</p><footer>2026-10-10 · 离线文档；Vin=90 V 实板计时已核对；NPU 全范围精度仍待验收。<br>来源 SHA-256：6bb0b3985dae7b017dd3fbe5a7d1fe0ccbd0d1e5fc2bbaab54982449153363c5</footer></main></div></body></html>

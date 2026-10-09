@@ -75,18 +75,19 @@ class Links(HTMLParser):
     def handle_starttag(self,tag,attrs):
         for key,value in attrs:
             if key in ("href","src"): self.urls.append(value)
-for name in ("NPU_integration_guide_zh","NN_timing_guide_zh","DAB_F28P550_guide_zh","NPU_optimization_log_zh"):
+for name in ("NPU_integration_guide_zh","NN_timing_guide_zh","DAB_F28P550_guide_zh","NPU_optimization_log_zh","NPU_performance_reflection_20261010_zh","NPU_external_evidence_20261010_zh"):
     source=APP/"docs"/(name+".md")
     rendered=APP/"docs"/(name+".html")
     text=rendered.read_text(encoding="utf-8")
     assert sha(source) in text
-    assert "CPU1_LAUNCHXL_NPU_FLASH" in text
+    if name not in ("NPU_performance_reflection_20261010_zh","NPU_external_evidence_20261010_zh"):
+        assert "CPU1_LAUNCHXL_NPU_FLASH" in text
     links=Links();links.feed(text)
     for url in links.urls:
         parts=urlsplit(url)
         if not parts.scheme and parts.path:
             assert (rendered.parent/unquote(parts.path)).exists(),url
-report={"date":"2026-10-09","ccs_configuration":"CPU1_LAUNCHXL_NPU_FLASH",
+report={"date":"2026-10-10","ccs_configuration":"CPU1_LAUNCHXL_NPU_FLASH",
         "real_ti_nnc_library":True,"ti_nnc":manifest["ti_mcu_nnc"],"hardware_stages":4,
         "library_sha256":manifest["library_sha256"],"final_output_timestamp_hook":True,
         "builds":["CPU1_LAUNCHXL_NPU_FLASH","CPU1_LAUNCHXL_FLASH"],

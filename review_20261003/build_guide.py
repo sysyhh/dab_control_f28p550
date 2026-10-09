@@ -117,11 +117,11 @@ document.getElementById('search').addEventListener('click',search);document.getE
 sha = hashlib.sha256(SOURCE.read_bytes()).hexdigest()
 document = f'''<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>F28P550 DAB · 上手与配置说明</title><style>{css}</style></head>
-<body><div class="shell"><nav aria-label="文档目录"><div class="brand">F28P550 DAB<br>上手与配置说明</div><span class="badge">2026-10-09 · NPU 核对与计时版</span><p style="font-size:13px">FPU 基准已验证<br>NPU 已接入，实板数值和计时待核对</p><label for="query" style="font-size:13px">在文档中查找</label><input id="query" type="search" placeholder="例如：ADC、软启动、B09"><div class="tools"><button id="search">查找</button><button id="next">下一处</button><button id="clear">清除</button><button id="print">打印 / 保存 PDF</button></div><div id="search-status" aria-live="polite"></div>{md.toc}<p><a href="DAB_F28P550_guide_zh.md">Markdown 原稿</a></p></nav>
+<body><div class="shell"><nav aria-label="文档目录"><div class="brand">F28P550 DAB<br>上手与配置说明</div><span class="badge">2026-10-10 · NPU 核对与计时版</span><p style="font-size:13px">FPU 基准已验证<br>Vin=90 V 实板计时已核对，NPU 全范围精度待验收</p><label for="query" style="font-size:13px">在文档中查找</label><input id="query" type="search" placeholder="例如：ADC、软启动、B09"><div class="tools"><button id="search">查找</button><button id="next">下一处</button><button id="clear">清除</button><button id="print">打印 / 保存 PDF</button></div><div id="search-status" aria-live="polite"></div>{md.toc}<p><a href="DAB_F28P550_guide_zh.md">Markdown 原稿</a></p></nav>
 <main><article id="article">{body}</article><footer>离线阅读：不加载网络脚本、字体或样式。资料链接需要联网。<br>来源文件 SHA-256：{sha}</footer></main></div><script>{script}</script></body></html>'''
 (DOCS / "DAB_F28P550_guide_zh.html").write_text(document, encoding="utf-8", newline="\n")
 (DOCS / "guide_manifest.json").write_text(json.dumps({
-    "date": "2026-10-09", "source": SOURCE.name, "source_sha256": sha,
+    "date": "2026-10-10", "source": SOURCE.name, "source_sha256": sha,
     "html_sha256": hashlib.sha256((DOCS / "DAB_F28P550_guide_zh.html").read_bytes()).hexdigest(),
     "renderer": "Python-Markdown " + markdown.__version__,
     "offline_assets": ["assets/runtime.svg", "assets/timing.svg", "assets/states.svg"],
@@ -130,13 +130,13 @@ document = f'''<!doctype html>
 }, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 print("Guide rendered: Markdown, offline HTML, three SVG diagrams and manifest")
 
-for name in ("NN_timing_guide_zh", "NPU_integration_guide_zh", "NPU_optimization_log_zh"):
+for name in ("NN_timing_guide_zh", "NPU_integration_guide_zh", "NPU_optimization_log_zh", "NPU_performance_reflection_20261010_zh", "NPU_external_evidence_20261010_zh"):
     source = DOCS / (name + ".md")
     renderer = markdown.Markdown(extensions=["tables", "fenced_code", "toc"])
     content = renderer.convert(source.read_text(encoding="utf-8"))
-    for related in ("NN_timing_guide_zh", "NPU_integration_guide_zh", "DAB_F28P550_guide_zh", "NPU_optimization_log_zh"):
+    for related in ("NN_timing_guide_zh", "NPU_integration_guide_zh", "DAB_F28P550_guide_zh", "NPU_optimization_log_zh", "NPU_performance_reflection_20261010_zh", "NPU_external_evidence_20261010_zh"):
         content = content.replace(f'href="{related}.md"', f'href="{related}.html"')
-    title = {"NN_timing_guide_zh":"NN 耗时统计", "NPU_integration_guide_zh":"DAB NPU 接入与开发板核对", "NPU_optimization_log_zh":"NPU 耗时优化与复测"}[name]
-    output = f'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title}</title><style>{css}</style></head><body><div class="shell"><nav aria-label="文档目录"><div class="brand">{title}</div>{renderer.toc}<p><a href="DAB_F28P550_guide_zh.html">返回上手说明</a></p><p><a href="{source.name}">Markdown 原稿</a></p></nav><main>{content}<footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：{hashlib.sha256(source.read_bytes()).hexdigest()}</footer></main></div></body></html>'''
+    title = {"NN_timing_guide_zh":"NN 耗时统计", "NPU_integration_guide_zh":"DAB NPU 接入与开发板核对", "NPU_optimization_log_zh":"NPU 耗时优化与复测", "NPU_performance_reflection_20261010_zh":"NPU 性能复盘与后续方向", "NPU_external_evidence_20261010_zh":"F28P55x NPU 外部证据核对"}[name]
+    output = f'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title}</title><style>{css}</style></head><body><div class="shell"><nav aria-label="文档目录"><div class="brand">{title}</div>{renderer.toc}<p><a href="DAB_F28P550_guide_zh.html">返回上手说明</a></p><p><a href="{source.name}">Markdown 原稿</a></p></nav><main>{content}<footer>2026-10-10 · 离线文档；Vin=90 V 实板计时已核对；NPU 全范围精度仍待验收。<br>来源 SHA-256：{hashlib.sha256(source.read_bytes()).hexdigest()}</footer></main></div></body></html>'''
     (DOCS / (name + ".html")).write_text(output, encoding="utf-8", newline="\n")
     print("Rendered", name)

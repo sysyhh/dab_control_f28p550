@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-09",
+  "date": "2026-10-10",
   "ccs_configuration": "CPU1_LAUNCHXL_NPU_FLASH",
   "real_ti_nnc_library": true,
   "ti_nnc": "2.1.0",
