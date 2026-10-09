@@ -27,6 +27,7 @@
   "power_control_approved": false,
   "hardware_stages": 4,
   "completion_hook": "after final output dequantization, before finished=1",
-  "library_sha256": "43ef130d7832bf16ffeb8803054333e97f40c2a27a6eda8c1ef89adb8650d1f9",
+  "detail_profile": false,
+  "library_sha256": "2de6e2ebf953ed6bd0bdc05d356c6480568d9f3b1c7a88e549e14e985c0a3e77",
   "header_sha256": "932b5658528fd69dc4872f8e8b86426992209857558b62859f002c80d28c0153"
 }

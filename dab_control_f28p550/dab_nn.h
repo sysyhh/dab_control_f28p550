@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include "dab_types.h"
+#include "dab_npu_trace.h"
 
 //=============================================================================
 // Acceleration Mode Selector
@@ -82,6 +83,13 @@ typedef struct {
     Dab_NnTimeStats_t endToEnd; // 输入准备开始至有效结果发布，统计更新不计入。
 } Dab_NnTiming_t;
 extern volatile Dab_NnTiming_t g_nnTiming;
+typedef struct {
+    bool instrumented; // 由生成库的编译标记决定；false 时所有分段均无测量意义。
+    uint32_t invalidPairs;
+    uint16_t lastCalls[DAB_NPU_TRACE_SLOTS]; // PARAMS/INS 等每个模型任务通常调用四次。
+    Dab_NnTimeStats_t stage[DAB_NPU_TRACE_SLOTS]; // 同一任务内同类步骤累加后记录一份样本。
+} Dab_NpuDetail_t;
+extern volatile Dab_NpuDetail_t g_nnNpuDetail;
 extern volatile uint32_t g_nnTimingSequence; // 奇数表示正在更新；CCS 建议完成后暂停再读取。
 extern volatile bool g_nnTimingResetRequested, g_nnTimingResetAccepted;
 bool DAB_NN_resetTiming(void); // 仅后台且无在途任务/重复测试时允许清统计。

@@ -17,6 +17,9 @@ int32_t tvmgen_default_run(struct tvmgen_default_inputs *in, struct tvmgen_defau
     input=(float *)in->features; output=(float *)out->output; calls++;
     for(i=0;i<16;i++) if(i!=1) assert(input[i]==0.0f);
     assert(fabsf(input[1]+1.0f)<1.e-6f); /* Vin=90, not the legacy Vin/140 */
+#if DAB_NPU_DETAIL_PROFILE
+    DAB_NN_traceBegin(DAB_NPU_INPUT); mockTimer-=100; DAB_NN_traceEnd(DAB_NPU_INPUT);
+#endif
     mockTimer-=300;
     return 0;
 }
@@ -45,6 +48,13 @@ int main(void)
     DAB_NN_benchmarkService(true);mockTimer-=900;complete();DAB_NN_benchmarkService(true);
     assert(g_nnBenchmarkState==DAB_NN_BENCH_DONE && g_nnBenchmarkCompleted==2);
     assert(g_nnTiming.npuCompletion.samples==2 && g_nnTiming.fpuForward.samples==0);
+#if DAB_NPU_DETAIL_PROFILE
+    assert(g_nnNpuDetail.instrumented && g_nnNpuDetail.invalidPairs==0);
+    assert(g_nnNpuDetail.stage[DAB_NPU_INPUT].samples==2 && g_nnNpuDetail.stage[DAB_NPU_INPUT].lastTicks==100);
+    assert(g_nnNpuDetail.lastCalls[DAB_NPU_INPUT]==1);
+#else
+    assert(!g_nnNpuDetail.instrumented && g_nnNpuDetail.stage[DAB_NPU_INPUT].samples==0);
+#endif
     assert(DAB_NN_getOutput(result) && result[0]==.4375f && g_nnLastOutput[3]==1);
     assert(!DAB_Control_start() && g_startRejectReason==7);
     Mock_reset();DAB_NN_init();DAB_NN_service(90);mockTimer-=150001;

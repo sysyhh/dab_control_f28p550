@@ -11,3 +11,5 @@
 *.d_raw
 *.log
 *.bak
+/dab_control_f28p550/[0-9]*
+/dab_control_f28p550/relay_graph.*.txt

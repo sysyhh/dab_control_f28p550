@@ -52,6 +52,12 @@ static struct tvmgen_default_outputs s_npuOutputs = { (void *)s_output };
 
 // 统计仅由后台更新；完成 ISR 钩子只保存时间戳，避免扩大实时中断负担。
 volatile Dab_NnTiming_t g_nnTiming;
+volatile Dab_NpuDetail_t g_nnNpuDetail;
+#ifdef DAB_USE_HARDWARE_NPU
+static volatile uint32_t s_traceStart[DAB_NPU_TRACE_SLOTS], s_traceTicks[DAB_NPU_TRACE_SLOTS];
+static volatile uint16_t s_traceCalls[DAB_NPU_TRACE_SLOTS];
+static volatile bool s_traceOpen[DAB_NPU_TRACE_SLOTS];
+#endif
 volatile uint32_t g_nnTimingSequence;
 volatile bool g_nnTimingResetRequested, g_nnTimingResetAccepted;
 volatile bool g_nnBenchmarkRequested, g_nnBenchmarkCancelRequested;
@@ -74,6 +80,10 @@ static void clearTiming(void)
     uint32_t begin;
     g_nnTimingSequence++;
     memset((void *)&g_nnTiming, 0, sizeof(g_nnTiming));
+    memset((void *)&g_nnNpuDetail, 0, sizeof(g_nnNpuDetail));
+#if defined(DAB_NPU_DAB16_MODEL) && DAB_NPU_DETAIL_PROFILE
+    g_nnNpuDetail.instrumented = true;
+#endif
     g_nnTiming.timerHz = DEVICE_SYSCLK_FREQ;
     g_nnTiming.revision = 1U;
 #ifdef DAB_USE_HARDWARE_NPU
@@ -108,6 +118,7 @@ static void addTime(volatile Dab_NnTimeStats_t *stats, uint32_t ticks)
 
 static void finishProfile(bool valid, uint32_t observedTick, uint32_t publishedTick)
 {
+    uint16_t slot;
     bool warmup = s_benchJob && g_nnBenchmarkWarmupCompleted < s_benchWarmup;
     g_nnTimingSequence++;
     if (!valid && !g_nnTiming.frozen) g_nnTiming.rejectedOutputs++;
@@ -119,6 +130,13 @@ static void finishProfile(bool valid, uint32_t observedTick, uint32_t publishedT
         addTime(&g_nnTiming.npuObserved, s_jobRunTick - observedTick);
         if (s_npuDoneStamped)
             addTime(&g_nnTiming.npuCompletion, s_jobRunTick - s_npuDoneTick);
+#if defined(DAB_NPU_DAB16_MODEL) && DAB_NPU_DETAIL_PROFILE
+        for (slot=0U; slot<DAB_NPU_TRACE_SLOTS; slot++)
+        {
+            g_nnNpuDetail.lastCalls[slot] = s_traceCalls[slot];
+            if (s_traceCalls[slot]) addTime(&g_nnNpuDetail.stage[slot], s_traceTicks[slot]);
+        }
+#endif
 #else
         addTime(&g_nnTiming.fpuForward, s_jobRunTick - s_jobReturnTick);
 #endif
@@ -141,6 +159,30 @@ static void finishProfile(bool valid, uint32_t observedTick, uint32_t publishedT
         if (!DAB_NN_isBenchmarkActive()) g_nnTiming.frozen = true;
     }
     g_nnTimingSequence++;
+}
+
+// ISR 中只记原始时间；求平均在任务完成后由后台统一进行。
+#pragma CODE_SECTION(DAB_NN_traceBegin, ".TI.ramfunc")
+void DAB_NN_traceBegin(uint16_t slot)
+{
+#ifdef DAB_USE_HARDWARE_NPU
+    if (slot >= DAB_NPU_TRACE_SLOTS || !s_busy) return;
+    if (s_traceOpen[slot]) g_nnNpuDetail.invalidPairs++;
+    s_traceStart[slot] = CPUTimer_getTimerCount(CPUTIMER2_BASE);
+    s_traceOpen[slot] = true;
+#endif
+}
+
+#pragma CODE_SECTION(DAB_NN_traceEnd, ".TI.ramfunc")
+void DAB_NN_traceEnd(uint16_t slot)
+{
+#ifdef DAB_USE_HARDWARE_NPU
+    if (slot >= DAB_NPU_TRACE_SLOTS || !s_busy) return;
+    if (!s_traceOpen[slot]) { g_nnNpuDetail.invalidPairs++; return; }
+    s_traceTicks[slot] += s_traceStart[slot] - CPUTimer_getTimerCount(CPUTIMER2_BASE);
+    s_traceCalls[slot]++;
+    s_traceOpen[slot] = false;
+#endif
 }
 
 #pragma CODE_SECTION(DAB_NN_noteNpuCompletion, ".TI.ramfunc")
@@ -469,6 +511,11 @@ static void serviceInference(float vin_volts, bool force)
 #ifdef DAB_USE_HARDWARE_NPU
     {
         int32_t status;
+#if defined(DAB_NPU_DAB16_MODEL) && DAB_NPU_DETAIL_PROFILE
+        memset((void *)s_traceTicks, 0, sizeof(s_traceTicks));
+        memset((void *)s_traceCalls, 0, sizeof(s_traceCalls));
+        memset((void *)s_traceOpen, 0, sizeof(s_traceOpen));
+#endif
         tvmgen_default_finished = 0;
         s_npuDoneStamped = false;
         s_started = CPUTimer_getTimerCount(CPUTIMER2_BASE);
