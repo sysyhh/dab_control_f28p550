@@ -21,6 +21,8 @@ def main():
     parser.add_argument("--sdk", type=Path, default=Path("E:/Software_Download/ti/c2000/C2000Ware_DigitalPower_SDK_5_05_01_00/c2000ware"))
     parser.add_argument("--out", type=Path, default=APP / "model/generated/npu")
     parser.add_argument("--detail-profile", action="store_true", help="Enable intrusive stage timing; off for performance comparison")
+    parser.add_argument("--optimization-level", type=int, choices=range(2), default=1,
+                        help="0: original runtime; 1: checked hidden-layer identity")
     args = parser.parse_args()
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from prepare_npu_conv import prepare
@@ -76,7 +78,10 @@ def main():
     code = "extern void DAB_NN_noteNpuCompletion(void);\n" + code.replace(
         "  tvmgen_default_finished = 1;",
         "  DAB_NN_noteNpuCompletion(); /* Final output is ready; stamp before publication. */\n  tvmgen_default_finished = 1;")
-    from patch_npu_runtime import instrument, instrument_driver
+    (output / "lib1.reference.c").write_text(code, encoding="utf-8")
+    from patch_npu_runtime import instrument, instrument_driver, hidden_identity
+    if args.optimization_level >= 1:
+        code = hidden_identity(code, (output / "lib0.c").read_text())
     code = instrument(code, args.detail_profile)
     runtime.write_text(code, encoding="utf-8")
     import tvm
@@ -101,6 +106,7 @@ def main():
                 "output_order": ["D1", "D0", "D2", "T"], "power_control_approved": False,
                 "hardware_stages": 4, "completion_hook": "after final output dequantization, before finished=1",
                 "detail_profile": args.detail_profile,
+                "optimization_level": args.optimization_level,
                 "library_sha256": sha(output / "mod.a"), "header_sha256": sha(header)}
     (output / "dab_npu_contract.h").write_text(
         "/* Generated only after the TI NNC header ABI has been checked. */\n"

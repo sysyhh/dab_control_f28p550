@@ -114,6 +114,13 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
+  static void* sid_13_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
   static void* sid_11_let;
 #ifdef __cplusplus
 } // extern "C"
@@ -135,14 +142,7 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_13_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_15_let;
+  static void* sid_8_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -156,7 +156,21 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
+  static void* sid_12_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
   static void* sid_6_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_15_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -170,14 +184,14 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_4_let;
+  static void* sid_3_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_3_let;
+  static void* sid_4_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -191,14 +205,7 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_12_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_8_let;
+  static void* sid_2_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -206,13 +213,6 @@ extern "C" {
 extern "C" {
 #endif
   static void* sid_16_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_2_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -304,14 +304,8 @@ TVM_DLL int32_t tvmgen_default_fused_cast_cast_multiply_nn_relu_multiply_add_flo
   DAB_NN_traceBegin(DAB_NPU_CONVERT);
 #endif
 
-  void* fused_cast_cast_multiply_nn_relu_multiply_constant_let = (&(global_const_workspace_10_var[64]));
-  void* fused_cast_cast_multiply_nn_relu_constant_let = (&(global_const_workspace_10_var[112]));
-  for (int32_t ax3 = 0; ax3 < 32; ++ax3) {
-    float v_ = ((float)((int32_t)p0[ax3])) * 1.562500e-02f;
-    float v__1 = floorf(((((v_) > (0.000000e+00f) ? (v_) : (0.000000e+00f)) * ((float*)fused_cast_cast_multiply_nn_relu_constant_let)[0]) + ((float*)fused_cast_cast_multiply_nn_relu_multiply_constant_let)[0]));
-    float v__2 = (v__1) < (2.550000e+02f) ? (v__1) : (2.550000e+02f);
-    T_cast[ax3] = ((uint8_t)((v__2) > (0.000000e+00f) ? (v__2) : (0.000000e+00f)));
-  }
+  /* uint8 全范围逐值验证：逆缩放、ReLU、再缩放及取整的结果均为原值。 */
+  for (int32_t i = 0; i < 32; ++i) T_cast[i] = p0[i];
 
 #if DAB_NPU_DETAIL_PROFILE
   DAB_NN_traceEnd(DAB_NPU_CONVERT);
@@ -327,14 +321,8 @@ TVM_DLL int32_t tvmgen_default_fused_cast_cast_multiply_nn_relu_multiply_add_flo
   DAB_NN_traceBegin(DAB_NPU_CONVERT);
 #endif
 
-  void* fused_cast_cast_multiply_nn_relu_multiply_constant_1_let = (&(global_const_workspace_18_var[48]));
-  void* fused_cast_cast_multiply_nn_relu_constant_1_let = (&(global_const_workspace_18_var[96]));
-  for (int32_t ax3 = 0; ax3 < 16; ++ax3) {
-    float v_ = ((float)((int32_t)p0[ax3])) * 7.812500e-03f;
-    float v__1 = floorf(((((v_) > (0.000000e+00f) ? (v_) : (0.000000e+00f)) * ((float*)fused_cast_cast_multiply_nn_relu_constant_1_let)[0]) + ((float*)fused_cast_cast_multiply_nn_relu_multiply_constant_1_let)[0]));
-    float v__2 = (v__1) < (2.550000e+02f) ? (v__1) : (2.550000e+02f);
-    T_cast[ax3] = ((uint8_t)((v__2) > (0.000000e+00f) ? (v__2) : (0.000000e+00f)));
-  }
+  /* uint8 全范围逐值验证：逆缩放、ReLU、再缩放及取整的结果均为原值。 */
+  for (int32_t i = 0; i < 16; ++i) T_cast[i] = p0[i];
 
 #if DAB_NPU_DETAIL_PROFILE
   DAB_NN_traceEnd(DAB_NPU_CONVERT);
@@ -350,14 +338,8 @@ TVM_DLL int32_t tvmgen_default_fused_cast_cast_multiply_nn_relu_multiply_add_flo
   DAB_NN_traceBegin(DAB_NPU_CONVERT);
 #endif
 
-  void* fused_cast_cast_multiply_nn_relu_multiply_constant_2_let = (&(global_const_workspace_24_var[32]));
-  void* fused_cast_cast_multiply_nn_relu_constant_2_let = (&(global_const_workspace_24_var[80]));
-  for (int32_t ax3 = 0; ax3 < 16; ++ax3) {
-    float v_ = ((float)((int32_t)p0[ax3])) * 3.906250e-03f;
-    float v__1 = floorf(((((v_) > (0.000000e+00f) ? (v_) : (0.000000e+00f)) * ((float*)fused_cast_cast_multiply_nn_relu_constant_2_let)[0]) + ((float*)fused_cast_cast_multiply_nn_relu_multiply_constant_2_let)[0]));
-    float v__2 = (v__1) < (2.550000e+02f) ? (v__1) : (2.550000e+02f);
-    T_cast[ax3] = ((uint8_t)((v__2) > (0.000000e+00f) ? (v__2) : (0.000000e+00f)));
-  }
+  /* uint8 全范围逐值验证：逆缩放、ReLU、再缩放及取整的结果均为原值。 */
+  for (int32_t i = 0; i < 16; ++i) T_cast[i] = p0[i];
 
 #if DAB_NPU_DETAIL_PROFILE
   DAB_NN_traceEnd(DAB_NPU_CONVERT);
@@ -543,21 +525,21 @@ TVM_DLL void tvmgen_default_IRQHandlerHelper() {
 switch(tinie_curr_layer) {
 case 0:
    sid_14_let = (&(global_workspace_1_var[0]));
+   sid_13_let = (&(global_workspace_1_var[16]));
    sid_11_let = (&(global_workspace_1_var[16]));
    sid_10_let = (&(global_workspace_1_var[32]));
    sid_9_let = (&(global_workspace_1_var[0]));
-   sid_13_let = (&(global_workspace_1_var[16]));
-   sid_15_let = (&(global_workspace_1_var[16]));
-   sid_7_let = (&(global_workspace_1_var[32]));
-   sid_6_let = (&(global_workspace_1_var[0]));
-   sid_5_let = (&(global_workspace_1_var[32]));
-   sid_4_let = (&(global_workspace_1_var[0]));
-   sid_3_let = (&(global_workspace_1_var[32]));
-   sid_1_let = (&(global_workspace_1_var[16]));
-   sid_12_let = (&(global_workspace_1_var[0]));
    sid_8_let = (&(global_workspace_1_var[16]));
-   sid_16_let = (&(global_workspace_1_var[0]));
+   sid_7_let = (&(global_workspace_1_var[32]));
+   sid_12_let = (&(global_workspace_1_var[0]));
+   sid_6_let = (&(global_workspace_1_var[0]));
+   sid_15_let = (&(global_workspace_1_var[16]));
+   sid_5_let = (&(global_workspace_1_var[32]));
+   sid_3_let = (&(global_workspace_1_var[32]));
+   sid_4_let = (&(global_workspace_1_var[0]));
+   sid_1_let = (&(global_workspace_1_var[16]));
    sid_2_let = (&(global_workspace_1_var[0]));
+   sid_16_let = (&(global_workspace_1_var[0]));
   tvmgen_default_fused_reshape_multiply_add_floor_clip_cast_reshape(features_buffer_var, sid_1_let, global_const_workspace_0_var, global_workspace_1_var);
   tvmgen_default_fused_tinie_c28_pack(sid_1_let, sid_2_let, global_const_workspace_0_var, global_workspace_1_var);
   tvmgen_default_ti_npu_convolve1x1NHWC_0(sid_2_let, sid_3_let, global_const_workspace_0_var, global_workspace_1_var);

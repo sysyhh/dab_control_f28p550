@@ -28,6 +28,7 @@
   "hardware_stages": 4,
   "completion_hook": "after final output dequantization, before finished=1",
   "detail_profile": false,
-  "library_sha256": "2de6e2ebf953ed6bd0bdc05d356c6480568d9f3b1c7a88e549e14e985c0a3e77",
+  "optimization_level": 1,
+  "library_sha256": "c94cbf3c4e453db6b84a3dff08530c81553d47007a4207ca5e2767eb9781f5a0",
   "header_sha256": "932b5658528fd69dc4872f8e8b86426992209857558b62859f002c80d28c0153"
 }

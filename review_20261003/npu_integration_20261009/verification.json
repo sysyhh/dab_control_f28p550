@@ -4,7 +4,7 @@
   "real_ti_nnc_library": true,
   "ti_nnc": "2.1.0",
   "hardware_stages": 4,
-  "library_sha256": "2de6e2ebf953ed6bd0bdc05d356c6480568d9f3b1c7a88e549e14e985c0a3e77",
+  "library_sha256": "c94cbf3c4e453db6b84a3dff08530c81553d47007a4207ca5e2767eb9781f5a0",
   "final_output_timestamp_hook": true,
   "builds": [
     "CPU1_LAUNCHXL_NPU_FLASH",

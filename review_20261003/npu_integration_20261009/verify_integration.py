@@ -27,7 +27,7 @@ folder=APP/"model/generated/npu"
 manifest=json.loads((folder/"manifest.json").read_text())
 for key,path in [("model_sha256",APP/"model"/manifest["model"]),("library_sha256",folder/"mod.a"),("header_sha256",folder/"tvmgen_default.h")]:
     assert manifest[key]==sha(path),key
-runtime=(folder/"lib1.c").read_text()
+runtime=(folder/"lib1.c").read_text(encoding="utf-8")
 assert runtime.count("DAB_NN_noteNpuCompletion();")==1
 assert runtime.index("DAB_NN_noteNpuCompletion();") < runtime.index("tvmgen_default_finished = 1;")
 assert (folder/"lib2.c").read_text().count("tinie_curr_layer += 1;")==4
