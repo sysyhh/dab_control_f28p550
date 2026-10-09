@@ -13,3 +13,6 @@
 *.bak
 /dab_control_f28p550/[0-9]*
 /dab_control_f28p550/relay_graph.*.txt
+/tools/c2000_debug/runs/
+/tools/c2000_debug/benchmarks/
+/tools/c2000_debug/.lock

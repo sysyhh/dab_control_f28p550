@@ -1,0 +1,68 @@
+{
+  "ok": true,
+  "date": "2026-10-09",
+  "real_board_batches": 11,
+  "formal_samples_per_batch": 1000,
+  "warmup_per_batch": 10,
+  "vin": 90,
+  "reports": [
+    {
+      "label": "p3_release",
+      "summary": "tools/c2000_debug/benchmarks/20261009_225221_p3_release/summary.json",
+      "batches": 3,
+      "end_to_end_mean_us": [
+        149.07456970214844,
+        149.07456970214844,
+        149.07456970214844
+      ],
+      "all_checks_passed": true
+    },
+    {
+      "label": "fpu_flash",
+      "summary": "tools/c2000_debug/benchmarks/20261009_225422_fpu_flash/summary.json",
+      "batches": 3,
+      "end_to_end_mean_us": [
+        28.715497970581055,
+        28.715497970581055,
+        28.715497970581055
+      ],
+      "all_checks_passed": true
+    },
+    {
+      "label": "p3_profile",
+      "summary": "tools/c2000_debug/benchmarks/20261009_225556_p3_profile/summary.json",
+      "batches": 3,
+      "end_to_end_mean_us": [
+        175.01425170898438,
+        175.01425170898438,
+        175.01425170898438
+      ],
+      "all_checks_passed": true
+    },
+    {
+      "label": "p3_restored",
+      "summary": "tools/c2000_debug/benchmarks/20261009_225733_p3_restored/summary.json",
+      "batches": 1,
+      "end_to_end_mean_us": [
+        149.07456970214844
+      ],
+      "all_checks_passed": true
+    },
+    {
+      "label": "p3_final",
+      "summary": "tools/c2000_debug/benchmarks/20261009_230005_p3_final/summary.json",
+      "batches": 1,
+      "end_to_end_mean_us": [
+        149.07456970214844
+      ],
+      "all_checks_passed": true
+    }
+  ],
+  "npu_over_fpu_end_to_end_ratio": 5.191432509889778,
+  "instrumentation_added_end_to_end_us": 25.939682006835938,
+  "profile_params_and_instructions_us": 97.96926879882812,
+  "profile_four_layer_waits_us": 22.439785957336426,
+  "delivered_detail_profile": false,
+  "power_control_approved": false,
+  "whole_range_accuracy_acceptance": false
+}

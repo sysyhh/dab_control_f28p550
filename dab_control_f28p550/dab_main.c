@@ -11,6 +11,8 @@
 volatile bool g_clearFaultRequested = false; // CCS 人工清故障请求；主循环读取后即清零，不是串口接收命令。
 volatile bool g_lastClearFaultAccepted = false; // 记录最近一次清除是否获准；失败时应先查看故障原因和恢复条件。
 volatile uint32_t g_backgroundHeartbeat = 0U; // 主循环进度计数，配合控制中断进度判断是否有任务停滞。
+#pragma RETAIN(g_debugBuildId)
+volatile const uint32_t g_debugBuildId = 0x20261009UL; // 自动实板调试读取此标记，核对新编译程序确已加载；不参与控制。
 static uint32_t s_watchdogControlHeartbeat;
 
 static void initWatchdog(void)

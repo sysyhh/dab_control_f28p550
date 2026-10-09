@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "tests": [
+    {
+      "name": "default_real_board_1",
+      "pass": true,
+      "result": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\tools\\c2000_debug\\runs\\20261009_220659_859504\\result.json"
+    },
+    {
+      "name": "default_real_board_2",
+      "pass": true,
+      "result": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\tools\\c2000_debug\\runs\\20261009_220711_949851\\result.json"
+    },
+    {
+      "name": "custom_expression_and_register",
+      "pass": true,
+      "result": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\tools\\c2000_debug\\runs\\20261009_220721_463791\\result.json"
+    },
+    {
+      "name": "missing_expression_fails_and_halts",
+      "pass": true,
+      "result": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\tools\\c2000_debug\\runs\\20261009_220730_446830\\result.json"
+    },
+    {
+      "name": "build_failure_blocks_stale_output",
+      "pass": true,
+      "result": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\tools\\c2000_debug\\runs\\20261009_220739_208795\\result.json"
+    }
+  ]
+}
