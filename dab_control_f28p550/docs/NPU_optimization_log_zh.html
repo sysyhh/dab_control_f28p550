@@ -1,0 +1,118 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NPU 耗时优化与复测</title><style>
+:root{--ink:#203648;--muted:#526b7d;--blue:#1766a4;--line:#d7e2eb;--panel:#f1f6fb}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{margin:0;background:#f8fafc;color:var(--ink);font:16px/1.8 'Microsoft YaHei','Noto Sans CJK SC',sans-serif}
+.shell{display:grid;grid-template-columns:290px minmax(0,1fr);max-width:1500px;margin:auto}
+nav{position:sticky;top:0;height:100vh;overflow:auto;padding:26px 20px;border-right:1px solid var(--line);background:var(--panel)}
+.brand{font-size:20px;font-weight:700;line-height:1.5;margin-bottom:14px}.badge{font-size:12px;background:#fff1db;color:#795524;padding:4px 8px;border-radius:4px}
+nav ul{list-style:none;padding-left:0}nav li{margin:6px 0}nav li li{font-size:13px;padding-left:13px}nav a{color:#294d69;text-decoration:none;display:block;line-height:1.6;padding:3px 0}nav a:hover{color:var(--blue);text-decoration:underline}
+main{min-width:0;padding:42px 48px 75px;background:white}h1{font-size:32px;line-height:1.5;margin:0 0 20px}h2{font-size:25px;padding-top:22px;margin:40px 0 18px;border-top:2px solid var(--line);line-height:1.6}h3{font-size:20px;margin-top:30px}
+p{margin:15px 0}a{color:var(--blue);text-underline-offset:3px}strong{color:#183f61}code{font-family:Consolas,monospace;font-size:.9em;background:#eef3f8;padding:2px 4px;border-radius:3px;overflow-wrap:anywhere}
+pre{background:#edf3f8;border-left:4px solid #739bbd;padding:18px;overflow:auto;font-size:14px;line-height:1.7}pre code{background:transparent;padding:0;overflow-wrap:normal}
+.table-scroll{overflow-x:auto;margin:20px 0}table{width:100%;border-collapse:collapse;min-width:580px;font-size:14px;line-height:1.75}th,td{padding:10px 12px;border:1px solid var(--line);vertical-align:top}th{background:#e9f2fa;text-align:left}tbody tr:nth-child(even){background:#f8fbfe}td code{font-size:12px}
+img{display:block;width:100%;max-width:1100px;height:auto;margin:25px auto;border:1px solid var(--line);border-radius:12px}
+li{margin:8px 0}footer{margin-top:45px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}button{border:1px solid #bdd0e0;border-radius:5px;background:white;color:#284a65;padding:7px 12px;cursor:pointer;font:inherit;font-size:13px}button:hover{background:#e3eef8}
+input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:inherit;font-size:14px}#search-status{font-size:12px;min-height:22px;color:#526b7d}.search-hit{background:#ffe9a0;border-radius:3px;color:inherit}.search-current{background:#ffca56;outline:2px solid #b7791f}
+@media(max-width:1000px){.shell{grid-template-columns:245px minmax(0,1fr)}main{padding:32px 24px}nav{padding:20px 14px}}
+@media(max-width:740px){.shell{display:block}nav{position:relative;height:auto;max-height:420px;border-right:0;border-bottom:1px solid var(--line)}main{padding:25px 17px}h1{font-size:26px}h2{font-size:22px}}
+@media print{body{background:white;font:10pt/1.6 'Microsoft YaHei',sans-serif}.shell{display:block}nav{display:none}main{padding:0}h1{font-size:20pt}h2{font-size:15pt;break-after:avoid}h3{font-size:12pt;break-after:avoid}.table-scroll{overflow:visible}table{min-width:0;font-size:9pt}th,td{padding:5px}tr{break-inside:avoid}pre,img{break-inside:avoid}a{color:#203648;text-decoration:none}.search-hit,.search-current{background:none;outline:none}}
+</style></head><body><div class="shell"><nav aria-label="文档目录"><div class="brand">NPU 耗时优化与复测</div><div class="toc">
+<ul>
+<li><a href="#npu">NPU 耗时优化记录</a><ul>
+<li><a href="#_1">基线</a></li>
+<li><a href="#p0">P0：可关闭的分段计时</a></li>
+<li><a href="#p1">P1：消除隐藏层间重复浮点运算</a></li>
+<li><a href="#p2">P2：直接复制层间紧凑数据</a></li>
+<li><a href="#p3npu-ram">P3：NPU 配置及数据处理代码在 RAM 中运行</a></li>
+<li><a href="#_2">开发板复测方法</a></li>
+<li><a href="#_3">后续轮次的依据</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><a href="DAB_F28P550_guide_zh.html">返回上手说明</a></p><p><a href="NPU_optimization_log_zh.md">Markdown 原稿</a></p></nav><main><h1 id="npu">NPU 耗时优化记录</h1>
+<p>所有轮次保留功率输出禁止、1 ms 超时和现有输出检查。软件验证通过表示构建及程序逻辑通过，实际耗时和硬件输出仍须开发板复测。</p>
+<p>已提交历史：基线 <code>8344686</code>、P0 <code>aeb8cd4</code>、P1 <code>1bd4abe</code>、P2 <code>ef9a527</code>。后续提交通过项目根目录下 <code>git log --oneline</code> 查看；不必切换历史版本即可用下述选项逐级复测。</p>
+<h2 id="_1">基线</h2>
+<p>优化前 Git 提交：<code>8344686</code>。用户提供的 1000 个板上样本：FPU 端到端平均 28.69056 μs，NPU 端到端平均 268.50498 μs，NPU 完成平均 253.16565 μs、提交平均 74.51850 μs；对应测试输入未随该组统计提供，复测时需补记 Vin。</p>
+<h2 id="p0">P0：可关闭的分段计时</h2>
+<p>生成模型库时添加 <code>--detail-profile</code>，再重新 Build NPU 配置。<code>g_nnNpuDetail.instrumented=true</code> 表示库带详细计时，<code>stage[]</code> 每项格式与 <code>g_nnTiming</code> 相同；同类步骤在一次任务内累加后记一个样本，预热与冻结规则相同，<code>lastCalls[]</code> 显示最后一项任务的调用次数，<code>invalidPairs</code> 应为 0。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">stage 下标</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">0</td>
+<td>输入量化</td>
+</tr>
+<tr>
+<td style="text-align: right;">1</td>
+<td>数据打包或优化后的紧凑数据复制</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>数据拆包</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td>隐藏层间处理</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td>四层参数装载时间总和</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td>四层指令装载时间总和</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td>四层寄存器配置时间总和</td>
+</tr>
+<tr>
+<td style="text-align: right;">7～10</td>
+<td>各层启动至进入完成中断，包含中断响应延迟</td>
+</tr>
+<tr>
+<td style="text-align: right;">11</td>
+<td>最终 FLOAT32 输出还原</td>
+</tr>
+</tbody>
+</table>
+<p>详细计时的计数读取和函数调用会增加耗时。最终性能比较必须重新生成不带 <code>--detail-profile</code> 的库并重新 Build；该版本在编译时移除详细计时调用，<code>instrumented=false</code>、分段样本为零，原有提交/完成/端到端统计继续有效。</p>
+<p>本轮检查：带计时及普通库均用真实 TI 工具构建，接口测试覆盖预热排除、分段累加、输出拒绝、超时与功率启动禁止。尚无本轮板上实测收益。</p>
+<h2 id="p1">P1：消除隐藏层间重复浮点运算</h2>
+<p>三处隐藏层输出是无符号 8 位数；当前模型使用 64、128、256 三个二次幂比例、零偏移和 0.5 取整偏置。原处理对 0～255 的每个值均返回原值，因此替换为逐元素复制；保留 NPU 内部激活操作、首层输入量化和末层输出还原。</p>
+<p>生成脚本默认 <code>--optimization-level 1</code>，指定 <code>0</code> 可重建原计算路径。脚本检查原表达式、通道数和生成常量，遇到不同模型立即停止；同时保存 <code>lib1.reference.c</code> 供比较，避免重新生成覆盖优化。</p>
+<p><code>tools/verify_npu_runtime.py</code> 提取新旧生成代码中的真实 C 函数，采用严格浮点编译，对三个函数的所有 64 个通道位置各遍历 256 种值并检查输出边界。此检查保证已替换的 CPU 步骤等价；完整 NPU 输出仍须在板上核对。</p>
+<h2 id="p2">P2：直接复制层间紧凑数据</h2>
+<p>三个隐藏层连接处分别复制 16、8、8 个 C28 存储单元，替代原来的拆包、恒等变换、重新打包。C28 一个存储单元是 16 位，TI 的 <code>__byte</code> 每次处理其中一个 8 位通道；原目标缓冲区和下一层输入/输出地址保持不变。</p>
+<p>脚本默认 <code>--optimization-level 2</code>，生成时检查 TI 打包实现、三个连接处的调用顺序和源/目标范围不部分重叠；相同地址允许原位保留数据。验证程序编译原生成的拆包/打包函数并模拟 C28 存储语义，对 65536 种存储单元值逐一比较 8 单元和 16 单元复制，同时检查边界；首层打包和末层拆包仍保留。</p>
+<h2 id="p3npu-ram">P3：NPU 配置及数据处理代码在 RAM 中运行</h2>
+<p>默认生成级别提升为 <code>--optimization-level 3</code>。使用独立 <code>.dab_npu_ramfunc</code>，Flash 保存代码镜像，<code>DAB_NN_init()</code> 在 NPU 初始化前复制到 LS2；NPU 配置、启动、中断、首末层数据处理及层间复制在此区域运行，数据、权重、输入输出与 GS1 工作区位置不变。</p>
+<p>普通版本链接结果：运行地址 <code>0x9000</code>，使用 <code>0x337</code> 个 16 位存储单元，即 823/2048 单元，代码镜像 1646 字节。反汇编已检查初始化路径使用正确的 Flash 源地址、LS2 目标地址和复制长度；实际脱离调试器的上电启动以及运行收益仍需开发板验证。</p>
+<p>原有 LS0/LS1 的控制、保护和 FPU RAM 代码继续单独分配，详细计时版本也要检查 LS2 未超出容量。构建检查读取新生成的 map 文件，核对主要函数运行地址和 GS1 工作区位置，并确认已删除的隐藏层转换未被链接。</p>
+<h2 id="_2">开发板复测方法</h2>
+<ol>
+<li>使用 <code>CPU1_LAUNCHXL_NPU_FLASH</code>，保持 <code>DAB_AUTO_START=0</code>、<code>DAB_BOARD_CONFIG_CONFIRMED=0</code>，连接 USB 即可做 NN 基准测试。基准测试用指定的 Vin，仍须确认程序处于停止状态；功率输出批准标记继续为 0。</li>
+<li>每次重新生成库后都在 CCS 完整 Build、重新加载，并从初始化运行；P3 必须经过初始化复制，不能直接跳转到主循环。</li>
+<li>设置 <code>g_nnBenchmarkVin=90.0f</code>、<code>g_nnBenchmarkIterations=1000</code>、<code>g_nnBenchmarkWarmup=10</code>，最后设置 <code>g_nnBenchmarkRequested=true</code>。运行至 <code>g_nnBenchmarkState=2</code> 且统计冻结后读取，期间不打断点。</li>
+<li>每一级记录生成清单中的 <code>optimization_level</code>、<code>detail_profile</code>、库 SHA-256、测试 Vin、<code>g_nnTiming</code>、<code>g_nnLastOutput</code>、<code>g_nnTimeoutCount</code> 及故障状态。应完成 1000 个正式样本、拒绝输出及超时均为 0；同一输入的四项输出应与级别 0 一致。</li>
+<li>对照同一输入、相同中断与外设条件下各级的 <code>npuSubmit</code>、<code>npuCompletion</code>、<code>endToEnd</code> 的平均/最小/最大值，再与相同条件的 FPU 比较。各步骤包含中断响应或抢占，不能将完成时间当作裸 NPU 周期。</li>
+</ol>
+<p>在 <code>ccs_projects</code> 目录执行以下命令，N 替换为 0、1、2 或 3：</p>
+<pre><code class="language-powershell">review_20261003/npu_integration_20261009/python310/python.exe dab_control_f28p550/tools/compile_dab_npu.py --optimization-level N
+</code></pre>
+<p>定位剩余耗时时，在相同命令末尾加 <code>--detail-profile</code>，Build 并复测，保存 <code>g_nnNpuDetail</code>。<code>invalidPairs</code> 应为 0；四层启动/完成各一次，参数/指令/寄存器各四次，级别 2/3 的隐藏层转换不再有样本，紧凑数据复制计入 stage[1]；分段统计涉及计时调用，须与不带详细计时的正式成绩区分。</p>
+<p>正式速度对比使用不带 <code>--detail-profile</code> 的库；当前交付版本默认如此。复现软件检查：</p>
+<pre><code class="language-powershell">python dab_control_f28p550/tools/verify_npu_runtime.py
+python review_20261003/npu_integration_20261009/verify_integration.py
+</code></pre>
+<h2 id="_3">后续轮次的依据</h2>
+<p>当前先交付不改变模型数学含义的 P0～P3。收到新一轮开发板的分段统计及完整输出后，再决定是否缓存指令或调整模型；指令缓存需要核对各层指令的差异、覆盖方式与复位失效条件，不能仅因为代码尺寸相同就复用。</p>
+<p>目前量化模型在 92.2～92.5 V 仍存在已记录的无效输出；上述优化不会消除量化误差，因而仍不允许用于功率闭环。提高精度、开放功率控制以及判断优化后是否快于 FPU，均需另外的数值与实板验收。</p><footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：db3bac8de8de38c15e0a874deb2a5c65edbff2cbbe10285c79f1ff7130c0cff7</footer></main></div></body></html>

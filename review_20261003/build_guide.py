@@ -51,7 +51,7 @@ parts += ['<path d="M298,315 H322 V194 H398 V178" stroke="#58708a" stroke-width=
           label(160, 206, "结果缓存"), arrow(480, 264, 430, 178)]
 parts += [box(30, 429, 1038, 100, "外部故障直接关闭输出", "GPIO60 → Input XBAR1 → TZ1 → 四路 OST；不依赖 CPU 中断执行", "#fff0e1"),
           label(31, 556, "图示为当前软件关系；引脚、实际关断延迟与四桥波形需实板确认。")]
-(ASSETS / "runtime.svg").write_text("".join(parts)+"</svg>", encoding="utf-8")
+(ASSETS / "runtime.svg").write_text("".join(parts)+"</svg>", encoding="utf-8", newline="\n")
 
 parts = [svg_start(1100, 540, "EPWM1 采样、读取及控制时序：每周期 100 微秒")]
 parts += [label(28, 40, "EPWM1：7500 上下计数，TBCLK=150 MHz", False)]
@@ -66,7 +66,7 @@ parts += [label(172, 180, "向上计数"), label(719, 205, "向下计数"),
           label(50, 415, "数据采样比正常读取早约 50 μs；数据年龄时间戳记录的是读取结束。"),
           label(50, 448, "下一次零点前保留 150 个计数（约 1 μs）的读取检查余量。"),
           label(50, 497, "功率 PWM 独立运行于 15～60 kHz，EPWM7 装载边界另行确认；此图未按比例表示 ADC 转换耗时。")]
-(ASSETS / "timing.svg").write_text("".join(parts)+"</svg>", encoding="utf-8")
+(ASSETS / "timing.svg").write_text("".join(parts)+"</svg>", encoding="utf-8", newline="\n")
 
 parts = [svg_start(1100, 530, "DAB 状态：待机、软启动、运行和人工故障清除")]
 parts += [label(28, 40, "输出释放由首包装载与保护条件共同决定", False),
@@ -81,7 +81,7 @@ parts += [arrow(300, 148, 415, 148), label(312, 122, "启动通过"),
           '<path d="M415,389 H270 V211" fill="none" stroke="#58708a" stroke-width="2.5" marker-end="url(#arrow)"/>',
           label(34, 305, "连续正常 ≥5 ms"), label(34, 332, "+ ADC 连续 50 帧"), label(34, 359, "+ 人工清除"),
           label(30, 488, "正常停止 → STANDBY；故障中停止仍保持 FAULT；清除成功也不会自动启动。")]
-(ASSETS / "states.svg").write_text("".join(parts)+"</svg>", encoding="utf-8")
+(ASSETS / "states.svg").write_text("".join(parts)+"</svg>", encoding="utf-8", newline="\n")
 
 raw = SOURCE.read_text(encoding="utf-8")
 md = markdown.Markdown(extensions=["tables", "fenced_code", "toc"], extension_configs={"toc": {"toc_depth": "2-3"}})
@@ -119,7 +119,7 @@ document = f'''<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>F28P550 DAB · 上手与配置说明</title><style>{css}</style></head>
 <body><div class="shell"><nav aria-label="文档目录"><div class="brand">F28P550 DAB<br>上手与配置说明</div><span class="badge">2026-10-09 · NPU 核对与计时版</span><p style="font-size:13px">FPU 基准已验证<br>NPU 已接入，实板数值和计时待核对</p><label for="query" style="font-size:13px">在文档中查找</label><input id="query" type="search" placeholder="例如：ADC、软启动、B09"><div class="tools"><button id="search">查找</button><button id="next">下一处</button><button id="clear">清除</button><button id="print">打印 / 保存 PDF</button></div><div id="search-status" aria-live="polite"></div>{md.toc}<p><a href="DAB_F28P550_guide_zh.md">Markdown 原稿</a></p></nav>
 <main><article id="article">{body}</article><footer>离线阅读：不加载网络脚本、字体或样式。资料链接需要联网。<br>来源文件 SHA-256：{sha}</footer></main></div><script>{script}</script></body></html>'''
-(DOCS / "DAB_F28P550_guide_zh.html").write_text(document, encoding="utf-8")
+(DOCS / "DAB_F28P550_guide_zh.html").write_text(document, encoding="utf-8", newline="\n")
 (DOCS / "guide_manifest.json").write_text(json.dumps({
     "date": "2026-10-09", "source": SOURCE.name, "source_sha256": sha,
     "html_sha256": hashlib.sha256((DOCS / "DAB_F28P550_guide_zh.html").read_bytes()).hexdigest(),
@@ -127,16 +127,16 @@ document = f'''<!doctype html>
     "offline_assets": ["assets/runtime.svg", "assets/timing.svg", "assets/states.svg"],
     "asset_sha256": {"assets/"+p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(ASSETS.glob("*.svg"))},
     "chapters": 17, "board_acceptance_items": 17
-}, ensure_ascii=False, indent=2), encoding="utf-8")
+}, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 print("Guide rendered: Markdown, offline HTML, three SVG diagrams and manifest")
 
-for name in ("NN_timing_guide_zh", "NPU_integration_guide_zh"):
+for name in ("NN_timing_guide_zh", "NPU_integration_guide_zh", "NPU_optimization_log_zh"):
     source = DOCS / (name + ".md")
     renderer = markdown.Markdown(extensions=["tables", "fenced_code", "toc"])
     content = renderer.convert(source.read_text(encoding="utf-8"))
-    for related in ("NN_timing_guide_zh", "NPU_integration_guide_zh", "DAB_F28P550_guide_zh"):
+    for related in ("NN_timing_guide_zh", "NPU_integration_guide_zh", "DAB_F28P550_guide_zh", "NPU_optimization_log_zh"):
         content = content.replace(f'href="{related}.md"', f'href="{related}.html"')
-    title = "NN 耗时统计" if name.startswith("NN_") else "DAB NPU 接入与开发板核对"
+    title = {"NN_timing_guide_zh":"NN 耗时统计", "NPU_integration_guide_zh":"DAB NPU 接入与开发板核对", "NPU_optimization_log_zh":"NPU 耗时优化与复测"}[name]
     output = f'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title}</title><style>{css}</style></head><body><div class="shell"><nav aria-label="文档目录"><div class="brand">{title}</div>{renderer.toc}<p><a href="DAB_F28P550_guide_zh.html">返回上手说明</a></p><p><a href="{source.name}">Markdown 原稿</a></p></nav><main>{content}<footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：{hashlib.sha256(source.read_bytes()).hexdigest()}</footer></main></div></body></html>'''
-    (DOCS / (name + ".html")).write_text(output, encoding="utf-8")
+    (DOCS / (name + ".html")).write_text(output, encoding="utf-8", newline="\n")
     print("Rendered", name)

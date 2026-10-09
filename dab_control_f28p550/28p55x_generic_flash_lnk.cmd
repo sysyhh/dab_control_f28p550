@@ -63,6 +63,13 @@ SECTIONS
    ramgs1 : > RAMGS1
    .rodata.tvm : > FLASH_BANK1, ALIGN(8)
    .bss.noinit.tvm : > RAMGS1, ALIGN(8), TYPE = NOINIT
+   // NPU 热点代码使用独立 LS2；Flash 保存镜像，DAB_NN_init 在启用 NPU 前复制。
+   .dab_npu_ramfunc : {} LOAD = FLASH_BANK0,
+                        RUN = RAMLS2,
+                        LOAD_START(DabNpuLoadStart),
+                        LOAD_SIZE(DabNpuLoadSize),
+                        RUN_START(DabNpuRunStart),
+                        ALIGN(8)
 
    #if defined(__TI_EABI__)
        .TI.ramfunc : {} LOAD = FLASH_BANK0,

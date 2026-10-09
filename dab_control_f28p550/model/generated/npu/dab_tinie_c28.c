@@ -1,3 +1,7 @@
+#pragma CODE_SECTION(TINIE_setup, ".dab_npu_ramfunc")
+#pragma CODE_SECTION(TINIE_start, ".dab_npu_ramfunc")
+#pragma CODE_SECTION(write_configMMR, ".dab_npu_ramfunc")
+#pragma CODE_SECTION(TINIE_clearInterruptACK, ".dab_npu_ramfunc")
 #define DAB_NPU_DETAIL_PROFILE 0
 #include "dab_npu_trace.h"
 extern volatile int32_t tinie_curr_layer;

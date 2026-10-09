@@ -21,8 +21,8 @@ def main():
     parser.add_argument("--sdk", type=Path, default=Path("E:/Software_Download/ti/c2000/C2000Ware_DigitalPower_SDK_5_05_01_00/c2000ware"))
     parser.add_argument("--out", type=Path, default=APP / "model/generated/npu")
     parser.add_argument("--detail-profile", action="store_true", help="Enable intrusive stage timing; off for performance comparison")
-    parser.add_argument("--optimization-level", type=int, choices=range(3), default=2,
-                        help="0: original; 1: hidden identity; 2: packed transitions")
+    parser.add_argument("--optimization-level", type=int, choices=range(4), default=3,
+                        help="0: original; 1: hidden identity; 2: packed transitions; 3: RAM runtime")
     args = parser.parse_args()
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from prepare_npu_conv import prepare
@@ -55,7 +55,7 @@ def main():
                "--target-c-mcpu=c28", str(model), "-o", str(output / "mod.a"),
                "--cross-compiler=cl2000", f"--cross-compiler-options={cross}"]
     completed = subprocess.run(command, cwd=APP, env=env, capture_output=True, text=True, errors="replace")
-    (output / "compile.log").write_text(completed.stdout + completed.stderr, encoding="utf-8")
+    (output / "compile.log").write_text(completed.stdout + completed.stderr, encoding="utf-8", newline="\n")
     if completed.returncode:
         print(completed.stdout + completed.stderr)
         raise SystemExit(completed.returncode)
@@ -78,14 +78,19 @@ def main():
     code = "extern void DAB_NN_noteNpuCompletion(void);\n" + code.replace(
         "  tvmgen_default_finished = 1;",
         "  DAB_NN_noteNpuCompletion(); /* Final output is ready; stamp before publication. */\n  tvmgen_default_finished = 1;")
-    (output / "lib1.reference.c").write_text(code, encoding="utf-8")
-    from patch_npu_runtime import instrument, instrument_driver, hidden_identity, packed_transitions
+    (output / "lib1.reference.c").write_text(code, encoding="utf-8", newline="\n")
+    from patch_npu_runtime import instrument, instrument_driver, hidden_identity, packed_transitions, ram_functions
     if args.optimization_level >= 1:
         code = hidden_identity(code, (output / "lib0.c").read_text())
     if args.optimization_level >= 2:
         code = packed_transitions(code)
     code = instrument(code, args.detail_profile)
-    runtime.write_text(code, encoding="utf-8")
+    if args.optimization_level >= 3:
+        names=re.findall(r'\b(tvmgen_default_\w+|dab_npu_copy_words|tinie_sublayer_IRQHandler)\([^;{}]*\)\s*\{',code)
+        code=ram_functions(code,names)
+        kernels=re.findall(r'\b(tvmgen_default_ti_npu_\w+)\([^;{}]*\)\s*\{',kernel)
+        (output / "lib2.c").write_text(ram_functions(kernel,kernels),encoding="utf-8", newline="\n")
+    runtime.write_text(code, encoding="utf-8", newline="\n")
     import tvm
     root = Path(tvm.__file__).parent
     if args.optimization_level >= 2:
@@ -97,14 +102,20 @@ def main():
     rebuild += [f"--include_path={p.resolve()}" for p in includes + [APP, root / "3rdparty/tinie-api", root / "standalone_crt/include"]]
     subprocess.run(rebuild + [str(runtime)], cwd=output, env=env, check=True, capture_output=True)
     driver = output / "dab_tinie_c28.c"
-    driver.write_text(instrument_driver((root / "3rdparty/tinie-api/hard/src/tinie_c28.c").read_text(), args.detail_profile), encoding="utf-8")
+    driver_code=instrument_driver((root / "3rdparty/tinie-api/hard/src/tinie_c28.c").read_text(), args.detail_profile)
+    if args.optimization_level >= 3:
+        driver_code=ram_functions(driver_code,["TINIE_setup","TINIE_start","write_configMMR","TINIE_clearInterruptACK"])
+    driver.write_text(driver_code, encoding="utf-8", newline="\n")
     result=subprocess.run(rebuild + ["--output_file=tinie_c28.obj", str(driver)], cwd=output, env=env, capture_output=True)
     if result.returncode:
         raise RuntimeError(result.stdout.decode(errors="replace")+result.stderr.decode(errors="replace"))
-    subprocess.run([str(compiler.parent / "ar2000.exe"), "r", "mod.a", "lib1.obj", "tinie_c28.obj"],
+    objects=["lib1.obj", "tinie_c28.obj"]
+    if args.optimization_level >= 3:
+        subprocess.run(rebuild + [str(output / "lib2.c")],cwd=output,env=env,check=True,capture_output=True)
+        objects.append("lib2.obj")
+    subprocess.run([str(compiler.parent / "ar2000.exe"), "r", "mod.a"]+objects,
                    cwd=output, check=True, capture_output=True)
-    (output / "lib1.obj").unlink()
-    (output / "tinie_c28.obj").unlink()
+    for obj in objects: (output / obj).unlink()
     manifest = {"model": model.name, "model_sha256": sha(model), "ti_mcu_nnc": version("ti_mcu_nnc"),
                 "target": "c, ti-npu", "cgt": str(args.cgt), "sdk": str(args.sdk), "cross_options": cross,
                 "input_shape": [1, 16], "output_shape": [1, 1, 1, 4], "io_dtype": "float32",
@@ -113,16 +124,18 @@ def main():
                 "hardware_stages": 4, "completion_hook": "after final output dequantization, before finished=1",
                 "detail_profile": args.detail_profile,
                 "optimization_level": args.optimization_level,
+                "runtime_sha256": sha(runtime), "driver_sha256": sha(driver),
+                "kernel_sha256": sha(output / "lib2.c"),
                 "library_sha256": sha(output / "mod.a"), "header_sha256": sha(header)}
     (output / "dab_npu_contract.h").write_text(
         "/* Generated only after the TI NNC header ABI has been checked. */\n"
         "#ifndef DAB_NPU_CONTRACT_H_\n#define DAB_NPU_CONTRACT_H_\n"
         "#define DAB_NPU_RUNTIME_INPUT_DIM 16U\n#define DAB_NPU_RUNTIME_OUTPUT_DIM 4U\n"
         "#define DAB_NPU_MIN_VIN 90.0f\n#define DAB_NPU_MAX_VIN 140.0f\n"
-        "#define DAB_NPU_POWER_CONTROL_APPROVED 0\n#endif\n", encoding="utf-8")
+        "#define DAB_NPU_POWER_CONTROL_APPROVED 0\n#endif\n", encoding="utf-8", newline="\n")
     contract=output / "dab_npu_contract.h"
-    contract.write_text(contract.read_text().replace("#endif", f"#define DAB_NPU_DETAIL_PROFILE {int(args.detail_profile)}\n#endif"), encoding="utf-8")
-    (output / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    contract.write_text(contract.read_text().replace("#endif", f"#define DAB_NPU_DETAIL_PROFILE {int(args.detail_profile)}\n#define DAB_NPU_RAM_RUNTIME {int(args.optimization_level >= 3)}\n#endif"), encoding="utf-8", newline="\n")
+    (output / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8", newline="\n")
     print(json.dumps(manifest, indent=2))
 
 

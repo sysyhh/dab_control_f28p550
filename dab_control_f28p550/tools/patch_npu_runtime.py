@@ -55,6 +55,13 @@ def function(code, name, transform):
 def trace(call):
     return '\n#if DAB_NPU_DETAIL_PROFILE\n  '+call+';\n#endif\n'
 
+def ram_functions(code, names):
+    """Dedicated section, separately copied at startup; no GS1 code placement."""
+    for name in names:
+        if not re.search(r'\b'+re.escape(name)+r'\([^;{}]*\)\s*\{',code):
+            raise RuntimeError('Missing RAM function '+name)
+    return '\n'.join(f'#pragma CODE_SECTION({name}, ".dab_npu_ramfunc")' for name in names)+'\n'+code
+
 def instrument(code, enabled):
     names=re.findall(r'\b(tvmgen_default_fused_\w+)\([^;{}]*\)\s*\{',code)
     for name in names:

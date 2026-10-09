@@ -28,7 +28,10 @@
   "hardware_stages": 4,
   "completion_hook": "after final output dequantization, before finished=1",
   "detail_profile": false,
-  "optimization_level": 2,
-  "library_sha256": "16ad70c6b870450f11de6539eba52175337a815d35b6d2d48ded06ff1c232e9a",
+  "optimization_level": 3,
+  "runtime_sha256": "1b4fa7469b6690a80195aa256d8f84411748e8390112e098ef63ed8a3b298143",
+  "driver_sha256": "ae5fc4fcb9e4aa0142dedd47c95ca6ca2a26826eaf2cb85f1a584bba04506283",
+  "kernel_sha256": "c641e13195ffa058b7ad21607a578f9e17c3650e45d6a569bb21c90467309023",
+  "library_sha256": "a46d6eefc2ae12d0b37eb6a1693df32f26d5b5e2a4b098b364aa10a0d252c44f",
   "header_sha256": "932b5658528fd69dc4872f8e8b86426992209857558b62859f002c80d28c0153"
 }

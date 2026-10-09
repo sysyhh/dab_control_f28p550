@@ -2,7 +2,7 @@
   "date": "2026-10-09",
   "source": "DAB_F28P550_guide_zh.md",
   "source_sha256": "0c7e1d388a8c5a90cfb8fcdd1cfa8f869a45ed8dc9523f6018db38b82da23ca6",
-  "html_sha256": "19b1e9947d3bbb30e2737ddf5d69464b786e1452e9f9e3bb2e3d20acb32bda14",
+  "html_sha256": "b0435c9fc94e05731bd2fb0851ecce561e713c1bf84adb44f022af8fa3890995",
   "renderer": "Python-Markdown 3.10.2",
   "offline_assets": [
     "assets/runtime.svg",
@@ -10,9 +10,9 @@
     "assets/states.svg"
   ],
   "asset_sha256": {
-    "assets/runtime.svg": "b57ca6e185f37133f6f580bc062e6513106dbc40c2f183c2abaaf7bf08c9b161",
-    "assets/states.svg": "039ad20893439ce1633066e8d75a933a3ef87a33d69c6612d7b488236518e423",
-    "assets/timing.svg": "df0f63e825750dea56e0d29b71bb08eb1d711c6eb0e37404aa40c9155a1c72ba"
+    "assets/runtime.svg": "11244fcb3a1c8c4bdbcea81ab516d7e4beab4277e4a097244d3ff37675b5f00e",
+    "assets/states.svg": "6bd2d4365cc649e0df11d4c9dae8f3d536e40c3a412047ced094b0b65942cf25",
+    "assets/timing.svg": "00af80309d036174628138c51d69847a9eebf9ef358be1b45a528eb748fbeb0b"
   },
   "chapters": 17,
   "board_acceptance_items": 17

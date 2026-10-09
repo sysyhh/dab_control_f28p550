@@ -300,6 +300,7 @@ g_nnBenchmarkRequested = true;
 </code></pre>
 <p>编译器和 SDK 默认使用本机现有 E 盘路径，可用 <code>--cgt</code>、<code>--sdk</code> 指定其他安装位置；TI 工具路径不能包含空格。脚本执行等价转换、501 点对照、TI NNC 编译、维度和硬件阶段检查、完成时间钩子写入及库更新，并保存清单。它不会重新训练模型，也不会把模型标记为已通过功率控制验收。</p>
 <h2 id="8">8. 剩余验收与精度改进</h2>
+<p>耗时优化已提供分级重建、可关闭的分段计时、隐藏层重复运算消除、紧凑数据复制和 RAM 运行代码；默认使用级别 3，详细计时关闭。各轮修改、验证范围与开发板复测操作见 <a href="NPU_optimization_log_zh.html">NPU 耗时优化记录</a>，当前尚无这些修改后的实板耗时结论。</p>
 <p>本地已通过真实 TI 模型编译、NPU/FPU FLASH 链接、501 点转换等价对照，以及输入适配、范围、异步任务、计时、超时与启动禁止测试。电脑上的接口替身只验证程序逻辑，不能证明开发板实际执行时间或硬件数值。</p>
 <p>与 FLOAT ONNX 基准比较时，501 点最大绝对误差依次约为 <code>[0.0488685, 0.0370852, 0.0269486, 0.0488721]</code>。以基础周期 2500 估算，相位误差约 <code>[133,101,74]</code> 个计数、周期误差约 123 个计数；估算未替代完整 PWM 参数包对照，明显不满足一个计数的精度目标。先前 51 个整数电压点报告的误差更小，是因为较稀疏的点没有覆盖这些量化转换位置。</p>
 <table>
@@ -332,4 +333,4 @@ g_nnBenchmarkRequested = true;
 </tr>
 </tbody>
 </table>
-<p>官方依据：<a href="https://software-dl.ti.com/mctools/nnc/mcu/v2.1.0/installing.html">TI NNC 安装说明</a>、<a href="https://software-dl.ti.com/mctools/nnc/mcu/v2.1.0/compiling.html">TI NNC 编译与 CCS 集成</a>。本项目的真实硬件分配还通过本地生成的 <code>lib1.c</code>、<code>lib2.c</code> 和最终链接文件核对。</p><footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：37c785a385e9129055653326c45007a5b1189ee6fd13979fdc83d87ab65eec66</footer></main></div></body></html>
+<p>官方依据：<a href="https://software-dl.ti.com/mctools/nnc/mcu/v2.1.0/installing.html">TI NNC 安装说明</a>、<a href="https://software-dl.ti.com/mctools/nnc/mcu/v2.1.0/compiling.html">TI NNC 编译与 CCS 集成</a>。本项目的真实硬件分配还通过本地生成的 <code>lib1.c</code>、<code>lib2.c</code> 和最终链接文件核对。</p><footer>2026-10-09 · 离线文档；实际开发板数值与耗时待核对。<br>来源 SHA-256：992a26004c2e7cb9be1c4823b6c1028d777c7e16a97ccfaffdc155f7044d13ad</footer></main></div></body></html>

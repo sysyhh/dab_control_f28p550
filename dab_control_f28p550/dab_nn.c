@@ -15,6 +15,9 @@
 #ifdef DAB_NPU_DAB16_MODEL
 #include "model/generated/npu/tvmgen_default.h"
 #include "model/generated/npu/dab_npu_contract.h"
+#if defined(__TI_COMPILER_VERSION__) && DAB_NPU_RAM_RUNTIME
+extern uint16_t DabNpuLoadStart, DabNpuLoadSize, DabNpuRunStart;
+#endif
 #else
 #ifndef DAB_NPU_FLOAT_IO_CONFIRMED
 #error "Verify the DAB generated model has float32 input[3] and output[4] before enabling NPU"
@@ -118,7 +121,9 @@ static void addTime(volatile Dab_NnTimeStats_t *stats, uint32_t ticks)
 
 static void finishProfile(bool valid, uint32_t observedTick, uint32_t publishedTick)
 {
+#if defined(DAB_USE_HARDWARE_NPU) && defined(DAB_NPU_DAB16_MODEL) && DAB_NPU_DETAIL_PROFILE
     uint16_t slot;
+#endif
     bool warmup = s_benchJob && g_nnBenchmarkWarmupCompleted < s_benchWarmup;
     g_nnTimingSequence++;
     if (!valid && !g_nnTiming.frozen) g_nnTiming.rejectedOutputs++;
@@ -420,6 +425,11 @@ void DAB_NN_init(void)
 #ifdef DAB_USE_HARDWARE_NPU
     s_busy = false;
     s_npuDoneStamped = false;
+#if defined(__TI_COMPILER_VERSION__) && defined(DAB_NPU_DAB16_MODEL) && DAB_NPU_RAM_RUNTIME
+    // C28 的 memcpy 长度按 16 位存储单元计；链接器符号的地址给出镜像长度。
+    // 先完成复制再注册/启动 NPU，保证普通 Flash 上电启动同样有效。
+    memcpy(&DabNpuRunStart, &DabNpuLoadStart, (size_t)&DabNpuLoadSize);
+#endif
     TI_NPU_init(); // 仅真实模型分支初始化硬件；需要 DAB 专用头文件、模型库及完成通知。
 #endif
 }

@@ -27,19 +27,31 @@ folder=APP/"model/generated/npu"
 manifest=json.loads((folder/"manifest.json").read_text())
 for key,path in [("model_sha256",APP/"model"/manifest["model"]),("library_sha256",folder/"mod.a"),("header_sha256",folder/"tvmgen_default.h")]:
     assert manifest[key]==sha(path),key
+for key,name in [("runtime_sha256","lib1.c"),("driver_sha256","dab_tinie_c28.c"),("kernel_sha256","lib2.c")]:
+    if key in manifest: assert manifest[key]==sha(folder/name),key
 runtime=(folder/"lib1.c").read_text(encoding="utf-8")
 assert runtime.count("DAB_NN_noteNpuCompletion();")==1
 assert runtime.index("DAB_NN_noteNpuCompletion();") < runtime.index("tvmgen_default_finished = 1;")
 assert (folder/"lib2.c").read_text().count("tinie_curr_layer += 1;")==4
-maptext=(APP/"CPU1_LAUNCHXL_NPU_FLASH/dab_control_f28p550.map").read_text()
-assert re.search(r"\.bss.noinit.tvm\s+\*?\s*\d+\s+0000e000\s+00000060",maptext)
-assert "DAB_NN_noteNpuCompletion" in maptext and "mod.a : lib2.obj" in maptext
-assert "g_nnLastOutput" in maptext
 for config in ("CPU1_LAUNCHXL_NPU_FLASH", "CPU1_LAUNCHXL_FLASH"):
     completed=subprocess.run(["E:/Software_Download/ti/ccs2020/ccs/utils/bin/gmake.exe","-W","../dab_nn.c","-j4","all"],cwd=APP/config,capture_output=True,text=True,errors="replace")
     (HERE/(config+"_final_build.log")).write_text(completed.stdout+completed.stderr,encoding="utf-8")
     assert completed.returncode==0,config
     assert (APP/config/"dab_control_f28p550.out").is_file()
+maptext=(APP/"CPU1_LAUNCHXL_NPU_FLASH/dab_control_f28p550.map").read_text()
+assert re.search(r"\.bss.noinit.tvm\s+\*?\s*\d+\s+0000e000\s+00000060",maptext)
+assert "DAB_NN_noteNpuCompletion" in maptext and "mod.a : lib2.obj" in maptext
+assert "g_nnLastOutput" in maptext
+ram=None
+if manifest.get("optimization_level",0)>=3:
+    section=re.search(r'\.dab_npu_ramfunc\s+\*?\s+0\s+([0-9a-f]+)\s+([0-9a-f]+)\s+RUN ADDR = ([0-9a-f]+)',maptext)
+    assert section, "Missing NPU RAM section"
+    load,size,run=[int(v,16) for v in section.groups()]
+    assert 0x80000<=load<0xA0000 and run==0x9000 and 0<size<=0x800
+    for name in ('TINIE_setup','TINIE_start','tvmgen_default_IRQHandler','tvmgen_default_IRQHandlerHelper','dab_npu_copy_words'):
+        assert re.search(r'0\s+00009[0-7][0-9a-f]{2}\s+'+name+r'\s',maptext),name
+    assert 'fused_cast_cast_multiply_nn_relu_multiply_add_floor_clip_cast' not in maptext
+    ram={"load":hex(load),"run":hex(run),"c28_words":size,"capacity_words":2048}
 logs=["dab16_test.log","timing_regression.log","followup_regression.log","legacy_npu_regression.log"]
 passes=[]
 for name in logs:
@@ -55,7 +67,7 @@ class Links(HTMLParser):
     def handle_starttag(self,tag,attrs):
         for key,value in attrs:
             if key in ("href","src"): self.urls.append(value)
-for name in ("NPU_integration_guide_zh","NN_timing_guide_zh","DAB_F28P550_guide_zh"):
+for name in ("NPU_integration_guide_zh","NN_timing_guide_zh","DAB_F28P550_guide_zh","NPU_optimization_log_zh"):
     source=APP/"docs"/(name+".md")
     rendered=APP/"docs"/(name+".html")
     text=rendered.read_text(encoding="utf-8")
@@ -75,6 +87,8 @@ report={"date":"2026-10-09","ccs_configuration":"CPU1_LAUNCHXL_NPU_FLASH",
         "ccs_settings_and_artifact_hashes_checked":True,"document_links_and_source_hashes_checked":True,
         "application_sources_sha256":{name:sha(APP/name) for name in ("dab_nn.c","dab_nn.h","dab_control.c","dab_control.h",".cproject")},
         "forced_nn_recompile":True,
+        "optimization_level":manifest.get("optimization_level",0),
+        "detail_profile":manifest.get("detail_profile",False),"npu_ram_runtime":ram,
         "power_control_approved":False,"board_numeric_and_timing_validation":"pending"}
-(HERE/"verification.json").write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding="utf-8")
+(HERE/"verification.json").write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding="utf-8",newline="\n")
 print("PASS: real library hashes, four hardware stages, final completion hook, GS1 placement, two TI builds, host regressions, model comparison, CCS settings, document links")
