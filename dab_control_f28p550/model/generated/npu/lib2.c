@@ -51,80 +51,9 @@ extern void (*tinie_sublayer_postproc)(void);
 extern void tinie_sublayer_IRQHandler();
       
 
-#include "hard/ins_asm/PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS.h"
-
-static const uint32_t PWCONV_PARAMS[] = {
-  // 8-bit weights in little-endian:
-0x19acc67e,
-0xf6fefce,
-0x43334103,
-0x104beb0a,
-0xf0d090e,
-0x30c000c,
-0x304000c,
-0x306010b,
-0x0,
-0x0,
-0x0,
-0x0,
-0x0,
-0x0,
-0x0,
-0x0,
-
- // 24-bit bias in little-endian:
-0xbd1,
-0x0,
-0x77f,
-0x0,
-0x305,
-0x0,
-0x2592,
-0x0,
-
- // (8-bit scale, 5-bit shift (store as 8-bit)) pairs in little-endian:
-0x1080108,
-0x1080108,
-};
-
-static const uint32_t PWCONV_MMR[] = {
-0x0,
-0x0,
-0x0,
-0x7f0180,
-0x0,
-0x4304091,
-0x0,
-0x0,
-0x0,
-0x3,
-0x0,
-0x0,
-0x8,
-0x0,
-0x0,
-0x4,
-0x1,
-0x0,
-0x0,
-0x1,
-0x0,
-0x0,
-0x0,
-0x0,
-0x0,
-0x8,
-0x8,
-0xc,
-0xc,
-0x0,
-0x0,
-0x0,
-0x0,
-};
 #include "hard/ins_asm/PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS.h"
 
-static const uint32_t PWCONV_PARAMS_1[] = {
+static const uint32_t PWCONV_PARAMS[] = {
   // 8-bit weights in little-endian:
 0x8080800,
 0x400080c,
@@ -340,7 +269,7 @@ static const uint32_t PWCONV_PARAMS_1[] = {
 0x1170117,
 };
 
-static const uint32_t PWCONV_MMR_1[] = {
+static const uint32_t PWCONV_MMR[] = {
 0x0,
 0x0,
 0x0,
@@ -377,7 +306,7 @@ static const uint32_t PWCONV_MMR_1[] = {
 };
 #include "hard/ins_asm/PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS.h"
 
-static const uint32_t PWCONV_PARAMS_2[] = {
+static const uint32_t PWCONV_PARAMS_1[] = {
   // 8-bit weights in little-endian:
 0x3d34b696,
 0x3d743dce,
@@ -489,7 +418,7 @@ static const uint32_t PWCONV_PARAMS_2[] = {
 0x1160116,
 };
 
-static const uint32_t PWCONV_MMR_2[] = {
+static const uint32_t PWCONV_MMR_1[] = {
 0x0,
 0x0,
 0x0,
@@ -526,7 +455,7 @@ static const uint32_t PWCONV_MMR_2[] = {
 };
 #include "hard/ins_asm/PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS.h"
 
-static const uint32_t PWCONV_PARAMS_3[] = {
+static const uint32_t PWCONV_PARAMS_2[] = {
   // 8-bit weights in little-endian:
 0x3f1e2607,
 0x3c281b37,
@@ -702,7 +631,7 @@ static const uint32_t PWCONV_PARAMS_3[] = {
 0x1160116,
 };
 
-static const uint32_t PWCONV_MMR_3[] = {
+static const uint32_t PWCONV_MMR_2[] = {
 0x0,
 0x0,
 0x0,
@@ -737,16 +666,83 @@ static const uint32_t PWCONV_MMR_3[] = {
 0x0,
 0x0,
 };
+#include "hard/ins_asm/PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS.h"
+
+static const uint32_t PWCONV_PARAMS_3[] = {
+  // 8-bit weights in little-endian:
+0x19acc67e,
+0xf6fefce,
+0x43334103,
+0x104beb0a,
+0xf0d090e,
+0x30c000c,
+0x304000c,
+0x306010b,
+0x0,
+0x0,
+0x0,
+0x0,
+0x0,
+0x0,
+0x0,
+0x0,
+
+ // 24-bit bias in little-endian:
+0xbd1,
+0x0,
+0x77f,
+0x0,
+0x305,
+0x0,
+0x2592,
+0x0,
+
+ // (8-bit scale, 5-bit shift (store as 8-bit)) pairs in little-endian:
+0x1080108,
+0x1080108,
+};
+
+static const uint32_t PWCONV_MMR_3[] = {
+0x0,
+0x0,
+0x0,
+0x7f0180,
+0x0,
+0x4304091,
+0x0,
+0x0,
+0x0,
+0x3,
+0x0,
+0x0,
+0x8,
+0x0,
+0x0,
+0x4,
+0x1,
+0x0,
+0x0,
+0x1,
+0x0,
+0x0,
+0x0,
+0x0,
+0x0,
+0x8,
+0x8,
+0xc,
+0xc,
+0x0,
+0x0,
+0x0,
+0x0,
+};
 extern TINIE_layer_t* tinie_sublayers;
 static TINIE_layer_t __attribute__((aligned(4))) tinie_sublayers_data[1];
 
 static uint8_t __attribute__((section(".bss.noinit.tvm"), aligned(4))) tvm_tensors[1];
 
 
-#ifdef __cplusplus
-extern "C"
-#endif
-TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_3(int8_t* __restrict__ inputData, int8_t* __restrict__ outputData, uint8_t* __restrict__ global_const_workspace_26_var, uint8_t* __restrict__ global_workspace_27_var);
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -762,15 +758,19 @@ TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_1(int8_t* __restrict__ inp
 #ifdef __cplusplus
 extern "C"
 #endif
-TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_3(int8_t* __restrict__ inputData, int8_t* __restrict__ outputData, uint8_t* __restrict__ global_const_workspace_26_var, uint8_t* __restrict__ global_workspace_27_var) {
+TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_3(int8_t* __restrict__ inputData, int8_t* __restrict__ outputData, uint8_t* __restrict__ global_const_workspace_26_var, uint8_t* __restrict__ global_workspace_27_var);
+#ifdef __cplusplus
+extern "C"
+#endif
+TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_0(int8_t* __restrict__ inputData, int8_t* __restrict__ outputData, uint8_t* __restrict__ global_const_workspace_6_var, uint8_t* __restrict__ global_workspace_7_var) {
   {
     tinie_sublayers_data[0] = (TINIE_layer_t) {
       sizeof(PWCONV_MMR)/sizeof(PWCONV_MMR[0]),
       sizeof(PWCONV_PARAMS)/sizeof(PWCONV_PARAMS[0]),
-      sizeof(PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS)/sizeof(PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS[0]),
+      sizeof(PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS)/sizeof(PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS[0]),
       PWCONV_MMR,
       PWCONV_PARAMS,
-      PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS,
+      PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS,
       inputData,
       NULL,
       outputData,
@@ -787,7 +787,7 @@ TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_3(int8_t* __restrict__ inp
 #ifdef __cplusplus
 extern "C"
 #endif
-TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_0(int8_t* __restrict__ inputData, int8_t* __restrict__ outputData, uint8_t* __restrict__ global_const_workspace_6_var, uint8_t* __restrict__ global_workspace_7_var) {
+TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_2(int8_t* __restrict__ inputData, int8_t* __restrict__ outputData, uint8_t* __restrict__ global_const_workspace_22_var, uint8_t* __restrict__ global_workspace_23_var) {
   {
     tinie_sublayers_data[0] = (TINIE_layer_t) {
       sizeof(PWCONV_MMR_1)/sizeof(PWCONV_MMR_1[0]),
@@ -812,7 +812,7 @@ TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_0(int8_t* __restrict__ inp
 #ifdef __cplusplus
 extern "C"
 #endif
-TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_2(int8_t* __restrict__ inputData, int8_t* __restrict__ outputData, uint8_t* __restrict__ global_const_workspace_22_var, uint8_t* __restrict__ global_workspace_23_var) {
+TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_1(int8_t* __restrict__ inputData, int8_t* __restrict__ outputData, uint8_t* __restrict__ global_const_workspace_14_var, uint8_t* __restrict__ global_workspace_15_var) {
   {
     tinie_sublayers_data[0] = (TINIE_layer_t) {
       sizeof(PWCONV_MMR_2)/sizeof(PWCONV_MMR_2[0]),
@@ -837,15 +837,15 @@ TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_2(int8_t* __restrict__ inp
 #ifdef __cplusplus
 extern "C"
 #endif
-TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_1(int8_t* __restrict__ inputData, int8_t* __restrict__ outputData, uint8_t* __restrict__ global_const_workspace_14_var, uint8_t* __restrict__ global_workspace_15_var) {
+TVM_DLL int32_t tvmgen_default_ti_npu_convolve1x1NHWC_3(int8_t* __restrict__ inputData, int8_t* __restrict__ outputData, uint8_t* __restrict__ global_const_workspace_26_var, uint8_t* __restrict__ global_workspace_27_var) {
   {
     tinie_sublayers_data[0] = (TINIE_layer_t) {
       sizeof(PWCONV_MMR_3)/sizeof(PWCONV_MMR_3[0]),
       sizeof(PWCONV_PARAMS_3)/sizeof(PWCONV_PARAMS_3[0]),
-      sizeof(PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS)/sizeof(PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS[0]),
+      sizeof(PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS)/sizeof(PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS[0]),
       PWCONV_MMR_3,
       PWCONV_PARAMS_3,
-      PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS,
+      PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS,
       inputData,
       NULL,
       outputData,

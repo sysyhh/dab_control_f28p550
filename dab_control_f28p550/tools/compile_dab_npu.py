@@ -21,8 +21,8 @@ def main():
     parser.add_argument("--sdk", type=Path, default=Path("E:/Software_Download/ti/c2000/C2000Ware_DigitalPower_SDK_5_05_01_00/c2000ware"))
     parser.add_argument("--out", type=Path, default=APP / "model/generated/npu")
     parser.add_argument("--detail-profile", action="store_true", help="Enable intrusive stage timing; off for performance comparison")
-    parser.add_argument("--optimization-level", type=int, choices=range(2), default=1,
-                        help="0: original runtime; 1: checked hidden-layer identity")
+    parser.add_argument("--optimization-level", type=int, choices=range(3), default=2,
+                        help="0: original; 1: hidden identity; 2: packed transitions")
     args = parser.parse_args()
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from prepare_npu_conv import prepare
@@ -79,13 +79,19 @@ def main():
         "  tvmgen_default_finished = 1;",
         "  DAB_NN_noteNpuCompletion(); /* Final output is ready; stamp before publication. */\n  tvmgen_default_finished = 1;")
     (output / "lib1.reference.c").write_text(code, encoding="utf-8")
-    from patch_npu_runtime import instrument, instrument_driver, hidden_identity
+    from patch_npu_runtime import instrument, instrument_driver, hidden_identity, packed_transitions
     if args.optimization_level >= 1:
         code = hidden_identity(code, (output / "lib0.c").read_text())
+    if args.optimization_level >= 2:
+        code = packed_transitions(code)
     code = instrument(code, args.detail_profile)
     runtime.write_text(code, encoding="utf-8")
     import tvm
     root = Path(tvm.__file__).parent
+    if args.optimization_level >= 2:
+        packing=(root / "standalone_crt/include/tvm/runtime/contrib/tvm_tinie_c28.h").read_text()
+        if "__byte(packed, i) = to_pack[i];" not in packing or "unpacked[i] = __byte(to_unpack, i);" not in packing:
+            raise RuntimeError("Unexpected TI C28 packing semantics")
     rebuild = [str(compiler), "--compile_only", "--abi=eabi", "-O3", "--opt_for_speed=5",
                "--c99", "-v28", "-ml", "-mt", "--gen_func_subsections", "--float_support=fpu32"]
     rebuild += [f"--include_path={p.resolve()}" for p in includes + [APP, root / "3rdparty/tinie-api", root / "standalone_crt/include"]]

@@ -52,6 +52,19 @@ volatile int32_t tinie_curr_sublayer __attribute__((weak));
 volatile int32_t tinie_num_sublayers __attribute__((weak));
 void (*tinie_sublayer_postproc)(void) __attribute__((weak));
 volatile int32_t tvmgen_default_finished;
+TVM_DLL int32_t dab_npu_copy_words(uint16_t* source, uint16_t* destination, uint16_t words) {
+  /* C28 一个存储单元包含两个 8 位通道；保持原目标缓冲区，避免下一层输入和输出重叠。 */
+
+#if DAB_NPU_DETAIL_PROFILE
+  DAB_NN_traceBegin(DAB_NPU_PACK);
+#endif
+  for (uint16_t i = 0; i < words; ++i) destination[i] = source[i];
+
+#if DAB_NPU_DETAIL_PROFILE
+  DAB_NN_traceEnd(DAB_NPU_PACK);
+#endif
+  return 0;
+}
 void tvmgen_default_IRQHandlerHelper();
 TINIE_layer_t* __attribute__((weak)) tinie_sublayers;
 __attribute__((weak)) void tinie_sublayer_IRQHandler() {
@@ -107,14 +120,14 @@ static uint8_t* global_workspace_1_var;
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_14_let;
+  static void* sid_15_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_13_let;
+  static void* sid_14_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -135,6 +148,62 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
+  static void* sid_6_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_5_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_12_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_13_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_3_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_1_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_7_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_16_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
   static void* sid_9_let;
 #ifdef __cplusplus
 } // extern "C"
@@ -149,48 +218,6 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_7_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_12_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_6_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_15_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_5_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_3_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
   static void* sid_4_let;
 #ifdef __cplusplus
 } // extern "C"
@@ -198,21 +225,7 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_1_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
   static void* sid_2_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_16_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -524,42 +537,36 @@ TVM_DLL void tvmgen_default_IRQHandlerHelper() {
   }
 switch(tinie_curr_layer) {
 case 0:
+   sid_15_let = (&(global_workspace_1_var[16]));
    sid_14_let = (&(global_workspace_1_var[0]));
-   sid_13_let = (&(global_workspace_1_var[16]));
    sid_11_let = (&(global_workspace_1_var[16]));
    sid_10_let = (&(global_workspace_1_var[32]));
+   sid_6_let = (&(global_workspace_1_var[0]));
+   sid_5_let = (&(global_workspace_1_var[32]));
+   sid_12_let = (&(global_workspace_1_var[0]));
+   sid_13_let = (&(global_workspace_1_var[16]));
+   sid_3_let = (&(global_workspace_1_var[32]));
+   sid_1_let = (&(global_workspace_1_var[16]));
+   sid_7_let = (&(global_workspace_1_var[32]));
+   sid_16_let = (&(global_workspace_1_var[0]));
    sid_9_let = (&(global_workspace_1_var[0]));
    sid_8_let = (&(global_workspace_1_var[16]));
-   sid_7_let = (&(global_workspace_1_var[32]));
-   sid_12_let = (&(global_workspace_1_var[0]));
-   sid_6_let = (&(global_workspace_1_var[0]));
-   sid_15_let = (&(global_workspace_1_var[16]));
-   sid_5_let = (&(global_workspace_1_var[32]));
-   sid_3_let = (&(global_workspace_1_var[32]));
    sid_4_let = (&(global_workspace_1_var[0]));
-   sid_1_let = (&(global_workspace_1_var[16]));
    sid_2_let = (&(global_workspace_1_var[0]));
-   sid_16_let = (&(global_workspace_1_var[0]));
   tvmgen_default_fused_reshape_multiply_add_floor_clip_cast_reshape(features_buffer_var, sid_1_let, global_const_workspace_0_var, global_workspace_1_var);
   tvmgen_default_fused_tinie_c28_pack(sid_1_let, sid_2_let, global_const_workspace_0_var, global_workspace_1_var);
   tvmgen_default_ti_npu_convolve1x1NHWC_0(sid_2_let, sid_3_let, global_const_workspace_0_var, global_workspace_1_var);
   return;
 case 1:
-  tvmgen_default_fused_tinie_c28_unpack(sid_3_let, sid_4_let, global_const_workspace_0_var, global_workspace_1_var);
-  tvmgen_default_fused_cast_cast_multiply_nn_relu_multiply_add_floor_clip_cast(sid_4_let, sid_5_let, global_const_workspace_0_var, global_workspace_1_var);
-  tvmgen_default_fused_tinie_c28_pack_1(sid_5_let, sid_6_let, global_const_workspace_0_var, global_workspace_1_var);
+  dab_npu_copy_words((uint16_t*)sid_3_let, (uint16_t*)sid_6_let, 16U);
   tvmgen_default_ti_npu_convolve1x1NHWC_1(sid_6_let, sid_7_let, global_const_workspace_0_var, global_workspace_1_var);
   return;
 case 2:
-  tvmgen_default_fused_tinie_c28_unpack_1(sid_7_let, sid_8_let, global_const_workspace_0_var, global_workspace_1_var);
-  tvmgen_default_fused_cast_cast_multiply_nn_relu_multiply_add_floor_clip_cast_1(sid_8_let, sid_9_let, global_const_workspace_0_var, global_workspace_1_var);
-  tvmgen_default_fused_tinie_c28_pack_2(sid_9_let, sid_10_let, global_const_workspace_0_var, global_workspace_1_var);
+  dab_npu_copy_words((uint16_t*)sid_7_let, (uint16_t*)sid_10_let, 8U);
   tvmgen_default_ti_npu_convolve1x1NHWC_2(sid_10_let, sid_11_let, global_const_workspace_0_var, global_workspace_1_var);
   return;
 case 3:
-  tvmgen_default_fused_tinie_c28_unpack_1(sid_11_let, sid_12_let, global_const_workspace_0_var, global_workspace_1_var);
-  tvmgen_default_fused_cast_cast_multiply_nn_relu_multiply_add_floor_clip_cast_2(sid_12_let, sid_13_let, global_const_workspace_0_var, global_workspace_1_var);
-  tvmgen_default_fused_tinie_c28_pack_2(sid_13_let, sid_14_let, global_const_workspace_0_var, global_workspace_1_var);
+  dab_npu_copy_words((uint16_t*)sid_11_let, (uint16_t*)sid_14_let, 8U);
   tvmgen_default_ti_npu_convolve1x1NHWC_3(sid_14_let, sid_15_let, global_const_workspace_0_var, global_workspace_1_var);
   return;
 case 4:

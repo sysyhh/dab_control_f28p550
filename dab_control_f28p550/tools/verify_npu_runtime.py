@@ -42,7 +42,33 @@ def main():
  assert(a[0]==0xA5 && a[{n+1}]==0xA5);
  assert(memcmp(a+1,input,{n})==0);
 }}\n'''
-    body+='puts("PASS: generated C hidden-layer identity; all 256 values at all 64 channel positions; boundary guards"); return 0;}\n'
+    body+='puts("PASS: generated C hidden-layer identity; all 256 values at all 64 channel positions; boundary guards");\n'
+    if 'int32_t dab_npu_copy_words(' in current:
+        code+=extract(current,'dab_npu_copy_words','copy_words')+'\n'
+        # Exhaust every possible packed 16-bit word. Actual old unpack and pack
+        # functions are compiled against C28 storage semantics, not host bytes.
+        code+='''
+#define uint8_t uint16_t
+static void c28_unpack_unsigned(uint16_t *src,uint16_t *dst,int i) {dst[i]=(src[i/2]>>((i%2)*8))&255;}
+static void c28_pack(uint16_t *src,uint16_t *dst,int i) {unsigned shift=(i%2)*8; dst[i/2]=(uint16_t)((dst[i/2]&~(255U<<shift))|((src[i]&255U)<<shift));}
+'''
+        for suffix in ('','_1'):
+            code+=extract(original,'tvmgen_default_fused_tinie_c28_unpack'+suffix,'unpack'+suffix)+'\n'
+        for suffix in ('_1','_2'):
+            code+=extract(original,'tvmgen_default_fused_tinie_c28_pack'+suffix,'pack'+suffix)+'\n'
+        code+='#undef uint8_t\n'
+        body+='''{ uint16_t src[18],old[18],now[18],expanded[32]; unsigned value,words,j;
+for(words=8;words<=16;words+=8) for(value=0;value<65536;++value) {
+ for(j=0;j<18;++j) {src[j]=(uint16_t)(value+j*257U); old[j]=now[j]=0xA55A;}
+ if(words==16) {unpack(src+1,expanded,0,0); pack_1(expanded,old+1,0,0);}
+ else {unpack_1(src+1,expanded,0,0); pack_2(expanded,old+1,0,0);}
+ copy_words(src+1,now+1,(uint16_t)words);
+ assert(memcmp(old,now,sizeof(old))==0);
+ assert(now[0]==0xA55A && now[words+1]==0xA55A);
+ copy_words(now+1,now+1,(uint16_t)words); assert(memcmp(old,now,sizeof(old))==0);
+} puts("PASS: generated packed copy versus original unpack/pack; all 65536 word values; 8/16 words; boundary guards"); }
+'''
+    body+='return 0;}\n'
     with tempfile.TemporaryDirectory(prefix='dab_npu_verify_') as directory:
         folder=Path(directory)
         (folder/'test.c').write_text(code+body,encoding='utf-8')

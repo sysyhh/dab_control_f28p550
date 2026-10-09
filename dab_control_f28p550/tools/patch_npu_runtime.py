@@ -19,6 +19,31 @@ def hidden_identity(code, constants):
         code=function(code,IDENTITY+suffix,replace)
     return code
 
+def packed_transitions(code):
+    """Keep original next-layer buffers; copying avoids input/output aliasing."""
+    offsets={name:int(offset) for name,offset in re.findall(r'(sid_\d+_let) = \(&\(global_workspace_1_var\[(\d+)\]\)\);',code)}
+    for layer,words in [(1,16),(2,8),(3,8)]:
+        begin=code.index(f'case {layer}:'); end=code.index(f'case {layer+1}:',begin)
+        block=code[begin:end]
+        lines=block.splitlines()
+        calls=[line.strip() for line in lines if line.strip().startswith('tvmgen_default_')]
+        if len(calls)!=4 or 'unpack' not in calls[0] or IDENTITY not in calls[1] or 'pack_' not in calls[2] or 'convolve' not in calls[3]:
+            raise RuntimeError('Unexpected layer transition sequence')
+        source=re.search(r'\((sid_\d+_let),',calls[0])[1]
+        destination=re.search(r'\(sid_\d+_let, (sid_\d+_let),',calls[2])[1]
+        if 0 < abs(offsets[source]-offsets[destination]) < words:
+            raise RuntimeError('Packed transition buffers overlap')
+        replaced=f'  dab_npu_copy_words((uint16_t*){source}, (uint16_t*){destination}, {words}U);'
+        block=block.replace('\n'.join(lines[1:4]),replaced)
+        code=code[:begin]+block+code[end:]
+    helper='''TVM_DLL int32_t dab_npu_copy_words(uint16_t* source, uint16_t* destination, uint16_t words) {
+  /* C28 一个存储单元包含两个 8 位通道；保持原目标缓冲区，避免下一层输入和输出重叠。 */
+'''+trace('DAB_NN_traceBegin(DAB_NPU_PACK)')+'''  for (uint16_t i = 0; i < words; ++i) destination[i] = source[i];
+'''+trace('DAB_NN_traceEnd(DAB_NPU_PACK)')+'''  return 0;
+}
+'''
+    return code.replace('void tvmgen_default_IRQHandlerHelper();',helper+'void tvmgen_default_IRQHandlerHelper();',1)
+
 def function(code, name, transform):
     match=re.search(r'\b'+re.escape(name)+r'\([^;{}]*\)\s*\{',code)
     if not match: raise RuntimeError("Missing generated function: "+name)
