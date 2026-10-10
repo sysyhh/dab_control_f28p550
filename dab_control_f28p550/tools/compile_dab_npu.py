@@ -29,6 +29,9 @@ def main():
     model = prepare()
     import onnx
     from importlib.metadata import version
+    nnc_version = version("ti_mcu_nnc")
+    if nnc_version not in ("2.1.0", "2.1.1"):
+        raise RuntimeError("This integration has only checked NNC 2.1.0/2.1.1; review the runtime and SDK contract before upgrading")
     network = onnx.load(str(model))
     onnx.checker.check_model(network)
     inp, out = network.graph.input, network.graph.output
@@ -108,10 +111,18 @@ def main():
     subprocess.run(rebuild + [str(runtime)], cwd=output, env=env, check=True, capture_output=True)
     driver = output / "dab_tinie_c28.c"
     driver_code=instrument_driver((root / "3rdparty/tinie-api/hard/src/tinie_c28.c").read_text(), args.detail_profile)
-    if args.optimization_level >= 4:
+    if args.optimization_level >= 4 and nnc_version == "2.1.0":
         driver_code=load_unroll(driver_code)
+    if nnc_version == "2.1.1":
+        # 保留新版 TI 的四项展开装载；不再套用仅适用于 2.1.0 的循环替换。
+        if (driver_code.count('static void TINIE_mem_write(')!=1 or
+                'TINIE_mem_write(params, layer->num_params, layer->params);' not in driver_code or
+                'TINIE_mem_write(ins, layer->num_ins, layer->ins);' not in driver_code):
+            raise RuntimeError("Unexpected NNC 2.1.1 loading implementation")
     if args.optimization_level >= 3:
-        driver_code=ram_functions(driver_code,["TINIE_setup","TINIE_start","write_configMMR","TINIE_clearInterruptACK"])
+        driver_names=["TINIE_setup","TINIE_start","write_configMMR","TINIE_clearInterruptACK"]
+        if nnc_version == "2.1.1": driver_names.append("TINIE_mem_write")
+        driver_code=ram_functions(driver_code,driver_names)
     driver.write_text(driver_code, encoding="utf-8", newline="\n")
     result=subprocess.run(rebuild + ["--output_file=tinie_c28.obj", str(driver)], cwd=output, env=env, capture_output=True)
     if result.returncode:
@@ -123,7 +134,7 @@ def main():
     subprocess.run([str(compiler.parent / "ar2000.exe"), "r", "mod.a"]+objects,
                    cwd=output, check=True, capture_output=True)
     for obj in objects: (output / obj).unlink()
-    manifest = {"model": model.name, "model_sha256": sha(model), "ti_mcu_nnc": version("ti_mcu_nnc"),
+    manifest = {"model": model.name, "model_sha256": sha(model), "ti_mcu_nnc": nnc_version,
                 "target": "c, ti-npu", "cgt": str(args.cgt), "sdk": str(args.sdk), "cross_options": cross,
                 "input_shape": [1, 16], "output_shape": [1, 1, 1, 4], "io_dtype": "float32",
                 "input": "features[1]=Vin/25-4.6; all other features zero; Vin 90..140 V",
@@ -131,6 +142,7 @@ def main():
                 "hardware_stages": 4, "completion_hook": "after final output dequantization, before finished=1",
                 "detail_profile": args.detail_profile,
                 "optimization_level": args.optimization_level,
+                "loading_implementation": "ti_2.1.1_native" if nnc_version == "2.1.1" else ("dab_unroll4" if args.optimization_level >= 4 else "ti_2.1.0_original"),
                 "ram_constant_symbols": constant_symbols,
                 "runtime_sha256": sha(runtime), "driver_sha256": sha(driver),
                 "kernel_sha256": sha(output / "lib2.c"),

@@ -364,7 +364,7 @@ NPU 运行采用一组长期存在的输入、输出和描述对象，一次只�
 | `dab_float_baseline.onnx` | FLOAT32、输入 `[1,3]`、输出 `[1,4]`，原权重基准 | 还不能；需要 TI 支持的模型编译过程 |
 | `dab_model_manifest.json` | 模型结构、单位、文件摘要和既有对照结果 | 用于追踪版本 |
 | `validation_vectors_NOT_calibration.csv` | Vin 20～140，步长 1，共 121 个回归向量 | 不是代表性校准数据，也不是训练范围声明 |
-| `generated/npu/tvmgen_default.h` | TI NNC 2.1.0 真实生成，输入 16 项 FLOAT32 | 已接入专用配置，待实板核对 |
+| `generated/npu/tvmgen_default.h` | TI NNC 2.1.1 真实生成，输入 16 项 FLOAT32 | 已接入专用配置；Vin=90 V 已核对，全范围精度仍待验收 |
 | `generated/npu/mod.a` | DAB16 模型库，四层矩阵运算使用 NPU | 已编译链接；仅核对/计时，禁止功率启动 |
 
 当前 FPU 与原表达式在电脑上对照的最大绝对误差为 **3.91155481×10⁻⁷**；ONNX 清单记录此前独立 ONNX 对照结果，不应把两种验证误差混为一项。都未证明真实 NPU 的数值或运行速度。

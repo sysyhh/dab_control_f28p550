@@ -72,16 +72,25 @@ def ram_constants(code):
     names=arrays+headers
     return '\n'.join(f'#pragma DATA_SECTION({name}, ".dab_npu_const")' for name in names)+'\n'+code,names
 
+def output_stage(name):
+    """2.1.0 ends at cast_multiply; 2.1.1 appends _reshape to the same final float restore."""
+    return name.endswith('_fused_cast_multiply') or name.endswith('_fused_cast_multiply_reshape')
+
 def instrument(code, enabled):
     names=re.findall(r'\b(tvmgen_default_fused_\w+)\([^;{}]*\)\s*\{',code)
+    outputs=[name for name in names if output_stage(name)]
+    if len(outputs)!=1:
+        raise RuntimeError('Expected one final float output stage, found: '+', '.join(outputs))
     for name in names:
         slot=('DAB_NPU_PACK' if '_tinie_c28_pack' in name else
               'DAB_NPU_UNPACK' if '_tinie_c28_unpack' in name else
               'DAB_NPU_CONVERT' if '_cast_cast_multiply_nn_relu' in name else
               'DAB_NPU_INPUT' if '_reshape_multiply_add_floor' in name else
-              'DAB_NPU_OUTPUT' if name.endswith('_fused_cast_multiply') else None)
+              'DAB_NPU_OUTPUT' if output_stage(name) else None)
         if slot:
-            code=function(code,name,lambda body: trace('DAB_NN_traceBegin('+slot+')')+body.replace('  return 0;',trace('DAB_NN_traceEnd('+slot+')')+'  return 0;'))
+            code=function(code,name,lambda body, slot=slot: trace('DAB_NN_traceBegin('+slot+')')+body.replace('  return 0;',trace('DAB_NN_traceEnd('+slot+')')+'  return 0;'))
+    if code.count('DAB_NN_traceBegin(DAB_NPU_OUTPUT)')!=1:
+        raise RuntimeError('Final float output stage was not instrumented')
     code=function(code,'tvmgen_default_IRQHandler',lambda body:trace('DAB_NN_traceEnd(DAB_NPU_WAIT0 + tinie_curr_layer - 1)')+body)
     return '#define DAB_NPU_DETAIL_PROFILE '+str(int(enabled))+'\n#include "dab_npu_trace.h"\n'+code
 

@@ -1,7 +1,7 @@
 {
   "model": "dab_npu_tinpu_conv.onnx",
   "model_sha256": "502716d85fb9872aa234e7fd2ca234b013f3ce92a3762a472d3ea7f3c79a9a08",
-  "ti_mcu_nnc": "2.1.0",
+  "ti_mcu_nnc": "2.1.1",
   "target": "c, ti-npu",
   "cgt": "E:\\Software_Download\\ti\\ccs2020\\ccs\\tools\\compiler\\ti-cgt-c2000_22.6.2.LTS",
   "sdk": "E:\\Software_Download\\ti\\c2000\\C2000Ware_DigitalPower_SDK_5_05_01_00\\c2000ware",
@@ -29,6 +29,7 @@
   "completion_hook": "after final output dequantization, before finished=1",
   "detail_profile": false,
   "optimization_level": 5,
+  "loading_implementation": "ti_2.1.1_native",
   "ram_constant_symbols": [
     "PWCONV_PARAMS",
     "PWCONV_MMR",
@@ -41,9 +42,9 @@
     "PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS",
     "PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS"
   ],
-  "runtime_sha256": "efbecd217a93b78969497b3104d9f2013d0c7671ac17d19aa3648919bb2538cd",
-  "driver_sha256": "33c489cdf2719ad4f418a40c25ab457ac8d9279173366a8c923ba3c660f1e55a",
-  "kernel_sha256": "ded6080e24ff5636ad8447e6336c8869fc2a3c659a8fc56a52aab1298d570bff",
-  "library_sha256": "89c0fb072c2b9b131239eba50310626d949151ef4f89c20d8b616f912538a2fe",
-  "header_sha256": "932b5658528fd69dc4872f8e8b86426992209857558b62859f002c80d28c0153"
+  "runtime_sha256": "af5f1c56faaeb5704a2208d11f918f2a6d8e14d41b410d15b90c0dba9ba9b762",
+  "driver_sha256": "aa28d08f883377bbac9352220402c690bc6e3cd7ae53efc619ad60cd922f044d",
+  "kernel_sha256": "889f91251042f3a6d7b6b23f94ebdcca779b24e631c19a15a04d5f122a39e1c2",
+  "library_sha256": "9fb39378b0b1a01e33c42c1d58d0e9a822f2b2e7b89349d8fa21fe7f36035b3c",
+  "header_sha256": "0f0042043848bacbaaca9e4f9d612b8f1678b3b656b035e22edec8bd4c97d5ac"
 }

@@ -2,7 +2,7 @@
 
 ## 1. 当前交付范围
 
-新增 `CPU1_LAUNCHXL_NPU_FLASH`，已用 TI MCU NNC 2.1.0 和 C2000 CGT 22.6.2.LTS 生成并链接真实 DAB 模型库。四层主要矩阵计算使用 NPU，输入准备、层间数据转换和最终 FLOAT32 输出还原仍由 CPU 完成；Vin=90 V 下已完成实板输出和耗时核对，全范围精度验收仍待完成。
+新增 `CPU1_LAUNCHXL_NPU_FLASH`。当前链接库由 TI MCU NNC 2.1.1 和 C2000 CGT 22.6.2.LTS 生成；P0～P5 的归档耗时使用 NNC 2.1.0。四层主要矩阵计算使用 NPU，输入准备、层间数据转换和最终 FLOAT32 输出还原仍由 CPU 完成；Vin=90 V 下已完成实板输出和耗时核对，全范围精度验收仍待完成。
 
 **当前模型仅用于数值核对和耗时测试，禁止启动功率输出。** 原因是 INT8 量化精度尚不足，不是板卡配置未确认；即使把板确认和自动启动宏置 1，`DAB_Control_start()` 也会返回拒绝码 7。原 `CPU1_LAUNCHXL_FLASH` 继续使用 FPU，其板确认、自动启动和保护门限没有被本次接入改动。
 
@@ -109,19 +109,21 @@ NPU 库在最后一层完成、CPU 输出还原之后，先调用 `DAB_NN_noteNp
 
 ## 7. 重新生成模型库
 
-普通 CCS 编译不需要 Python、PyTorch 或重新量化，交付的 `mod.a` 已可链接。只有修改候选模型或重新生成库时，才需 Python 3.10、`ti_mcu_nnc==2.1.0`、`numpy==1.26.4`、`onnx==1.16.2`、`onnxruntime==1.20.1` 及 TI 编译器/SDK。
+普通 CCS 编译不需要 Python、PyTorch 或重新量化，交付的 `mod.a` 已可链接。只有修改候选模型或重新生成库时，才需 Python 3.10、`ti_mcu_nnc==2.1.1`（归档对照可用 `2.1.0`）、`numpy==1.26.4`、`onnx==1.16.2`、`onnxruntime==1.20.1` 及 TI 编译器/SDK。生成脚本只接受这两个已核对的 NNC 版本。
 
-本机已准备隔离的 Python 3.10 环境，在 `ccs_projects` 目录执行：
+本机有两个隔离的 Python 3.10 环境。当前交付库用 2.1.1 环境，在 `ccs_projects` 目录执行：
 
 ```powershell
-review_20261003/npu_integration_20261009/python310/python.exe dab_control_f28p550/tools/compile_dab_npu.py
+review_20261003/npu_integration_20261009/nnc211_env/python.exe dab_control_f28p550/tools/compile_dab_npu.py --optimization-level 5
 ```
+
+2.1.0 对照环境是 `review_20261003/npu_integration_20261009/python310/python.exe`，命令相同。不要把两套环境的库混放后再沿用旧时间戳。
 
 编译器和 SDK 默认使用本机现有 E 盘路径，可用 `--cgt`、`--sdk` 指定其他安装位置；TI 工具路径不能包含空格。脚本执行等价转换、501 点对照、TI NNC 编译、维度和硬件阶段检查、完成时间钩子写入及库更新，并保存清单。它不会重新训练模型，也不会把模型标记为已通过功率控制验收。
 
 ## 8. 剩余验收与精度改进
 
-耗时优化已提供分级重建、可关闭的分段计时、隐藏层重复运算消除、紧凑数据复制、RAM 运行代码、四项展开装载及 RAM 装载源常量；默认使用级别 5，详细计时关闭。Vin=90 V 下普通版端到端平均 102.89487 μs，比级别 4 的 107.47151 μs 降低约 4.26%，仍为同条件 FPU 的约 3.58 倍；各轮实板数据、验证范围与复测操作见 [NPU 耗时优化记录](NPU_optimization_log_zh.md)。
+耗时优化已提供分级重建、可关闭的分段计时、隐藏层重复运算消除、紧凑数据复制、RAM 运行代码、四项展开装载、RAM 装载源常量，以及 NNC 2.1.1 对照；默认使用级别 5，详细计时关闭。Vin=90 V 下当前普通版端到端平均 99.54510 μs，比同日 P5 的 102.89487 μs 降低约 3.26%，仍为同条件 FPU 的约 3.47 倍。2.1.1 自带四项展开，该降幅不能再与 P4 相加。各轮实板数据、验证范围与复测操作见 [NPU 耗时优化记录](NPU_optimization_log_zh.md)。
 
 本地已通过真实 TI 模型编译、NPU/FPU FLASH 链接、501 点转换等价对照，以及输入适配、范围、异步任务、计时、超时与启动禁止测试。电脑上的接口替身只验证程序逻辑，不能证明开发板实际执行时间或硬件数值。
 

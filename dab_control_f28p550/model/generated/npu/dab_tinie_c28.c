@@ -2,6 +2,7 @@
 #pragma CODE_SECTION(TINIE_start, ".dab_npu_ramfunc")
 #pragma CODE_SECTION(write_configMMR, ".dab_npu_ramfunc")
 #pragma CODE_SECTION(TINIE_clearInterruptACK, ".dab_npu_ramfunc")
+#pragma CODE_SECTION(TINIE_mem_write, ".dab_npu_ramfunc")
 #define DAB_NPU_DETAIL_PROFILE 0
 #include "dab_npu_trace.h"
 extern volatile int32_t tinie_curr_layer;
@@ -93,6 +94,39 @@ static inline uint8_t find_and_clear_lsb_in_31b(uint32_t *val)
 }
 
 
+/* Optimized TINIE memory write.  Will switch to C2000Ware APIs once released. */
+/* - Step 1: Use down-counting loop, use direct pointer arithmetic
+ *    - Reduced per uint32_t latency from ~17 cycles to ~13 cycles
+ *  - Step 2: Unroll loop by 4, triggered compiler to generate RPTB block for loop
+ *    - Per uint32_t latency furthur reduced to ~6.27 cycles (i.e., ~1.57 cycles per byte)
+ *    - Unrolling loop by 8 does not produce furthur improvement, so stay with unrolling by 4
+ */
+static void TINIE_mem_write(volatile uint32_t *dst, uint32_t num, const uint32_t *src)
+{
+  int count_by_4 = num >> 2;
+  int count_by_1 = num & 0x3;
+  if (count_by_4 > 0)
+  {
+    while (count_by_4--)
+    {
+      * dst    = *src++;
+      *(dst+2) = *src++;
+      *(dst+4) = *src++;
+      *(dst+6) = *src++;
+        dst   += 8;       /* C28 16-bit addressable, access NPU memory accordingly */
+    }
+  }
+  if (count_by_1 > 0)
+  {
+    while (count_by_1--)
+    {
+      *dst++ = *src++;
+       dst++;             /* C28 16-bit addressable, access NPU memory accordingly */
+    }
+  }
+}
+
+
 static void write_configMMR(TINIE_layer_t *layer)
 {
     volatile uint32_t *mmrs = (uint32_t *) (TINIE_BASE_ADDR + TINIE_MMR_OFS);
@@ -102,8 +136,8 @@ static void write_configMMR(TINIE_layer_t *layer)
     {
         // uncompressed, all entries available
         mmrs[TINIE_CTL2_INDEX * 2] = layer->mmrs[TINIE_CTL2_INDEX];
-        for (int i = TINIE_CTL0_INDEX; i < TINIE_MMR0_INDEX; i++)
-            mmrs[i * 2] = layer->mmrs[i];
+        TINIE_mem_write(mmrs + TINIE_CTL0_INDEX * 2, TINIE_MMR0_INDEX - TINIE_CTL0_INDEX,
+                        layer->mmrs + TINIE_CTL0_INDEX);
         if (layer->residual_fmap == NULL)
             mmrs[TINIE_MMR2_INDEX * 2] = layer->mmrs[TINIE_MMR2_INDEX];
         mmrs[TINIE_MMR3_INDEX * 2] = layer->mmrs[TINIE_MMR3_INDEX];
@@ -162,21 +196,6 @@ static void write_configMMR(TINIE_layer_t *layer)
 }
 
 
-
-#pragma FUNC_ALWAYS_INLINE(dab_npu_load_words)
-static int32_t dab_npu_load_words(volatile uint32_t* destination, const uint32_t* source, uint32_t count) {
-    /* 保留 TI 的隔一个 32 位位置写入规则；按原顺序写四项，减少循环判断。 */
-    while (count >= 4U) {
-        destination[0] = source[0];
-        destination[2] = source[1];
-        destination[4] = source[2];
-        destination[6] = source[3];
-        source += 4; destination += 8; count -= 4U;
-    }
-    /* 处理不足四项的尾部，禁止越界读或写相邻保留位置。 */
-    while (count != 0U) { *destination = *source++; destination += 2; --count; }
-    return 0;
-}
 void TINIE_setup(TINIE_layer_t *layer)
 {
 
@@ -185,7 +204,10 @@ void TINIE_setup(TINIE_layer_t *layer)
 #endif
     // Step 1 - write to PARAMS memory
     volatile uint32_t *params = (uint32_t *) (TINIE_BASE_ADDR + TINIE_PARAMS_OFS);
-    dab_npu_load_words(params, layer->params, layer->num_params);
+    if (layer->num_params > 0)
+    {
+        TINIE_mem_write(params, layer->num_params, layer->params);
+    }
 
 
 #if DAB_NPU_DETAIL_PROFILE
@@ -197,7 +219,10 @@ void TINIE_setup(TINIE_layer_t *layer)
 #endif
     // Step 2 - write to INS memory
     volatile uint32_t *ins = (uint32_t *) (TINIE_BASE_ADDR + TINIE_INS_MEM_OFS);
-    dab_npu_load_words(ins, layer->ins, layer->num_ins);
+    if (layer->num_ins > 0)
+    {
+        TINIE_mem_write(ins, layer->num_ins, layer->ins);
+    }
 
 
 #if DAB_NPU_DETAIL_PROFILE

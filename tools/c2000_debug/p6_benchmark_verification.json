@@ -1,0 +1,128 @@
+{
+  "ok": true,
+  "date": "2026-10-10",
+  "compiler": "ti_mcu_nnc 2.1.1",
+  "optimization_level": 5,
+  "loading_implementation": "ti_2.1.1_native",
+  "detail_profile_for_official_speed": false,
+  "model_sha256": "502716d85fb9872aa234e7fd2ca234b013f3ce92a3762a472d3ea7f3c79a9a08",
+  "successful_real_board_batches": 10,
+  "nnc_2_1_1_batches": 7,
+  "same_day_p5_baseline_batches": 3,
+  "formal_samples_per_batch": 1000,
+  "warmup_per_batch": 10,
+  "vin": 90,
+  "timer_hz": 150000000,
+  "reports": [
+    {
+      "label": "p6_p5_baseline",
+      "summary": "tools/c2000_debug/benchmarks/20261010_120316_p6_p5_baseline/summary.json",
+      "compiler": "2.1.0",
+      "batches": 3,
+      "end_to_end_mean_us": [
+        102.8948745727539,
+        102.8948745727539,
+        102.8948745727539
+      ],
+      "all_checks_passed": true
+    },
+    {
+      "label": "p6_nnc211_release",
+      "summary": "tools/c2000_debug/benchmarks/20261010_121027_p6_nnc211_release/summary.json",
+      "compiler": "2.1.1",
+      "detail_profile": false,
+      "batches": 3,
+      "end_to_end_mean_us": [
+        99.54510498046875,
+        99.54510498046875,
+        99.54510498046875
+      ],
+      "all_checks_passed": true
+    },
+    {
+      "label": "p6_nnc211_profile",
+      "summary": "tools/c2000_debug/benchmarks/20261010_162806_p6_nnc211_profile/summary.json",
+      "compiler": "2.1.1",
+      "detail_profile": true,
+      "batches": 3,
+      "end_to_end_mean_us": [
+        117.4227066040039,
+        117.4227066040039,
+        117.4227066040039
+      ],
+      "all_checks_passed": true
+    },
+    {
+      "label": "p6_nnc211_final",
+      "summary": "tools/c2000_debug/benchmarks/20261010_163001_p6_nnc211_final/summary.json",
+      "compiler": "2.1.1",
+      "detail_profile": false,
+      "batches": 1,
+      "end_to_end_mean_us": [
+        99.54510498046875
+      ],
+      "all_checks_passed": true
+    }
+  ],
+  "ordinary_timing_mean_us": {
+    "prepare": 1.8933664560317993,
+    "fpuForward": 0,
+    "npuSubmit": 39.32899475097656,
+    "npuObserved": 94.94402313232422,
+    "npuCompletion": 92.74000549316406,
+    "publish": 2.6610465049743652,
+    "endToEnd": 99.54510498046875
+  },
+  "same_day_p5_ordinary_timing_mean_us": {
+    "npuSubmit": 41.5342903137207,
+    "npuCompletion": 96.05239868164062,
+    "endToEnd": 102.8948745727539
+  },
+  "p5_to_p6_reduction_percent": {
+    "npuSubmit": 5.309578052464349,
+    "npuCompletion": 3.448527297538162,
+    "endToEnd": 3.255526192333938
+  },
+  "p6_over_fpu_end_to_end_ratio": 3.46659859712175,
+  "reduction_still_required_to_match_fpu_percent": 71.15327973563825,
+  "profile_stage_mean_us": {
+    "input": 14.496797561645508,
+    "packedCopyAndPack": 3.0337929725646973,
+    "unpack": 0.6133333444595337,
+    "hiddenConvert": 0,
+    "parameters": 25.531465530395508,
+    "instructions": 19.781431198120117,
+    "registers": 10.124306678771973,
+    "layer0Wait": 3.4962661266326904,
+    "layer1Wait": 5.637279510498047,
+    "layer2Wait": 4.8655595779418945,
+    "layer3Wait": 3.3384530544281006,
+    "output": 0.41999998688697815
+  },
+  "profile_versus_p5_stage_mean_us": {
+    "parameters": -2.4099140167236328,
+    "instructions": -1.6816482543945312,
+    "registers": 1.3715476989746094,
+    "input": -0.00508880615234375,
+    "layer_wait_sum": -0.365720272064209,
+    "endToEnd": -3.613731384277344
+  },
+  "output_stage_hook": {
+    "function": "tvmgen_default_fused_cast_multiply_reshape",
+    "samples": 1000,
+    "last_calls": [1, 4, 1, 0, 4, 4, 4, 1, 1, 1, 1, 1],
+    "invalid_pairs": 0
+  },
+  "restored_release_matches_measured_firmware": true,
+  "restored_firmware_sha256": "a57d7cbbbd52ba787d87b7f96c8dedbdd85ee8989bd7dd7475edb26f4d99ca9e",
+  "final_library_sha256": "9fb39378b0b1a01e33c42c1d58d0e9a822f2b2e7b89349d8fa21fe7f36035b3c",
+  "profile_library_sha256": "05a0a95067fc8fb0a070137b5428b8715ffd10032dfdcdd2d6d15217e979ffab",
+  "final_detail_profile": false,
+  "static_comparison": "review_20261003/npu_integration_20261009/p6_constant_comparison.json",
+  "do_not_add_to_p4_or_p5_gains": "NNC 2.1.1 already contains its own four-wide TINIE_mem_write; that overlaps the P4 unroll",
+  "known_vin90_output": [0.4375, 0.25, 0, 1],
+  "power_control_approved": false,
+  "sdk_unchanged": "C2000Ware_DigitalPower_SDK_5_05_01_00",
+  "nnc_2_1_2_not_in_scope": true,
+  "scope": "Vin=90 only; detail profile is diagnostic; no standalone power-cycle test or full-range hardware precision acceptance"
+}

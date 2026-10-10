@@ -1,9 +1,11 @@
 {
   "date": "2026-10-10",
-  "reference_commit": "b04537d",
-  "board_retested_in_this_review": false,
-  "manifest_sha256": "9bdd6dc0500d66cd1f6726025bf9bc6f14159190e9961ed6e1585ba27cecee21",
+  "p5_reference_commit": "b04537d",
+  "delivered_ti_mcu_nnc": "2.1.1",
+  "board_retested_for_nnc_2_1_1": true,
+  "manifest_sha256": "e7f4580e448ea4b568887a620a253d7eea01d9da3183e36fbc6a36faa5f402ce",
   "evidence": [
+    "tools/c2000_debug/p6_benchmark_verification.json",
     "tools/c2000_debug/p5_benchmark_verification.json",
     "tools/c2000_debug/benchmarks/20261009_225422_fpu_flash/summary.json"
   ],
@@ -56,15 +58,36 @@
   "ordinary_mean_us": {
     "fpu_forward": 23.590925216674805,
     "fpu_end_to_end": 28.715497970581055,
-    "npu_completion": 96.05239868164062,
-    "npu_end_to_end": 102.8948745727539
+    "npu_completion": 92.74000549316406,
+    "npu_end_to_end": 99.54510498046875
   },
   "ordinary_min_us": {
-    "npuSubmit": 37.89333333333333,
-    "npuCompletion": 85.68,
-    "endToEnd": 101.19333333333333
+    "npuSubmit": 36.60666666666667,
+    "npuCompletion": 83.23333333333333,
+    "endToEnd": 98.84
   },
   "profile_stage_mean_us": {
+    "input": 14.496797561645508,
+    "packedCopyAndPack": 3.0337929725646973,
+    "unpack": 0.6133333444595337,
+    "hiddenConvert": 0,
+    "parameters": 25.531465530395508,
+    "instructions": 19.781431198120117,
+    "registers": 10.124306678771973,
+    "layer0Wait": 3.4962661266326904,
+    "layer1Wait": 5.637279510498047,
+    "layer2Wait": 4.8655595779418945,
+    "layer3Wait": 3.3384530544281006,
+    "output": 0.41999998688697815
+  },
+  "profile_end_to_end_us": 117.4227066040039,
+  "profile_extra_end_to_end_us": 17.877601623535156,
+  "profile_load_sum_us": 45.312896728515625,
+  "profile_wait_sum_us": 17.337558269500732,
+  "profile_load_fraction": 0.38589552258686,
+  "reduction_needed_to_match_current_fpu_fraction": 0.7115327973563825,
+  "p5_archived_ordinary_end_to_end_us": 102.8948745727539,
+  "p5_archived_profile_stage_mean_us": {
     "input": 14.501886367797852,
     "packedCopyAndPack": 2.9260663986206055,
     "unpack": 0.6133333444595337,
@@ -78,12 +101,7 @@
     "layer3Wait": 3.370206356048584,
     "output": 0.41999998688697815
   },
-  "profile_end_to_end_us": 121.03643798828125,
-  "profile_extra_end_to_end_us": 18.141563415527344,
-  "profile_load_sum_us": 49.40445899963379,
-  "profile_wait_sum_us": 17.70327854156494,
-  "profile_load_fraction": 0.4081783950418066,
-  "reduction_needed_to_match_current_fpu_fraction": 0.7209239226947385,
+  "nnc_2_1_1_end_to_end_reduction_versus_p5": 0.03255526192333935,
   "output_quantization_step": 0.015625,
   "period_count_step_at_base_2500": 39.0625,
   "arithmetic_padding_candidate_only": {
@@ -95,13 +113,17 @@
       4
     ],
     "macs": 640,
-    "compiled_or_hardware_verified": false
+    "report": "dab_control_f28p550/model/narrow_4x32x12x8x4_offline.json",
+    "float_equivalent": true,
+    "npu_layers_offloaded": 4,
+    "output_grid": "1/64",
+    "hardware_measured": false
   },
   "limitations": [
     "profile timing includes instrumentation and interrupts",
     "profile stages cannot be subtracted from ordinary timing to predict a lower bound",
     "minimum timing is not bare hardware timing",
     "Vin=90 hardware checks do not establish whole-range accuracy",
-    "padding candidate has not been compiled or measured"
+    "narrow padding candidate compiled offline only; quantization error and 1/64 output grid remain"
   ]
 }

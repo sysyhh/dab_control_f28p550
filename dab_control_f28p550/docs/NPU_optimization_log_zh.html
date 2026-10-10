@@ -34,8 +34,13 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <li><a href="#_3">剩余事项</a></li>
 </ul>
 </li>
-<li><a href="#_4">开发板复测方法</a></li>
-<li><a href="#_5">后续轮次的依据</a><ul>
+<li><a href="#p6nnc-211-2026-10-10">P6：NNC 2.1.1 对照（2026-10-10）</a><ul>
+<li><a href="#_4">实板结果</a></li>
+<li><a href="#_5">剩余事项</a></li>
+</ul>
+</li>
+<li><a href="#_6">开发板复测方法</a></li>
+<li><a href="#_7">后续轮次的依据</a><ul>
 <li><a href="#2026-10-09">自动实板统计（2026-10-09）</a></li>
 <li><a href="#p3">P3 后的实板统计反馈</a></li>
 </ul>
@@ -277,7 +282,94 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <p>当前交付为级别 5 普通库，<code>detail_profile=false</code>，板上已加载同版本并暂停。启动复制已在反复加载、复位和初始化后通过完整镜像比较；未做脱离调试器的断电再上电测试，该项仍需后续开发板实验。</p>
 <p>装载源放入 RAM 的收益有限，详细计时中参数和指令装载仍合计约 49.40 μs。后续重点是核对各层指令是否相同、指令写入长度和覆盖区域，以及复位后的失效条件，再评估安全的指令复用；固定填零输入的量化处理也可单独评估，不承诺未经实测的收益。</p>
 <p>Vin=90 V 的一致性检查不能替代全范围精度验收；92.2～92.5 V 的已知量化输出问题仍存在，功率控制批准标记仍为 0。模型或存储分配改变后，须重新检查 LS3 容量、复制长度、库清单和板上镜像一致性。</p>
-<h2 id="_4">开发板复测方法</h2>
+<h2 id="p6nnc-211-2026-10-10">P6：NNC 2.1.1 对照（2026-10-10）</h2>
+<p>在独立的 Python 3.10 环境安装 TI MCU NNC 2.1.1，仍使用 C2000 CGT 22.6.2.LTS 和 DigitalPower SDK 5.05.01.00，不升级到要求 C2000Ware 26.0 的 NNC 2.1.2。模型仍是 <code>dab_npu_tinpu_conv.onnx</code>，优化级别仍为 5。2.1.1 自带 <code>TINIE_mem_write</code> 四项展开，并放入 LS2；不再套用只适用于 2.1.0 的 <code>dab_npu_load_words</code>。因此本轮降幅已经包含与 P4 同类的装载展开，不能把发布说明中的 setup 改进和 P4、P5 的百分比相加。</p>
+<p>静态对照确认四层定义、两份指令表和量化标量与 2.1.0 一致。2.1.1 把最终输出函数改名为 <code>tvmgen_default_fused_cast_multiply_reshape</code>。分段计时原先只匹配以 <code>_fused_cast_multiply</code> 结尾的名字，第一份详细计时库漏掉了输出还原，该库没有加载到开发板。修正匹配并确认输出函数内同时有开始和结束钩子后，才做下面的分段测试。</p>
+<h3 id="_4">实板结果</h3>
+<p>条件与 P5 相同：LAUNCHXL-F28P55X、Vin=90 V、预热 10 次、正式 1000 次、150 MHz、计时期间连续运行。同日先复测已提交的 P5 普通库三轮，再测 2.1.1 普通库三轮、修正后的详细计时库三轮，最后把普通库拷回并强制重编译、重新链接，再测一轮。十轮均成功，共 10000 个正式样本。恢复后的固件 SHA-256 与三轮普通库测试相同，端到端平均也相同。</p>
+<table>
+<thead>
+<tr>
+<th>普通版本指标</th>
+<th style="text-align: right;">同日 P5 μs</th>
+<th style="text-align: right;">NNC 2.1.1 μs</th>
+<th style="text-align: right;">降低</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>提交调用</td>
+<td style="text-align: right;">41.53429</td>
+<td style="text-align: right;">39.32899</td>
+<td style="text-align: right;">5.31%</td>
+</tr>
+<tr>
+<td>最终输出完成</td>
+<td style="text-align: right;">96.05240</td>
+<td style="text-align: right;">92.74001</td>
+<td style="text-align: right;">3.45%</td>
+</tr>
+<tr>
+<td>端到端</td>
+<td style="text-align: right;">102.89487</td>
+<td style="text-align: right;">99.54510</td>
+<td style="text-align: right;">3.26%</td>
+</tr>
+</tbody>
+</table>
+<p>2.1.1 普通版四轮端到端平均均为 99.54510 μs。这只说明本次固定输入和运行条件下结果可重复。相对同条件 FPU 28.71550 μs 仍约为 3.47 倍；要达到该 FPU 成绩，还需要再减少约 71.15% 的端到端时间。正式速度采用关闭详细计时的普通库。</p>
+<table>
+<thead>
+<tr>
+<th>详细计时分段</th>
+<th style="text-align: right;">P5 μs</th>
+<th style="text-align: right;">NNC 2.1.1 μs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>四层参数装载合计</td>
+<td style="text-align: right;">27.94138</td>
+<td style="text-align: right;">25.53147</td>
+</tr>
+<tr>
+<td>四层指令装载合计</td>
+<td style="text-align: right;">21.46308</td>
+<td style="text-align: right;">19.78143</td>
+</tr>
+<tr>
+<td>四层寄存器配置合计</td>
+<td style="text-align: right;">8.75276</td>
+<td style="text-align: right;">10.12431</td>
+</tr>
+<tr>
+<td>输入量化</td>
+<td style="text-align: right;">14.50189</td>
+<td style="text-align: right;">14.49680</td>
+</tr>
+<tr>
+<td>四层启动至完成中断合计</td>
+<td style="text-align: right;">17.70328</td>
+<td style="text-align: right;">17.33756</td>
+</tr>
+<tr>
+<td>最终输出还原</td>
+<td style="text-align: right;">0.42000</td>
+<td style="text-align: right;">0.42000</td>
+</tr>
+<tr>
+<td>端到端</td>
+<td style="text-align: right;">121.03644</td>
+<td style="text-align: right;">117.42271</td>
+</tr>
+</tbody>
+</table>
+<p>参数和指令合计从约 49.40 μs 降到约 45.31 μs，寄存器配置从 8.75276 μs 增到 10.12431 μs。装载与配置分段净减少约 2.72 μs，详细计时版端到端减少约 3.61 μs。各分段仍包含中断和计时开销，不能从普通版时间里直接扣掉。输出还原仍约为 0.42000 μs，且 1000 个样本都记入了这一段。</p>
+<p>所有成功轮次均无输出拒绝、超时或故障，待机且四路功率 PWM 的 OST 锁定，输出仍为 <code>[0.4375,0.25,0,1]</code>。详细计时调用次数为 <code>[1,4,1,0,4,4,4,1,1,1,1,1]</code>、<code>invalidPairs=0</code>。级别 5 的 1592 个常量单元与 Flash 镜像一致。验收索引见 <a href="../../tools/c2000_debug/p6_benchmark_verification.json">P6 实板验收报告</a>。</p>
+<h3 id="_5">剩余事项</h3>
+<p>当前交付为 NNC 2.1.1、级别 5 的普通库，<code>detail_profile=false</code>，板上已加载同版本并暂停。功率控制批准标记仍为 0。2.1.1 没有改变 1/64 的输出间隔，也没有消除 92.2～92.5 V 的无效输出。继续在当前 <code>16→32→16→16→4</code> 上深改装载代码的预期收益已经变小。</p>
+<p>较少补齐候选 <code>4→32→12→8→4</code> 已在电脑上核对，没有替换交付库，也没有上板。浮点补齐与 <code>dab_nn.c</code> 一致；同一套 TI PTQ 后，501 点误差、92.2～92.5 V 无效输出和 1/64 输出格点都仍在。NNC 2.1.1 的卸载摘要把四层 PWCONV 标为硬件，生成代码里也有四次硬件层推进。层间量化、ReLU 和最终 1/64 还原仍由 CPU 完成。报告见 <a href="../model/narrow_4x32x12x8x4_offline.json">较少补齐候选</a>。精度没有改善，因此不能把这次编译成功写成可以测速或开功率。</p>
+<h2 id="_6">开发板复测方法</h2>
 <ol>
 <li>使用 <code>CPU1_LAUNCHXL_NPU_FLASH</code>，保持 <code>DAB_AUTO_START=0</code>、<code>DAB_BOARD_CONFIG_CONFIRMED=0</code>，连接 USB 即可做 NN 基准测试。基准测试用指定的 Vin，仍须确认程序处于停止状态；功率输出批准标记继续为 0。</li>
 <li>每次重新生成库后都在 CCS 完整 Build、重新加载，并从初始化运行；级别 3～5 必须经过代码/常量初始化复制，不能直接跳转到主循环。</li>
@@ -293,7 +385,7 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <pre><code class="language-powershell">python dab_control_f28p550/tools/verify_npu_runtime.py
 python review_20261003/npu_integration_20261009/verify_integration.py
 </code></pre>
-<h2 id="_5">后续轮次的依据</h2>
+<h2 id="_7">后续轮次的依据</h2>
 <h3 id="2026-10-09">自动实板统计（2026-10-09）</h3>
 <p>复用 <code>tools/c2000_debug</code> 的 CCS Scripting / XDS110 框架，增加 <code>benchmark_nn.py</code>；分别对 FPU FLASH、P3 普通 NPU FLASH、P3 详细计时 NPU FLASH 完成三轮测试，每轮重新加载程序并连续运行，测量中不打断点。三组均为 Vin=90 V、预热 10 次、正式 1000 次；各组的三轮平均耗时一致，但这些重复结果不代表已覆盖其他输入或运行条件。</p>
 <table>
@@ -449,5 +541,5 @@ python review_20261003/npu_integration_20261009/verify_integration.py
 </table>
 <p>按现有两组数据，端到端改善约 1.80 倍，但仍为此前 FPU 的 28.69056 μs 的 5.20 倍。最终完成到后台发现平均仅差 1.75229 μs，改善后台轮询无法解释剩余约 120 μs 的差距；而提交调用本身已接近 60 μs，需要继续检查首层数据处理、参数/指令装载和配置。</p>
 <p><code>npuSubmit</code> 和 <code>npuCompletion</code> 共用启动时间点，前者包含在后者之内，不能相加；两项均可能包含中断占用。下一次应在级别 3 下启用 <code>--detail-profile</code> 获取 <code>g_nnNpuDetail</code>，同时补记 Vin、输出、超时计数和库清单，以区分装载、配置、层间处理与各层启动到完成中断的耗时；详细计时版本仅用于定位，正式提速结论仍用关闭详细计时的版本。</p>
-<p>当前已交付不改变模型数学含义的 P0～P5，并完成自动实板统计。后续继续评估固定输入量化和指令复用；指令缓存需要核对各层指令的差异、覆盖方式与复位失效条件，不能仅因为代码尺寸相同就复用。</p>
-<p>目前量化模型在 92.2～92.5 V 仍存在已记录的无效输出；上述优化不会消除量化误差，因而仍不允许用于功率闭环。提高精度、开放功率控制以及判断优化后是否快于 FPU，均需另外的数值与实板验收。</p><footer>2026-10-10 · 离线文档；Vin=90 V 实板计时已核对；NPU 全范围精度仍待验收。<br>来源 SHA-256：357fb3341ab2dc135507cfe0990a23c7d66da823d0f7c85fbe91bf43498f55db</footer></main></div></body></html>
+<p>当前已交付不改变模型数学含义的 P0～P6，并完成自动实板统计。P6 之后不再把当前补齐模型的装载循环当作主要加速手段。指令复用仍须先核对各层指令差异、覆盖方式和复位失效条件。</p>
+<p>目前量化模型在 92.2～92.5 V 仍存在已记录的无效输出；上述优化不会消除量化误差，因而仍不允许用于功率闭环。提高精度、开放功率控制以及判断优化后是否快于 FPU，均需另外的数值与实板验收。</p><footer>2026-10-10 · 离线文档；Vin=90 V 实板计时已核对；NPU 全范围精度仍待验收。<br>来源 SHA-256：09a56c2b9aa1bdcc8188c10b966c2ae5b6daa00669f51dd4459c3f302d6cc3d6</footer></main></div></body></html>

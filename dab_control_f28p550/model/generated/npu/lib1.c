@@ -4,7 +4,7 @@
 #pragma CODE_SECTION(tvmgen_default_fused_cast_cast_multiply_nn_relu_multiply_add_floor_clip_cast, ".dab_npu_ramfunc")
 #pragma CODE_SECTION(tvmgen_default_fused_cast_cast_multiply_nn_relu_multiply_add_floor_clip_cast_1, ".dab_npu_ramfunc")
 #pragma CODE_SECTION(tvmgen_default_fused_cast_cast_multiply_nn_relu_multiply_add_floor_clip_cast_2, ".dab_npu_ramfunc")
-#pragma CODE_SECTION(tvmgen_default_fused_cast_multiply, ".dab_npu_ramfunc")
+#pragma CODE_SECTION(tvmgen_default_fused_cast_multiply_reshape, ".dab_npu_ramfunc")
 #pragma CODE_SECTION(tvmgen_default_fused_reshape_multiply_add_floor_clip_cast_reshape, ".dab_npu_ramfunc")
 #pragma CODE_SECTION(tvmgen_default_fused_tinie_c28_pack, ".dab_npu_ramfunc")
 #pragma CODE_SECTION(tvmgen_default_fused_tinie_c28_pack_1, ".dab_npu_ramfunc")
@@ -143,14 +143,14 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_15_let;
+  static void* sid_14_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_14_let;
+  static void* sid_13_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -178,41 +178,6 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_6_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_5_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_4_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_13_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-  static void* sid_7_let;
-#ifdef __cplusplus
-} // extern "C"
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
   static void* sid_8_let;
 #ifdef __cplusplus
 } // extern "C"
@@ -220,7 +185,14 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_1_let;
+  static void* sid_6_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_3_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -234,6 +206,20 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
+  static void* sid_5_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_15_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
   static void* sid_9_let;
 #ifdef __cplusplus
 } // extern "C"
@@ -241,7 +227,21 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  static void* sid_3_let;
+  static void* sid_7_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_1_let;
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+  static void* sid_4_let;
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -260,7 +260,7 @@ TVM_DLL int32_t tvmgen_default_fused_cast_cast_multiply_nn_relu_multiply_add_flo
 #ifdef __cplusplus
 extern "C"
 #endif
-TVM_DLL int32_t tvmgen_default_fused_cast_multiply(int8_t* p0, float* T_multiply, uint8_t* global_const_workspace_30_var, uint8_t* global_workspace_31_var);
+TVM_DLL int32_t tvmgen_default_fused_cast_multiply_reshape(int8_t* p0, float* T_reshape, uint8_t* global_const_workspace_30_var, uint8_t* global_workspace_31_var);
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -379,18 +379,10 @@ TVM_DLL int32_t tvmgen_default_fused_cast_cast_multiply_nn_relu_multiply_add_flo
 #ifdef __cplusplus
 extern "C"
 #endif
-TVM_DLL int32_t tvmgen_default_fused_cast_multiply(int8_t* p0, float* T_multiply, uint8_t* global_const_workspace_30_var, uint8_t* global_workspace_31_var) {
-#if DAB_NPU_DETAIL_PROFILE
-  DAB_NN_traceBegin(DAB_NPU_OUTPUT);
-#endif
-
+TVM_DLL int32_t tvmgen_default_fused_cast_multiply_reshape(int8_t* p0, float* T_reshape, uint8_t* global_const_workspace_30_var, uint8_t* global_workspace_31_var) {
   for (int32_t ax3 = 0; ax3 < 4; ++ax3) {
-    T_multiply[ax3] = (((float)p0[ax3]) * 1.562500e-02f);
+    T_reshape[ax3] = (((float)p0[ax3]) * 1.562500e-02f);
   }
-
-#if DAB_NPU_DETAIL_PROFILE
-  DAB_NN_traceEnd(DAB_NPU_OUTPUT);
-#endif
   return 0;
 }
 
@@ -554,21 +546,21 @@ TVM_DLL void tvmgen_default_IRQHandlerHelper() {
 switch(tinie_curr_layer) {
 case 0:
    sid_16_let = (&(global_workspace_1_var[0]));
-   sid_15_let = (&(global_workspace_1_var[16]));
    sid_14_let = (&(global_workspace_1_var[0]));
+   sid_13_let = (&(global_workspace_1_var[16]));
    sid_12_let = (&(global_workspace_1_var[0]));
    sid_11_let = (&(global_workspace_1_var[16]));
    sid_10_let = (&(global_workspace_1_var[32]));
-   sid_6_let = (&(global_workspace_1_var[0]));
-   sid_5_let = (&(global_workspace_1_var[32]));
-   sid_4_let = (&(global_workspace_1_var[0]));
-   sid_13_let = (&(global_workspace_1_var[16]));
-   sid_7_let = (&(global_workspace_1_var[32]));
    sid_8_let = (&(global_workspace_1_var[16]));
-   sid_1_let = (&(global_workspace_1_var[16]));
-   sid_2_let = (&(global_workspace_1_var[0]));
-   sid_9_let = (&(global_workspace_1_var[0]));
+   sid_6_let = (&(global_workspace_1_var[0]));
    sid_3_let = (&(global_workspace_1_var[32]));
+   sid_2_let = (&(global_workspace_1_var[0]));
+   sid_5_let = (&(global_workspace_1_var[32]));
+   sid_15_let = (&(global_workspace_1_var[16]));
+   sid_9_let = (&(global_workspace_1_var[0]));
+   sid_7_let = (&(global_workspace_1_var[32]));
+   sid_1_let = (&(global_workspace_1_var[16]));
+   sid_4_let = (&(global_workspace_1_var[0]));
   tvmgen_default_fused_reshape_multiply_add_floor_clip_cast_reshape(features_buffer_var, sid_1_let, global_const_workspace_0_var, global_workspace_1_var);
   tvmgen_default_fused_tinie_c28_pack(sid_1_let, sid_2_let, global_const_workspace_0_var, global_workspace_1_var);
   tvmgen_default_ti_npu_convolve1x1NHWC_0(sid_2_let, sid_3_let, global_const_workspace_0_var, global_workspace_1_var);
@@ -587,7 +579,7 @@ case 3:
   return;
 case 4:
   tvmgen_default_fused_tinie_c28_unpack_2(sid_15_let, sid_16_let, global_const_workspace_0_var, global_workspace_1_var);
-  tvmgen_default_fused_cast_multiply(sid_16_let, output_buffer_var, global_const_workspace_0_var, global_workspace_1_var);
+  tvmgen_default_fused_cast_multiply_reshape(sid_16_let, output_buffer_var, global_const_workspace_0_var, global_workspace_1_var);
   DAB_NN_noteNpuCompletion(); /* Final output is ready; stamp before publication. */
   tvmgen_default_finished = 1;
   break;

@@ -9,7 +9,7 @@ from patch_npu_runtime import IDENTITY
 APP=Path(__file__).resolve().parents[1]
 
 def extract(code,name,rename):
-    match=re.search(r'(?:TVM_DLL|static) int32_t '+re.escape(name)+r'\([^;{}]*\)\s*\{',code)
+    match=re.search(r'(?:TVM_DLL|static) (?:int32_t|void) '+re.escape(name)+r'\([^;{}]*\)\s*\{',code)
     if not match: raise RuntimeError('Missing function '+name)
     depth=1; end=match.end()
     while depth:
@@ -74,17 +74,21 @@ for(words=8;words<=16;words+=8) for(value=0;value<65536;++value) {
         stripped=re.sub(r'#pragma DATA_SECTION\([^\n]+\)\n','',kernel)
         assert stripped==(args.generated/'lib2.flash_reference.c').read_text(encoding='utf-8')
         print('PASS: RAM constant placement only adds directives; kernel and constant data unchanged')
-    if 'int32_t dab_npu_load_words(' in driver:
-        code+=extract(driver,'dab_npu_load_words','load_words')+'\n'
+    if 'int32_t dab_npu_load_words(' in driver or 'static void TINIE_mem_write(' in driver:
+        native='static void TINIE_mem_write(' in driver
+        code+=extract(driver,'TINIE_mem_write' if native else 'dab_npu_load_words','load_words')+'\n'
+        # 新版 TI helper 的参数顺序不同，仍按同一个独立写入基准检查。
+        invocation='load_words(now+1,n,src);' if native else 'load_words(now+1,src,n);'
         body+='''{ uint32_t src[516],old[1034],now[1034]; unsigned n,j;
 for(n=0;n<=516;++n) {
  for(j=0;j<516;++j) src[j]=0xAC128765U^(j*0x019DE1F3U);
  for(j=0;j<1034;++j) old[j]=now[j]=0xA5A5A5A5U;
  for(j=0;j<n;++j) old[1+j*2]=src[j];
- load_words(now+1,src,n);
+ INVOKE_LOAD
  assert(memcmp(old,now,sizeof(now))==0);
 } puts("PASS: real generated loading helper; lengths 0..516; all tails; MMIO stride and untouched guards"); }
 '''
+        body=body.replace('INVOKE_LOAD',invocation)
     body+='return 0;}\n'
     with tempfile.TemporaryDirectory(prefix='dab_npu_verify_') as directory:
         folder=Path(directory)

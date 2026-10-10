@@ -111,12 +111,12 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <tr>
 <td>NNC 2.1.0</td>
 <td>扩展 8 位激活与 8/4/2 位权重的可卸载配置</td>
-<td>项目当前基线；“能够编译”不等于装载开销已最优</td>
+<td>P5 对照基线；“能够编译”不等于装载开销已最优</td>
 </tr>
 <tr>
 <td>NNC 2.1.1</td>
 <td><strong>优化 F28P55x NPU setup 时间</strong>；新增内存及卸载摘要；<code>skip_normalize</code> 的提取缩放值从整数改为 float</td>
-<td>应独立对照生成代码和实测，且核对输入缩放的契约变化</td>
+<td>2026-10-10 已在同一模型上实测。普通版端到端 99.54510 μs，比同日 2.1.0 的 102.89487 μs 低约 3.26%。静态量化标量未变</td>
 </tr>
 <tr>
 <td>NNC 2.1.2</td>
@@ -125,7 +125,7 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 </tr>
 </tbody>
 </table>
-<p>来源：<a href="https://software-dl.ti.com/mctools/nnc/mcu/v2.1.1/release-notes.html">TI NNC 2.1.1 release notes</a>、<a href="https://software-dl.ti.com/mctools/nnc/mcu/users_guide/release-notes.html">TI NNC 2.1.2 release notes</a>。发布说明未承诺具体百分比，也未证明新版本优化与本项目 P4/P5 已做的修改相互独立；实际收益必须重新测量。</p>
+<p>来源：<a href="https://software-dl.ti.com/mctools/nnc/mcu/v2.1.1/release-notes.html">TI NNC 2.1.1 release notes</a>、<a href="https://software-dl.ti.com/mctools/nnc/mcu/users_guide/release-notes.html">TI NNC 2.1.2 release notes</a>。发布说明未承诺具体百分比。2.1.1 自带四项展开，与本项目 P4 重叠，实测降幅不能与 P4、P5 相加。本次实测条件和原始数据见 <a href="NPU_optimization_log_zh.html">NPU 耗时优化记录</a>。2.1.2 仍要求 C2000Ware 26.0 或更新，本次没有更换 SDK。</p>
 <h2 id="5">5. 模型设计与运行时间应分别验收</h2>
 <p>NNC 只将匹配的层模式交给 NPU，其余操作由 CPU 执行；输入/输出特征图主要为 8 位整数，权重为 2/4/8 位，通道通常要求 4 的倍数，当前只支持 batch=1。<a href="https://software-dl.ti.com/mctools/nnc/mcu/users_guide/layer_patterns.html">TI NNC Layer Patterns</a></p>
 <p>TI 官方设计指南建议按 NPU 约束设计模型，并警告不匹配配置可能回落到软件；PWCONV 要求通道为 4 的倍数，FC 有最小输入规模限制。<a href="https://github.com/TexasInstruments/tinyml-tensorlab/blob/main/tinyml-modelzoo/docs/NPU_CONFIGURATION_GUIDELINES.md">TI NPU Configuration Guidelines</a></p>
@@ -133,6 +133,6 @@ input{width:100%;padding:10px;border:1px solid #bdd0e0;border-radius:5px;font:in
 <h2 id="6">6. 据现有证据可作出的判断</h2>
 <ul>
 <li>固有启动/传输成本确实存在，小模型不保证快于 CPU；官方 16 宽案例已经显示这一点。</li>
-<li>编译和部署方式同时影响速度，新版 NNC 对 setup 的明确优化说明不能把当前 103 μs 全部视为硬件下限。</li>
+<li>编译和部署方式同时影响速度。NNC 2.1.1 实测后端到端为 99.54510 μs，仍不能把该时间全部视为硬件下限。</li>
 <li>外部证据支持继续做有限、可复现的验证，但不支持承诺当前网络必然超过本项目 28.7 μs FPU。是否超过，应在精度相当、计时边界一致、同一平台和中断条件下判定。</li>
-</ul><footer>2026-10-10 · 离线文档；Vin=90 V 实板计时已核对；NPU 全范围精度仍待验收。<br>来源 SHA-256：7ce26d7bd27011a847d58ae600b930319f89762a9da04cdc340e780482e9de64</footer></main></div></body></html>
+</ul><footer>2026-10-10 · 离线文档；Vin=90 V 实板计时已核对；NPU 全范围精度仍待验收。<br>来源 SHA-256：7f7c26be053bb0c92a633d48a55f7ed8dd6f26ec7741eb9ee64b71cd398c9ef5</footer></main></div></body></html>

@@ -38,11 +38,11 @@ TI E2E 存在同一型号、同一模型分别编译成 soft/hard 后 hard 更�
 
 | 版本 | 官方明确说明 | 对本项目的意义 |
 |---|---|---|
-| NNC 2.1.0 | 扩展 8 位激活与 8/4/2 位权重的可卸载配置 | 项目当前基线；“能够编译”不等于装载开销已最优 |
-| NNC 2.1.1 | **优化 F28P55x NPU setup 时间**；新增内存及卸载摘要；`skip_normalize` 的提取缩放值从整数改为 float | 应独立对照生成代码和实测，且核对输入缩放的契约变化 |
+| NNC 2.1.0 | 扩展 8 位激活与 8/4/2 位权重的可卸载配置 | P5 对照基线；“能够编译”不等于装载开销已最优 |
+| NNC 2.1.1 | **优化 F28P55x NPU setup 时间**；新增内存及卸载摘要；`skip_normalize` 的提取缩放值从整数改为 float | 2026-10-10 已在同一模型上实测。普通版端到端 99.54510 μs，比同日 2.1.0 的 102.89487 μs 低约 3.26%。静态量化标量未变 |
 | NNC 2.1.2 | 编译时移除 C2000Ware SDK 依赖；生成模型库的应用链接要求 **C2000Ware 26.0 或更新** | 当前工程使用较早的 SDK，不能直接替换模型库而假设兼容 |
 
-来源：[TI NNC 2.1.1 release notes](https://software-dl.ti.com/mctools/nnc/mcu/v2.1.1/release-notes.html)、[TI NNC 2.1.2 release notes](https://software-dl.ti.com/mctools/nnc/mcu/users_guide/release-notes.html)。发布说明未承诺具体百分比，也未证明新版本优化与本项目 P4/P5 已做的修改相互独立；实际收益必须重新测量。
+来源：[TI NNC 2.1.1 release notes](https://software-dl.ti.com/mctools/nnc/mcu/v2.1.1/release-notes.html)、[TI NNC 2.1.2 release notes](https://software-dl.ti.com/mctools/nnc/mcu/users_guide/release-notes.html)。发布说明未承诺具体百分比。2.1.1 自带四项展开，与本项目 P4 重叠，实测降幅不能与 P4、P5 相加。本次实测条件和原始数据见 [NPU 耗时优化记录](NPU_optimization_log_zh.md)。2.1.2 仍要求 C2000Ware 26.0 或更新，本次没有更换 SDK。
 
 ## 5. 模型设计与运行时间应分别验收
 
@@ -55,5 +55,5 @@ TI 官方设计指南建议按 NPU 约束设计模型，并警告不匹配配置
 ## 6. 据现有证据可作出的判断
 
 - 固有启动/传输成本确实存在，小模型不保证快于 CPU；官方 16 宽案例已经显示这一点。
-- 编译和部署方式同时影响速度，新版 NNC 对 setup 的明确优化说明不能把当前 103 μs 全部视为硬件下限。
+- 编译和部署方式同时影响速度。NNC 2.1.1 实测后端到端为 99.54510 μs，仍不能把该时间全部视为硬件下限。
 - 外部证据支持继续做有限、可复现的验证，但不支持承诺当前网络必然超过本项目 28.7 μs FPU。是否超过，应在精度相当、计时边界一致、同一平台和中断条件下判定。
