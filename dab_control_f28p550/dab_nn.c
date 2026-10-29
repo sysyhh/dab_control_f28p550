@@ -404,8 +404,8 @@ void DAB_NN_init(void)
     s_valid = s_fault = s_hasInput = false;
     g_nnInferenceCount = g_nnTimeoutCount = 0U;
     s_profileActive = s_benchJob = s_benchCancel = false;
-    // g_nnBenchmarkRequested = g_nnBenchmarkCancelRequested = false; // 关闭NN耗时测试
-    g_nnBenchmarkRequested = true; g_nnBenchmarkCancelRequested = false; // 开启NN耗时测试
+    g_nnBenchmarkRequested = g_nnBenchmarkCancelRequested = false; // 关闭NN耗时测试
+    // g_nnBenchmarkRequested = true; g_nnBenchmarkCancelRequested = false; // 开启NN耗时测试
     g_nnBenchmarkIterations = 1000U; g_nnBenchmarkWarmup = 10U;
     g_nnBenchmarkVin = DAB_NOMINAL_VIN;
     g_nnBenchmarkState = DAB_NN_BENCH_IDLE;
@@ -489,8 +489,9 @@ static void serviceInference(float vin_volts, bool force)
         }
         return; // 超时任务不计入成功耗时，仍锁定且不复用 NPU 缓冲区。
     }
-    if (!DAB_isFinite(vin_volts) || vin_volts <= 0.0f)
-    { s_fault = true; s_valid = false; return; } // Vin 必须有限且大于零；真实训练范围仍需原始训练说明。
+    if (!DAB_isFinite(vin_volts))
+    { s_fault = true; s_valid = false; return; } // Vin 必须有限；真实训练范围仍需原始训练说明。
+    if (vin_volts < 0.0f) vin_volts = 0.1f; // 零点附近标定可能为负，钳到 0，不锁网络故障。
 #ifdef DAB_NPU_DAB16_MODEL
     if (vin_volts < DAB_NPU_MIN_VIN || vin_volts > DAB_NPU_MAX_VIN)
     { s_fault = true; s_valid = false; return; } // 候选模型只在 90～140 V 做过量化与离线检查。

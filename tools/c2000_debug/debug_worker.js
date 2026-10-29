@@ -30,13 +30,28 @@ try {
     session.target.connect();
     result.connected = session.target.isConnected();
     session.target.halt();
-    result.stage = 'reset'; save();
-    session.target.reset();
-    result.stage = 'load'; save();
-    session.memory.loadProgram(request.out);
-    result.loaded = true;
-    result.stage = 'run'; save();
-    for (let i = 0; i < request.samples; i++) {
+    if (request.attach_only) {
+        // 只读取原现场；符号加载不写入程序，也不复位或恢复运行。
+        result.stage = 'attach_symbols'; save();
+        result.attach_pc_before_symbols = session.registers.read('PC');
+        session.symbols.load(request.out);
+        result.symbols_loaded = true;
+        result.attach_pc_after_symbols = session.registers.read('PC');
+        if (result.attach_pc_before_symbols !== result.attach_pc_after_symbols)
+            throw new Error('PC changed while loading symbols; target GEL may have reset the CPU');
+        try { session.memory.verifyProgram(request.out); result.program_verified = true; }
+        catch (e) { result.program_verified = false; result.errors.push({ stage: 'verify_program', message: String(e) }); }
+        const values = sample();
+        result.samples.push({ index: 0, values, pc: session.registers.read('PC') });
+        result.variables = values;
+    } else {
+        result.stage = 'reset'; save();
+        session.target.reset();
+        result.stage = 'load'; save();
+        session.memory.loadProgram(request.out);
+        result.loaded = true;
+        result.stage = 'run'; save();
+        for (let i = 0; i < request.samples; i++) {
         session.target.run(false);
         sleep(request.run_ms);
         session.target.halt();
@@ -44,6 +59,7 @@ try {
         const values = sample();
         result.samples.push({ index: i, values, pc: session.registers.read('PC') });
         result.variables = values;
+        }
     }
     if (request.verify_npu_const) {
         result.stage = 'verify_constants';

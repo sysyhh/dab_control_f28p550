@@ -72,7 +72,7 @@ static void initControlInterrupts(void)
 void main(void)
 {
     uint32_t lastTelemetry, now;
-    bool masked, start, stop, clear;
+    bool masked, start, stop, clear, hasVin;
     float vin, duty, error, voltage;
     Dab_State_e state;
 #if DAB_AUTO_START
@@ -107,6 +107,8 @@ void main(void)
     {
         masked = Interrupt_disableGlobal();
         vin = g_sensing.vin_ave;
+        // vin = 100.f;
+        hasVin = g_adcFrameCount != 0U; // 与电压同一临界区读取，首帧发布前 vin_ave 仍为 0。
         stop = g_stopRequested;
         start = g_startRequested;
         clear = g_clearFaultRequested;
@@ -115,7 +117,9 @@ void main(void)
         if (!masked) Interrupt_enableGlobal();
         if (clear && !stop) g_lastClearFaultAccepted = DAB_Protect_clearFault();
         if (!DAB_NN_benchmarkService(g_dabState == DAB_STATE_STANDBY && !DAB_PWM_isEnabled()))
-            DAB_NN_service(vin); // 普通服务保留输入缓存；重复测试仅在待机且输出关闭时接管，仍允许中断。
+        {
+            if (hasVin) DAB_NN_service(vin); // 使用原边平均电压；首帧有效采样前不推理，避免把 0 V 锁成 NN 故障。
+        }
         DAB_Telemetry_service(); // 只填入有限数量的 FIFO 字节，串口满时立即返回。
         serviceWatchdog();
         if (start && !stop && !clear) DAB_Control_start(); // 启动必须另行满足板确认、待机、采样、NN 和保护条件。

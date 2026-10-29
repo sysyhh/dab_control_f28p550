@@ -9,7 +9,7 @@
 #define DAB_BOARD_CONFIG_CONFIRMED 1 // 默认禁止输出；核对封装、原理图、采样与驱动接线后才能人工改为 1。
 #endif
 #ifndef DAB_AUTO_START
-#define DAB_AUTO_START 0 // 默认不自动启动，使用新的人工启停请求。
+#define DAB_AUTO_START 1 // 默认不自动启动，使用新的人工启停请求。
 #endif
 #define DAB_DEBUG_GPIO 61U // J6 总54 / 本地4，控制代码段测时；不是整个中断的耗时。
 #define DAB_DEBUG_PIN_CONFIG GPIO_61_GPIO61
@@ -57,22 +57,19 @@
 #define DAB_IL_ANALOG_GPIO 230U // B1/A10/C10 的数字复用名；此脚仅用于 ADC。
 
 // Original F28335 coefficients are reference values, not a new-board calibration.
-#define DAB_IL_SCALE 0.0168f // 电流换算为 scale×raw−offset，沿用旧板系数，须实板标定。
-#define DAB_IL_OFFSET 37.314f
+#define DAB_IL_SCALE 0.016424f // 电流换算为 scale×raw−offset，沿用旧板系数，须实板标定。
+#define DAB_IL_OFFSET 37.03514f
 #define DAB_IOUT_SCALE 0.0168f
 #define DAB_IOUT_OFFSET 37.314f
-#define DAB_NOMINAL_VIN 90.0f // 固定 NN 输入电压假设，不能当作实测 Vin。
-// Vin wiring/scaling is not known. Keep a clearly identified nominal-input mode.
-#define DAB_HAS_VIN_SENSING 0 // 未接入真实 Vin；启用前必须新增 SOC、标定与保护逻辑。
-#if DAB_HAS_VIN_SENSING
-#error "Add the actual Vin SOC, channel and calibration before enabling Vin protection"
-#endif
+#define DAB_NOMINAL_VIN 90.0f // 仅供 NN 耗时测试使用的固定激励；在线推理使用原边电压平均值。
+// 在线输入电压取原边 VP。此开关只启用 20 V 欠压保护，不决定神经网络是否使用采样值。
+#define DAB_HAS_VIN_SENSING 1
 
 // Open loop matches the old program's final F_duty=0 override.
 #define DAB_MODE_NN_OPEN_LOOP 0U
 #define DAB_MODE_NN_CLOSED_LOOP 1U
 #ifndef DAB_CONTROL_MODE
-#define DAB_CONTROL_MODE DAB_MODE_NN_OPEN_LOOP // 0：保留 NN 开环；1：启用电压 PI，参数仍需实板调试。
+#define DAB_CONTROL_MODE DAB_MODE_NN_CLOSED_LOOP // 0：保留 NN 开环；1：启用电压 PI，参数仍需实板调试。
 #endif
 #if DAB_CONTROL_MODE != DAB_MODE_NN_OPEN_LOOP && DAB_CONTROL_MODE != DAB_MODE_NN_CLOSED_LOOP
 #error "Unsupported DAB_CONTROL_MODE"
@@ -82,7 +79,10 @@
 #define DAB_ADC_READ_GUARD_COUNTS 150U // 读取结束前距下次 EPWM1 零点至少 150 计数，150 MHz 下约 1 μs。
 #define DAB_PWM_COMMIT_GUARD_COUNTS 600U // 距主 PWM 零点超过 600 计数，名义 4 μs；还需测写入最坏时间。
 #define DAB_PWM_STAGE_BUDGET_COUNTS 450U // 写入前额外预留 3 us；本次实测约 2.01 us，仍须验证全周期范围的最坏耗时。
-#if (DAB_PWM_COMMIT_GUARD_COUNTS + DAB_PWM_STAGE_BUDGET_COUNTS) >= 1250U
+#ifndef DAB_PWM_WINDOW_GUARD
+#define DAB_PWM_WINDOW_GUARD 0 // 临时关闭提交窗口：入口不够也写入，越界不报 PWM_WINDOW。上功率前改回 1。
+#endif
+#if DAB_PWM_WINDOW_GUARD && (DAB_PWM_COMMIT_GUARD_COUNTS + DAB_PWM_STAGE_BUDGET_COUNTS) >= 1250U
 #error "PWM entry reserve must be below the minimum supported TBPRD (1250)"
 #endif
 // Conservative software deadlines; validate the margin with the power board.

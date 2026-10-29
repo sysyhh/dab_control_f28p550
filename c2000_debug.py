@@ -9,6 +9,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_EXPRESSIONS = ['g_debugBuildId', 'g_backgroundHeartbeat', 'g_controlHeartbeat', 'g_dabState',
@@ -18,6 +19,31 @@ DEFAULT_EXPRESSIONS = ['g_debugBuildId', 'g_backgroundHeartbeat', 'g_controlHear
 # F28P55x word addresses from C2000Ware hw_memmap.h + EPWM_O_TZFLG (0x93).
 PWM_TRIP_REGISTERS = {'EPWM7_TZFLG': 0x4693, 'EPWM4_TZFLG': 0x4393,
                       'EPWM5_TZFLG': 0x4493, 'EPWM10_TZFLG': 0x4993}
+
+
+def attach_configuration(source, destination):
+    # 默认 F28P55x GEL 的 OnTargetConnect/OnPreFileLoaded 会复位。
+    # 仅当前取数会话覆盖 CPU GEL，原工程的目标配置保持不变。
+    tree = ET.parse(source)
+    device = tree.find('.//device')
+    if device is None:
+        raise ValueError('Attach requires an explicit F28P550 device configuration')
+    router = device.find("router[@id='IcePick_C_0']")
+    if router is None:
+        raise ValueError('Attach requires the F28P550 IcePick_C_0 router')
+    subpath = router.find("subpath[@id='Subpath_0']")
+    if subpath is None:
+        subpath = ET.SubElement(router, 'subpath', {'id':'Subpath_0'})
+        ET.SubElement(subpath, 'property', {'Type':'numericfield','Value':'0x10','id':'Port Number'})
+    cpu = subpath.find("cpu[@id='C28xx_CPU1']")
+    if cpu is None:
+        cpu = ET.SubElement(subpath, 'cpu', {'HW_revision':'1.0','XML_version':'1.0',
+                            'description':'C28xxCPU','id':'C28xx_CPU1','isa':'TMS320C28xx'})
+    gel = cpu.find("property[@id='GEL File']")
+    if gel is None:
+        gel = ET.SubElement(cpu, 'property', {'Type':'filepathfield','id':'GEL File'})
+    gel.set('Value','')
+    tree.write(destination, encoding='utf-8', xml_declaration=True)
 
 
 def execute(command, cwd, log, timeout):
@@ -39,6 +65,7 @@ def main():
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--run-test', action='store_true', help='Build, load RAM, run, halt and read two snapshots')
     mode.add_argument('--build-only', action='store_true')
+    mode.add_argument('--attach-only', action='store_true', help='Halt/read current target with existing symbols; never build, reset, load or run')
     parser.add_argument('--ccs', type=Path, default=Path(os.environ.get('CCS_ROOT', 'E:/Software_Download/ti/ccs2020/ccs')))
     parser.add_argument('--project', type=Path, default=ROOT / 'dab_control_f28p550')
     parser.add_argument('--build-dir', default='CPU1_RAM', help='Existing CCS-generated build directory')
@@ -72,10 +99,15 @@ def main():
         ccxml = (args.ccxml or project / 'targetConfigs/TMS320F28P550SJ9_LaunchPad.ccxml').resolve()
         make = ccs / 'utils/bin/gmake.exe'
         node = ccs / 'ccs_base/cloudagent/node.exe'
-        for item in [make, node, build_dir / 'makefile', ccxml]:
+        for item in ([node, ccxml, out] if args.attach_only else [make, node, build_dir / 'makefile', ccxml]):
             if not item.is_file():
                 raise FileNotFoundError(str(item))
         result.update(ccs=str(ccs), project=str(project), build_dir=str(build_dir), ccxml=str(ccxml))
+        if args.attach_only:
+            original_ccxml = ccxml
+            ccxml = run_dir / 'attach_no_gel.ccxml'
+            attach_configuration(original_ccxml, ccxml)
+            result.update(source_ccxml=str(original_ccxml), ccxml=str(ccxml), attach_only=True)
         build_command = [make, '-j', '8']
         if args.rebuild_nn:
             if not (project / 'dab_nn.c').is_file():
@@ -83,9 +115,10 @@ def main():
             # A restored archive/header may have older timestamps than the .out.
             # Recompiling this consumer also forces relink with the current archive.
             build_command += ['-W', '../dab_nn.c']
-        rc = execute(build_command + ['all'], build_dir, run_dir / 'build.log', 180)
-        result['build'] = 'PASS' if rc == 0 and out.is_file() else 'FAIL'
-        if result['build'] != 'PASS':
+        if not args.attach_only:
+            rc = execute(build_command + ['all'], build_dir, run_dir / 'build.log', 180)
+            result['build'] = 'PASS' if rc == 0 and out.is_file() else 'FAIL'
+        if not args.attach_only and result['build'] != 'PASS':
             raise RuntimeError('Build failed; see build.log. No program loaded.')
         result.update(out=str(out), out_sha256=hashlib.sha256(out.read_bytes()).hexdigest())
         if args.build_only:
@@ -97,6 +130,7 @@ def main():
                            registers=list(dict.fromkeys(['PC'] + (args.register or []))),
                            memory_registers=PWM_TRIP_REGISTERS,
                            verify_npu_const=args.verify_npu_const,
+                           attach_only=args.attach_only,
                            run_ms=args.run_ms, samples=args.samples, timeout_ms=args.timeout_ms)
             request_file = run_dir / 'request.json'
             request_file.write_text(json.dumps(request, indent=2), encoding='utf-8')
@@ -106,7 +140,7 @@ def main():
             if not (run_dir / 'hardware.json').is_file():
                 raise RuntimeError('Debugger returned no result; see debug.log')
             result.update(json.loads((run_dir / 'hardware.json').read_text(encoding='utf-8')))
-            result['ok'] = rc == 0 and result['connected'] and result['loaded'] and result['state'] == 'halted' and not result['errors']
+            result['ok'] = rc == 0 and result['connected'] and (result.get('symbols_loaded') if args.attach_only else result['loaded']) and result['state'] == 'halted' and not result['errors']
             checks = {}
             samples = result.get('samples', [])
             if len(samples) >= 2:
@@ -114,7 +148,7 @@ def main():
                     first, last = samples[0]['values'].get(name), samples[-1]['values'].get(name)
                     if isinstance(first, int) and isinstance(last, int):
                         checks[name + '_advanced'] = 0 < ((last - first) & 0xffffffff) < 0x80000000
-            if args.expr is None and 'g_debugBuildId' in result.get('variables', {}):
+            if not args.attach_only and args.expr is None and 'g_debugBuildId' in result.get('variables', {}):
                 checks['build_id_matches'] = result['variables']['g_debugBuildId'] == 0x20261009
                 checks['standby'] = result['variables'].get('g_dabState') == 1
                 checks['all_power_pwm_ost_latched'] = all(

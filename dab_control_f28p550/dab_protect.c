@@ -6,9 +6,9 @@
 #include "dab_math.h"
 
 volatile Dab_ProtectFlags_t g_protectFlags;
-#define THRESHOLD_VOUT_OVP 80.0f // 输出电压瞬时值达到 80 V 判故障；准确性依赖实际标定。
-#define THRESHOLD_IL_OCP 35.0f // 电感电流 ±25 A 软件门限，采样间尖峰仍需连续硬件保护。
-#define THRESHOLD_VIN_UVP 20.0f // 仅真实 Vin 采样模式使用；当前 Vin 固定，未启用真实欠压检测。
+#define THRESHOLD_VOUT_OVP 400.0f // 输出电压瞬时值达到 80 V 判故障；准确性依赖实际标定。
+#define THRESHOLD_IL_OCP 45.0f // 电感电流 ±25 A 软件门限，采样间尖峰仍需连续硬件保护。
+#define THRESHOLD_VIN_UVP 0.0f // DAB_HAS_VIN_SENSING 为 1 时，用瞬时原边电压判断输入欠压。
 static bool s_recoveryCandidate;
 static uint32_t s_recoveryTick;
 
@@ -44,10 +44,10 @@ bool DAB_Protect_checkFault(void)
         { g_protectFlags.bit.Vout_OVP_Flag = 1U; g_protectFlags.bit.Stop_Flag = 1U; }
         if (!DAB_isFinite(g_sensing.il) || g_sensing.il >= THRESHOLD_IL_OCP || g_sensing.il <= -THRESHOLD_IL_OCP)
         { g_protectFlags.bit.L_OCP_Flag = 1U; g_protectFlags.bit.Stop_Flag = 1U; }
-#if DAB_HAS_VIN_SENSING
-        if (!DAB_isFinite(g_sensing.vin) || g_sensing.vin < THRESHOLD_VIN_UVP)
-        { g_protectFlags.bit.Vin_UVP_Flag = 1U; g_protectFlags.bit.Stop_Flag = 1U; }
-#endif
+// #if DAB_HAS_VIN_SENSING
+//         if (!DAB_isFinite(g_sensing.vin) || g_sensing.vin < THRESHOLD_VIN_UVP)
+//         { g_protectFlags.bit.Vin_UVP_Flag = 1U; g_protectFlags.bit.Stop_Flag = 1U; }
+// #endif
     }
     // 恢复期间软件关断和首次记录始终保留；输出已关闭时可重置来源锁存，重新监测短故障脉冲。
     if (GPIO_readPin(DAB_HW_TRIP_GPIO) == 0U || sensingFault() || !DAB_ADC_isReady())

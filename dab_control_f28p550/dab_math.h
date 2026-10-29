@@ -21,10 +21,10 @@ static inline float DAB_piStep(float error, float kp, float ki,
     float unconstrained = kp * error + next;
     if (unconstrained > outputLimit && error > 0.0f)
         next = outputLimit - kp * error; // 上限饱和且误差继续推高时回退积分，使输出留在允许边界。
-    else if (unconstrained < 0.0f && error < 0.0f)
-        next = -kp * error; // 下限饱和且误差继续推低时回退积分；恢复方向的积分仍保留。
+    else if (unconstrained < -outputLimit && error < 0.0f)
+        next = -outputLimit - kp * error; // 下限饱和且误差继续推低时回退积分；恢复方向的积分仍保留。
     *integral = DAB_clamp(next, -outputLimit, outputLimit);
-    return DAB_clamp(kp * error + *integral, 0.0f, outputLimit); // 当前修正量只允许非负，不能据此宣称支持反向功率闭环。
+    return DAB_clamp(kp * error + *integral, -outputLimit, outputLimit);
 }
 
 static inline int DAB_nnOutputValid(const float *values)

@@ -134,7 +134,7 @@ void DAB_Control_step(void)
     error = DAB_clamp(target - g_sensing.vout_n_ave, -DAB_ERR_LIMIT, DAB_ERR_LIMIT); // 反馈使用 50 点平均电压，误差限为 ±40；滤波延迟需纳入闭环设计。
     integral = g_piCtrl.integral;
 #if DAB_CONTROL_MODE == DAB_MODE_NN_CLOSED_LOOP
-    duty = DAB_piStep(error, g_piCtrl.kp, g_piCtrl.ki, &integral, DAB_DUTY_MAX); // 闭环修正 0～0.15，包含积分边界处理；当前没有反向功率控制设计。
+    duty = DAB_piStep(error, g_piCtrl.kp, g_piCtrl.ki, &integral, DAB_DUTY_MAX); // 闭环修正 ±0.15，包含积分边界处理。
 #else
     duty = 0.0f; integral = 0.0f; // 默认开环保持旧程序最终 F_duty=0 行为，ref 只参与渐变误差显示。
 #endif

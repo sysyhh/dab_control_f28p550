@@ -4,14 +4,15 @@
 volatile Dab_Sensing_t g_sensing;
 volatile uint32_t g_adcFrameCount = 0U;
 volatile uint32_t g_adcInvalidFrameCount = 0U;
-#define VOUT_WINDOW_SIZE 50U // 电压平均 50 点；10 kHz 下约 2.45 ms 延迟，闭环调参须考虑此延迟。
+#define VOUT_P_WINDOW_SIZE 100U // 原边电压平均 100 点；10 kHz 下约 4.95 ms 延迟，神经网络输入使用该平均值。
+#define VOUT_N_WINDOW_SIZE 50U // 副边电压平均 50 点；10 kHz 下约 2.45 ms 延迟，闭环调参须考虑此延迟。
 #define IL_WINDOW_SIZE 10U // 电感电流平均 10 点；过流判断使用瞬时值，不等待平均窗口。
-static uint16_t s_voutP_buf[VOUT_WINDOW_SIZE], s_voutN_buf[VOUT_WINDOW_SIZE];
+static uint16_t s_voutP_buf[VOUT_P_WINDOW_SIZE], s_voutN_buf[VOUT_N_WINDOW_SIZE];
 static uint16_t s_il_buf[IL_WINDOW_SIZE];
-static uint32_t s_voutP_sum, s_voutN_sum, s_il_sum; // 对原始计数作整数累计，50×4095 最大为 204750，避免浮点长期加减漂移。
+static uint32_t s_voutP_sum, s_voutN_sum, s_il_sum; // 对原始计数作整数累计，100×4095 最大为 409500，避免浮点长期加减漂移。
 volatile uint16_t g_adcRecoveryFrameCount = 0U;
 volatile uint32_t g_adcLastFrameTick = 0U;
-static uint16_t s_idx_50, s_idx_10, s_count_50, s_count_10;
+static uint16_t s_idx_p, s_idx_n, s_idx_10, s_count_p, s_count_n, s_count_10;
 static volatile bool s_latestFrameValid;
 
 static void configureADC(uint32_t base, ADC_Channel ch0, ADC_Channel ch1)
@@ -38,11 +39,10 @@ void DAB_ADC_init(void)
     memset(s_voutN_buf, 0, sizeof(s_voutN_buf));
     memset(s_il_buf, 0, sizeof(s_il_buf));
     s_voutP_sum = s_voutN_sum = s_il_sum = 0U;
-    s_idx_50 = s_idx_10 = s_count_50 = s_count_10 = 0U;
+    s_idx_p = s_idx_n = s_idx_10 = s_count_p = s_count_n = s_count_10 = 0U;
     g_adcFrameCount = g_adcInvalidFrameCount = 0U;
     s_latestFrameValid = false;
     g_adcRecoveryFrameCount = 0U; g_adcLastFrameTick = 0U; // 初始化连续有效帧资格和最近读取时刻。
-    g_sensing.vin = g_sensing.vin_ave = DAB_NOMINAL_VIN; // 当前 Vin 固定为 90 V，没有 Vin 采样通道，不能据此判断真实输入欠压。
     GPIO_setAnalogMode(DAB_VOUT_P_ANALOG_GPIO, GPIO_ANALOG_ENABLED);
     GPIO_setAnalogMode(DAB_VOUT_N_ANALOG_GPIO, GPIO_ANALOG_ENABLED);
     GPIO_setAnalogMode(DAB_IOUT_ANALOG_GPIO, GPIO_ANALOG_ENABLED);
@@ -60,7 +60,7 @@ void DAB_ADC_init(void)
 bool DAB_ADC_isReady(void)
 {
     bool ready, masked = Interrupt_disableGlobal();
-    ready = s_latestFrameValid && g_adcRecoveryFrameCount == VOUT_WINDOW_SIZE &&
+    ready = s_latestFrameValid && g_adcRecoveryFrameCount == VOUT_N_WINDOW_SIZE &&
         (uint32_t)(g_adcLastFrameTick - CPUTimer_getTimerCount(CPUTIMER2_BASE)) <=
         (DEVICE_SYSCLK_FREQ / 1000000UL) * DAB_ADC_MAX_AGE_US;
     if (!masked) Interrupt_enableGlobal();
@@ -72,7 +72,7 @@ static bool rejectFrame(void)
 {
     s_latestFrameValid = false;
     g_adcRecoveryFrameCount = 0U; // 无效帧打断连续恢复资格，下一次有效帧从头累计。
-    s_idx_50 = s_idx_10 = s_count_50 = s_count_10 = 0U;
+    s_idx_p = s_idx_n = s_idx_10 = s_count_p = s_count_n = s_count_10 = 0U;
     s_voutP_sum = s_voutN_sum = s_il_sum = 0U;
     g_adcInvalidFrameCount++; // 保留异常次数及最后显示值，但已拒绝的数据不用于允许启动。
     return false;
@@ -125,27 +125,32 @@ bool DAB_ADC_read(void)
     if (clearADCFlags()) return rejectFrame(); // 结果虽已读出，若清标志时又发现竞争，仍整体作废。
     g_sensing.vout_p_raw = vp; g_sensing.vout_n_raw = vn;
     g_sensing.iout_raw = io; g_sensing.il_raw = il;
-    g_sensing.vout_p = BUCK_VOUT_P_SCALE * (float)vp - BUCK_VOUT_P_BIAS;
+    g_sensing.vout_p = BUCK_VOUT_P_SCALE * (float)vp + BUCK_VOUT_P_BIAS;
+    g_sensing.vin_raw = vp;
+    g_sensing.vin = g_sensing.vout_p; // 输入电压就是原边电压，使用同一路采样和同一套系数。
     g_sensing.vout_n = BUCK_VOUT_N_SCALE * (float)vn + BUCK_VOUT_N_BIAS; // VN 的偏置为相加，VP 为相减；保持原始标定符号，不能仅按变量名猜测。
     g_sensing.iout = BUCK_IOUT_COEF * (float)io - BUCK_IOUT_BIAS;
     g_sensing.il = BUCK_IL_COEF * (float)il - BUCK_IL_BIAS; // 保留瞬时电流供过流判断，尚未按当前采样板重新标定。
-    if (s_count_50 == VOUT_WINDOW_SIZE) // 窗口满后先移除最旧样本，再加入新样本；未填满时按实际点数求平均。
-    { s_voutP_sum -= s_voutP_buf[s_idx_50]; s_voutN_sum -= s_voutN_buf[s_idx_50]; }
+    if (s_count_p == VOUT_P_WINDOW_SIZE) s_voutP_sum -= s_voutP_buf[s_idx_p];
+    if (s_count_n == VOUT_N_WINDOW_SIZE) s_voutN_sum -= s_voutN_buf[s_idx_n];
     if (s_count_10 == IL_WINDOW_SIZE) s_il_sum -= s_il_buf[s_idx_10];
     s_voutP_sum += vp; s_voutN_sum += vn; s_il_sum += il;
-    s_voutP_buf[s_idx_50] = vp; s_voutN_buf[s_idx_50] = vn; s_il_buf[s_idx_10] = il;
-    if (s_count_50 < VOUT_WINDOW_SIZE) s_count_50++;
+    s_voutP_buf[s_idx_p] = vp; s_voutN_buf[s_idx_n] = vn; s_il_buf[s_idx_10] = il;
+    if (s_count_p < VOUT_P_WINDOW_SIZE) s_count_p++;
+    if (s_count_n < VOUT_N_WINDOW_SIZE) s_count_n++;
     if (s_count_10 < IL_WINDOW_SIZE) s_count_10++;
     g_sensing.vout_p_ave = BUCK_VOUT_P_SCALE * (float)s_voutP_sum *
-        (s_count_50 == VOUT_WINDOW_SIZE ? 0.02f : 1.0f / (float)s_count_50) - BUCK_VOUT_P_BIAS;
+        (s_count_p == VOUT_P_WINDOW_SIZE ? 0.01f : 1.0f / (float)s_count_p) + BUCK_VOUT_P_BIAS;
+    g_sensing.vin_ave = g_sensing.vout_p_ave; // 神经网络使用原边电压的 100 点平均值。
     g_sensing.vout_n_ave = BUCK_VOUT_N_SCALE * (float)s_voutN_sum *
-        (s_count_50 == VOUT_WINDOW_SIZE ? 0.02f : 1.0f / (float)s_count_50) + BUCK_VOUT_N_BIAS;
+        (s_count_n == VOUT_N_WINDOW_SIZE ? 0.02f : 1.0f / (float)s_count_n) + BUCK_VOUT_N_BIAS;
     g_sensing.il_ave = BUCK_IL_COEF * (float)s_il_sum *
         (s_count_10 == IL_WINDOW_SIZE ? 0.1f : 1.0f / (float)s_count_10) - BUCK_IL_BIAS;
-    if (++s_idx_50 >= VOUT_WINDOW_SIZE) s_idx_50 = 0U;
+    if (++s_idx_p >= VOUT_P_WINDOW_SIZE) s_idx_p = 0U;
+    if (++s_idx_n >= VOUT_N_WINDOW_SIZE) s_idx_n = 0U;
     if (++s_idx_10 >= IL_WINDOW_SIZE) s_idx_10 = 0U;
     g_adcFrameCount++;
-    if (g_adcRecoveryFrameCount < VOUT_WINDOW_SIZE) g_adcRecoveryFrameCount++;
+    if (g_adcRecoveryFrameCount < VOUT_N_WINDOW_SIZE) g_adcRecoveryFrameCount++;
     g_adcLastFrameTick = CPUTimer_getTimerCount(CPUTIMER2_BASE); // 记录读取结束时刻，不是实际模拟采样时刻；正常采样约早 50 μs。
     s_latestFrameValid = true;
     // 至此才发布本帧有效；任何失败路径都会清空历史和连续恢复计数。

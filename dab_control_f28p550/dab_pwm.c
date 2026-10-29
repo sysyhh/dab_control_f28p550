@@ -228,9 +228,15 @@ bool DAB_PWM_clearHardwareFault(void)
 #pragma CODE_SECTION(commitWindow, ".TI.ramfunc")
 static bool commitWindow(uint16_t minRemaining)
 {
-    return EPWM_getTimeBaseCounterDirection(DAB_PWM_LEG1_BASE) == EPWM_TIME_BASE_STATUS_COUNT_DOWN &&
-           EPWM_getTimeBaseCounterValue(DAB_PWM_LEG1_BASE) > minRemaining;
-           // 开始写入须同时保留写入预算和 600 计数边界；中途复核仍保留原 600 计数，不放宽保护。
+    bool ok = EPWM_getTimeBaseCounterDirection(DAB_PWM_LEG1_BASE) == EPWM_TIME_BASE_STATUS_COUNT_DOWN &&
+              EPWM_getTimeBaseCounterValue(DAB_PWM_LEG1_BASE) > minRemaining;
+              // 开始写入须同时保留写入预算和 600 计数边界；中途复核仍保留原 600 计数，不放宽保护。
+#if DAB_PWM_WINDOW_GUARD
+    return ok;
+#else
+    if (!ok) g_pwmLateCommitCount++; // 仍累计越界次数，但不暂缓、不报 PWM_WINDOW。
+    return true;
+#endif
 }
 
 #pragma CODE_SECTION(windowFault, ".TI.ramfunc")

@@ -27,16 +27,17 @@
 #define DAB_SOFT_CNT_MAX        1000U           // Soft-start counter maximum // 软启动累计新装载进度 1000 次；正常约 100 ms，并非盲目计时启动。
 #define DAB_ERR_LIMIT           40.0f           // Error saturation limit
 #define DAB_INT_LIMIT           0.15f           // Match the PI output range
-#define DAB_DUTY_MAX            0.15f           // Max PI duty limit (0.15)
+#define DAB_DUTY_MAX            0.15f           // PI 修正限幅为 ±该值。
 
 //=============================================================================
 // Reference calibration: must be checked on the actual F28P550 sampling board
 //=============================================================================
-#define BUCK_VOUT_P_SCALE       0.0615f
-#define BUCK_VOUT_P_BIAS        0.6465f
+#define BUCK_VOUT_P_SCALE       0.0911f
+// #define BUCK_VOUT_P_BIAS        -1.4577f
+#define BUCK_VOUT_P_BIAS        -0.3f
 
-#define BUCK_VOUT_N_SCALE       0.0303f
-#define BUCK_VOUT_N_BIAS        0.2903f
+#define BUCK_VOUT_N_SCALE       0.0911f
+#define BUCK_VOUT_N_BIAS        -0.3f
 
 #define BUCK_IL_COEF            DAB_IL_SCALE
 #define BUCK_IL_BIAS            DAB_IL_OFFSET
@@ -94,7 +95,7 @@ typedef struct
     uint16_t vout_n_raw;
     uint16_t iout_raw;
     uint16_t il_raw;
-    uint16_t vin_raw; // 当前没有 Vin SOC，该字段不能当作真实输入电压采样。
+    uint16_t vin_raw; // 与原边 VP 同一路 ADC 计数。
 
     // Instantaneous physical values
     float vout_p;
