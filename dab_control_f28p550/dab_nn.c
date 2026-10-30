@@ -12,26 +12,28 @@
 #include "dab_math.h"
 
 #ifdef DAB_USE_HARDWARE_NPU
-#ifdef DAB_NPU_DAB16_MODEL
+#ifdef DAB_NPU_FC_INT8
+#include "model/generated/fc_int8/tvmgen_default.h"
+#elif defined(DAB_NPU_FC_INT4)
+#include "model/generated/fc_int4/tvmgen_default.h"
+#elif defined(DAB_NPU_DAB16_MODEL)
 #include "model/generated/npu/tvmgen_default.h"
-#include "model/generated/npu/dab_npu_contract.h"
-#if defined(__TI_COMPILER_VERSION__) && DAB_NPU_RAM_RUNTIME
+#else
+#ifndef DAB_NPU_FLOAT_IO_CONFIRMED
+#error "Verify the DAB generated model has float32 input[3] and output[4] before enabling NPU"
+#endif
+#include "model/tvmgen_default.h"
+#endif
+#if defined(__TI_COMPILER_VERSION__) && defined(DAB_NPU_GENERATED_MODEL) && DAB_NPU_RAM_RUNTIME
 extern uint16_t DabNpuLoadStart, DabNpuLoadSize, DabNpuRunStart;
 #if DAB_NPU_RAM_CONSTANTS
 extern uint16_t DabNpuConstLoadStart, DabNpuConstLoadSize, DabNpuConstRunStart;
 #endif
 #endif
-#else
-#ifndef DAB_NPU_FLOAT_IO_CONFIRMED
-#error "Verify the DAB generated model has float32 input[3] and output[4] before enabling NPU"
-#endif
-// Include TVM generated model interface for TI NPU
-#include "model/tvmgen_default.h"
-#endif
 #endif
 
 // Intermediate buffers
-#ifdef DAB_NPU_DAB16_MODEL
+#ifdef DAB_NPU_GENERATED_MODEL
 static float s_input[DAB_NPU_RUNTIME_INPUT_DIM]; // NPU 模型输入宽度由生成契约给出，完成前不得改写。
 #else
 static float s_input[DAB_NN_INPUT_DIM]; // FPU 使用原始三项归一化输入。
@@ -74,6 +76,10 @@ volatile float g_nnBenchmarkVin = DAB_NOMINAL_VIN;
 volatile Dab_NnBenchmarkState_e g_nnBenchmarkState;
 volatile uint32_t g_nnBenchmarkCompleted, g_nnBenchmarkWarmupCompleted;
 volatile uint16_t g_nnBenchmarkRejectReason;
+#if DAB_NN_AUTO_BENCHMARK
+#pragma DATA_SECTION(g_nnBenchmarkE2eTicks, "ramgs0")
+volatile uint32_t g_nnBenchmarkE2eTicks[DAB_NN_BENCH_TICK_CAP];
+#endif
 static uint32_t s_jobBeginTick, s_jobPrepTick, s_jobRunTick, s_jobReturnTick;
 static bool s_profileActive, s_benchJob, s_benchCancel;
 static uint32_t s_benchIterations, s_benchWarmup;
@@ -91,7 +97,7 @@ static void clearTiming(void)
     g_nnTimingSequence++;
     memset((void *)&g_nnTiming, 0, sizeof(g_nnTiming));
     memset((void *)&g_nnNpuDetail, 0, sizeof(g_nnNpuDetail));
-#if defined(DAB_NPU_DAB16_MODEL) && DAB_NPU_DETAIL_PROFILE
+#if defined(DAB_NPU_GENERATED_MODEL) && DAB_NPU_DETAIL_PROFILE
     g_nnNpuDetail.instrumented = true;
 #endif
     g_nnTiming.timerHz = DEVICE_SYSCLK_FREQ;
@@ -136,7 +142,7 @@ static void snapshotBenchmarkOutput(void)
 
 static void finishProfile(bool valid, uint32_t observedTick, uint32_t publishedTick)
 {
-#if defined(DAB_USE_HARDWARE_NPU) && defined(DAB_NPU_DAB16_MODEL) && DAB_NPU_DETAIL_PROFILE
+#if defined(DAB_USE_HARDWARE_NPU) && defined(DAB_NPU_GENERATED_MODEL) && DAB_NPU_DETAIL_PROFILE
     uint16_t slot;
 #endif
 #ifdef DAB_USE_HARDWARE_NPU
@@ -144,8 +150,8 @@ static void finishProfile(bool valid, uint32_t observedTick, uint32_t publishedT
 #endif
     bool warmup = s_benchJob && g_nnBenchmarkWarmupCompleted < s_benchWarmup;
     g_nnTimingSequence++;
-    if (!valid && !g_nnTiming.frozen) g_nnTiming.rejectedOutputs++;
-    else if (valid && !warmup && !g_nnTiming.frozen)
+    if ((!valid || !s_valid) && !g_nnTiming.frozen) g_nnTiming.rejectedOutputs++;
+    if (valid && !warmup && !g_nnTiming.frozen)
     {
         addTime(&g_nnTiming.prepare, s_jobBeginTick - s_jobPrepTick);
 #ifdef DAB_USE_HARDWARE_NPU
@@ -160,7 +166,7 @@ static void finishProfile(bool valid, uint32_t observedTick, uint32_t publishedT
         g_nnTiming.npuIsrLastCount = s_isrCount;
         for (layer = 0U; layer < 5U; layer++)
             g_nnTiming.npuIsrLastLayerCount[layer] = s_isrLayerCount[layer];
-#if defined(DAB_NPU_DAB16_MODEL) && DAB_NPU_DETAIL_PROFILE
+#if defined(DAB_NPU_GENERATED_MODEL) && DAB_NPU_DETAIL_PROFILE
         for (slot=0U; slot<DAB_NPU_TRACE_SLOTS; slot++)
         {
             g_nnNpuDetail.lastCalls[slot] = s_traceCalls[slot];
@@ -172,7 +178,14 @@ static void finishProfile(bool valid, uint32_t observedTick, uint32_t publishedT
 #endif
         addTime(&g_nnTiming.publish, observedTick - publishedTick);
         addTime(&g_nnTiming.endToEnd, s_jobBeginTick - publishedTick);
-        if (s_benchJob) snapshotBenchmarkOutput();
+        if (s_benchJob)
+        {
+            snapshotBenchmarkOutput();
+#if DAB_NN_AUTO_BENCHMARK
+            if (g_nnBenchmarkCompleted < DAB_NN_BENCH_TICK_CAP)
+                g_nnBenchmarkE2eTicks[g_nnBenchmarkCompleted] = s_jobBeginTick - publishedTick;
+#endif
+        }
     }
     s_profileActive = false;
     if (s_benchJob)
@@ -459,9 +472,6 @@ void DAB_NN_init(void)
     s_valid = s_fault = s_hasInput = false;
     g_nnInferenceCount = g_nnTimeoutCount = 0U;
     s_profileActive = s_benchJob = s_benchCancel = false;
-#ifndef DAB_NN_AUTO_BENCHMARK
-#define DAB_NN_AUTO_BENCHMARK 0 // 正式固件默认不自动跑性能测试；测试构建通过 --define 开启。
-#endif
 #if DAB_NN_AUTO_BENCHMARK
     g_nnBenchmarkRequested = true; g_nnBenchmarkCancelRequested = false; // 开启NN耗时测试
 #else
@@ -474,6 +484,9 @@ void DAB_NN_init(void)
     g_nnBenchmarkRejectReason = 0U;
     memset((void *)g_nnBenchmarkOutput, 0, sizeof(g_nnBenchmarkOutput));
     g_nnBenchmarkOutputValid = 0U;
+#if DAB_NN_AUTO_BENCHMARK
+    memset((void *)g_nnBenchmarkE2eTicks, 0, sizeof(g_nnBenchmarkE2eTicks));
+#endif
     g_nnTimingResetRequested = g_nnTimingResetAccepted = false;
     g_nnTimingSequence = 0U;
     // Shared free-running time source for NPU timeout and background telemetry.
@@ -491,7 +504,7 @@ void DAB_NN_init(void)
 #ifdef DAB_USE_HARDWARE_NPU
     s_busy = false;
     s_npuDoneStamped = false;
-#if defined(__TI_COMPILER_VERSION__) && defined(DAB_NPU_DAB16_MODEL) && DAB_NPU_RAM_RUNTIME
+#if defined(__TI_COMPILER_VERSION__) && defined(DAB_NPU_GENERATED_MODEL) && DAB_NPU_RAM_RUNTIME
     // C28 的 memcpy 长度按 16 位存储单元计；链接器符号的地址给出镜像长度。
     // 先完成复制再注册/启动 NPU，保证普通 Flash 上电启动同样有效。
     memcpy(&DabNpuRunStart, &DabNpuLoadStart, (size_t)&DabNpuLoadSize);
@@ -508,10 +521,21 @@ static bool publishOutput(void)
 {
     uint16_t i;
     bool masked;
-    if (s_fault || !DAB_nnOutputValid(s_output)) { s_fault = true; s_valid = false; return false; } // 已有锁定异常或输出越界就拒绝发布，不允许晚完成恢复为有效。
+    bool legal = DAB_nnOutputValid(s_output);
+    if (s_fault) { s_valid = false; return false; } // 已有锁定异常不允许晚完成恢复为有效。
+    if (!legal)
+    {
+        if (!s_benchJob)
+        {
+            s_fault = true;
+            s_valid = false;
+            return false; // 控制路径仍拒绝非法输出；隔离计时才允许继续采样。
+        }
+        s_valid = false;
+    }
+    else s_valid = true;
     masked = Interrupt_disableGlobal();
     for (i = 0U; i < DAB_NN_OUTPUT_DIM; i++) g_nnLastOutput[i] = s_output[i]; // 短暂关中断拷贝整套结果，避免控制取到两个版本拼成的四个量。
-    s_valid = true;
     g_nnInferenceCount++;
     if (!masked) Interrupt_enableGlobal();
     return true;
@@ -555,7 +579,7 @@ static void serviceInference(float vin_volts, bool force)
     if (!DAB_isFinite(vin_volts))
     { s_fault = true; s_valid = false; return; } // Vin 必须有限；真实训练范围仍需原始训练说明。
     if (vin_volts < 0.0f) vin_volts = 0.1f; // 零点附近标定可能为负，钳到 0，不锁网络故障。
-#ifdef DAB_NPU_DAB16_MODEL
+#ifdef DAB_NPU_GENERATED_MODEL
     if (vin_volts < DAB_NPU_MIN_VIN || vin_volts > DAB_NPU_MAX_VIN)
     { s_fault = true; s_valid = false; return; } // 候选模型只在 90～140 V 做过量化与离线检查。
 #endif
@@ -580,7 +604,12 @@ static void serviceInference(float vin_volts, bool force)
     // the constant inputs still requires the original training specification.
     s_profileActive = true;
     s_jobBeginTick = CPUTimer_getTimerCount(CPUTIMER2_BASE);
-#ifdef DAB_NPU_DAB16_MODEL
+#ifdef DAB_NPU_FC_MODEL
+    memset(s_input, 0, sizeof(s_input));
+    s_input[0] = -0.5f; // 原生三维输入；多出的硬件通道严格补零，不把常量折进偏置。
+    s_input[1] = vin_volts / 140.0f;
+    s_input[2] = 0.285714f;
+#elif defined(DAB_NPU_DAB16_MODEL)
     memset(s_input, 0, sizeof(s_input));
     s_input[1] = vin_volts / 25.0f - 4.6f; // 两项常量已折入第一层，Vin 居中缩放；其余输入保持为零。
 #else
@@ -592,7 +621,7 @@ static void serviceInference(float vin_volts, bool force)
 #ifdef DAB_USE_HARDWARE_NPU
     {
         int32_t status;
-#if defined(DAB_NPU_DAB16_MODEL) && DAB_NPU_DETAIL_PROFILE
+#if defined(DAB_NPU_GENERATED_MODEL) && DAB_NPU_DETAIL_PROFILE
         memset((void *)s_traceTicks, 0, sizeof(s_traceTicks));
         memset((void *)s_traceCalls, 0, sizeof(s_traceCalls));
         memset((void *)s_traceOpen, 0, sizeof(s_traceOpen));
@@ -652,7 +681,7 @@ bool DAB_NN_benchmarkService(bool outputsStopped)
         else if (g_nnBenchmarkIterations == 0U || g_nnBenchmarkIterations > 10000U ||
                  g_nnBenchmarkWarmup > 1000U || !DAB_isFinite(g_nnBenchmarkVin) ||
                  g_nnBenchmarkVin <= 0.0f) g_nnBenchmarkRejectReason = 4U;
-#ifdef DAB_NPU_DAB16_MODEL
+#ifdef DAB_NPU_GENERATED_MODEL
         else if (g_nnBenchmarkVin < DAB_NPU_MIN_VIN || g_nnBenchmarkVin > DAB_NPU_MAX_VIN)
             g_nnBenchmarkRejectReason = 4U; // 越界只拒绝测试请求，不提交模型运算。
 #endif
@@ -670,6 +699,9 @@ bool DAB_NN_benchmarkService(bool outputsStopped)
             s_benchCancel = s_benchJob = false;
             memset((void *)g_nnBenchmarkOutput, 0, sizeof(g_nnBenchmarkOutput));
             g_nnBenchmarkOutputValid = 0U;
+#if DAB_NN_AUTO_BENCHMARK
+            memset((void *)g_nnBenchmarkE2eTicks, 0, sizeof(g_nnBenchmarkE2eTicks));
+#endif
             clearTiming();
             g_nnBenchmarkState = DAB_NN_BENCH_RUNNING;
         }

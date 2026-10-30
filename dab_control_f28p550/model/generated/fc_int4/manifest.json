@@ -1,0 +1,65 @@
+{
+  "kind": "native_3input_fc",
+  "model": "int4_zero_neuron.onnx",
+  "model_sha256": "93e7933e251bed7211e75560cc142c926e4844b5e1f02f1a2d3201102ec55568",
+  "source_generated": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\generated\\int4_zero_neuron_force_hw",
+  "ti_mcu_nnc": "2.1.1",
+  "force_no_c28_soft_offload": true,
+  "input_shape": [
+    1,
+    8
+  ],
+  "output_shape": [
+    1,
+    4
+  ],
+  "io_dtype": "float32",
+  "input": "features[0]=-0.5; features[1]=Vin/140; features[2]=0.285714; remaining channels zero; no Vin fold",
+  "expected_vin90_output": [
+    0.6701027154922485,
+    0.28851646184921265,
+    -0.009306982159614563,
+    1.0237680673599243
+  ],
+  "output_order": [
+    "D1",
+    "D0",
+    "D2",
+    "T"
+  ],
+  "power_control_approved": false,
+  "hardware_stages": 4,
+  "completion_hook": "after final output dequantization, before finished=1",
+  "detail_profile": false,
+  "optimization_level": 5,
+  "vin_channel_quant": false,
+  "reuse_instructions": true,
+  "hidden_identity": false,
+  "packed_transitions": false,
+  "ram_constant_symbols": [
+    "FC_PARAMS",
+    "FC_MMR",
+    "FC_PARAMS_1",
+    "FC_MMR_1",
+    "FC_PARAMS_2",
+    "FC_MMR_2",
+    "FC_PARAMS_3",
+    "FC_MMR_3",
+    "FC_PARAMS_3_sub1",
+    "FC_MMR_3_sub1",
+    "FC_iB8_oB8_kB4_iCm8_oC2L_INS",
+    "FC_iB8_oB8_kB4_iCm8_oCm4_INS"
+  ],
+  "runtime_sha256": "0a632b74a950f4f280d9f1aa973ecaac87e681ddf4500970d8c93d4eaef6c367",
+  "driver_sha256": "1823676ba5e1da2904231a800a3628b123d61f2ae9a311d079d0d61fa900d4b3",
+  "kernel_sha256": "94dccd629ddb3aedab0740bbb4b89015d29fa7146d9e971882d342bd83b4ba7f",
+  "library_sha256": "daaedda7eb1c31c60e7d8153c2884759469a59b382edf5875b0086843f5e991f",
+  "header_sha256": "abf2907eb37e68b201c26f99a7d89dd3ff69ab57ef4447cba9b0b6c6396dcaed",
+  "hardware_fc_mapped": true,
+  "fc_ins_tables": [
+    "FC_iB8_oB8_kB4_iCm8_oC2L_INS",
+    "FC_iB8_oB8_kB4_iCm8_oCm4_INS"
+  ],
+  "tinie_layer_increments": 4,
+  "tinie_fullyConnectedNHWC": 16
+}

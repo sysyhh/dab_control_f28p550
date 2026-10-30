@@ -1,0 +1,65 @@
+{
+  "kind": "native_3input_fc",
+  "model": "int8_zero_neuron.onnx",
+  "model_sha256": "e8188b8f4d545b7687fc60a7781e13ad153da03b8ef6f3c6acfc9d1f249acd98",
+  "source_generated": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\generated\\int8_zero_neuron_force_hw",
+  "ti_mcu_nnc": "2.1.1",
+  "force_no_c28_soft_offload": true,
+  "input_shape": [
+    1,
+    16
+  ],
+  "output_shape": [
+    1,
+    4
+  ],
+  "io_dtype": "float32",
+  "input": "features[0]=-0.5; features[1]=Vin/140; features[2]=0.285714; remaining channels zero; no Vin fold",
+  "expected_vin90_output": [
+    0.453125,
+    0.25,
+    0.0,
+    1.0
+  ],
+  "output_order": [
+    "D1",
+    "D0",
+    "D2",
+    "T"
+  ],
+  "power_control_approved": false,
+  "hardware_stages": 4,
+  "completion_hook": "after final output dequantization, before finished=1",
+  "detail_profile": false,
+  "optimization_level": 5,
+  "vin_channel_quant": false,
+  "reuse_instructions": true,
+  "hidden_identity": false,
+  "packed_transitions": false,
+  "ram_constant_symbols": [
+    "FC_PARAMS",
+    "FC_MMR",
+    "FC_PARAMS_1",
+    "FC_MMR_1",
+    "FC_PARAMS_1_sub1",
+    "FC_MMR_1_sub1",
+    "FC_PARAMS_2",
+    "FC_MMR_2",
+    "FC_PARAMS_3",
+    "FC_MMR_3",
+    "FC_iB8_oB8_kB8_iCm8b16_oC1LL_INS",
+    "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+  ],
+  "runtime_sha256": "fe0a0b0fd2045686a16979868ca263532fdf75d486ffd643fdc269a8a6c2d545",
+  "driver_sha256": "1823676ba5e1da2904231a800a3628b123d61f2ae9a311d079d0d61fa900d4b3",
+  "kernel_sha256": "51fdfab9dcab06462d088925d2edc5baf89d4b136b8d020ba58130e6dfd6240b",
+  "library_sha256": "2a901b110898209495486b7bc36cd00334dfd4017a437107c984bd61659fd675",
+  "header_sha256": "d2c4d00eba223200688be9eb14feec75f56b49aba69babfdbf90eddc446f6aa2",
+  "hardware_fc_mapped": true,
+  "fc_ins_tables": [
+    "FC_iB8_oB8_kB8_iCm8b16_oC1LL_INS",
+    "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+  ],
+  "tinie_layer_increments": 4,
+  "tinie_fullyConnectedNHWC": 16
+}

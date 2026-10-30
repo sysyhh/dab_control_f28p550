@@ -75,6 +75,8 @@ def main():
     parser.add_argument('--nn-auto-benchmark', action='store_true',
                         help='Test build only: compile with DAB_NN_AUTO_BENCHMARK=1. Official firmware defaults to 0.')
     parser.add_argument('--verify-npu-const', action='store_true', help='Compare the LS3 model constants with their Flash load image')
+    parser.add_argument('--read-e2e-ticks', action='store_true',
+                        help='After halt, read g_nnBenchmarkE2eTicks[1000] from ramgs0')
     parser.add_argument('--ccxml', type=Path)
     parser.add_argument('--expr', action='append', help='Read scalar GEL expression; repeat for multiple expressions')
     parser.add_argument('--register', action='append', help='Register name; PC is always included')
@@ -145,6 +147,7 @@ def main():
                            registers=list(dict.fromkeys(['PC'] + (args.register or []))),
                            memory_registers=PWM_TRIP_REGISTERS,
                            verify_npu_const=args.verify_npu_const,
+                           read_e2e_ticks=args.read_e2e_ticks,
                            attach_only=args.attach_only,
                            run_ms=args.run_ms, samples=args.samples, timeout_ms=args.timeout_ms)
             request_file = run_dir / 'request.json'

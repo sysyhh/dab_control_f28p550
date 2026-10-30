@@ -55,8 +55,8 @@ bool DAB_Control_start(void)
     float outputs[DAB_NN_OUTPUT_DIM];
     bool accepted = false;
     bool masked = Interrupt_disableGlobal();
-#if defined(DAB_NPU_DAB16_MODEL) && !DAB_NPU_POWER_CONTROL_APPROVED
-    if (true) g_startRejectReason = 7U; // 当前 INT8 候选模型仅供核对与计时，不能用板确认宏绕过精度验收。
+#if defined(DAB_NPU_GENERATED_MODEL) && !DAB_NPU_POWER_CONTROL_APPROVED
+    if (true) g_startRejectReason = 7U; // NPU 候选仅供核对与计时；FC/PWCONV 均不能用板确认宏绕过精度验收。
 #else
     if (!DAB_BOARD_CONFIG_CONFIRMED) g_startRejectReason = 1U; // 未核对接线和硬件时拒绝功率输出；默认宏为 0。
 #endif

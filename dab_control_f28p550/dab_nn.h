@@ -19,8 +19,33 @@
 // Uncomment DAB_USE_HARDWARE_NPU when using the compiled TI NPU model (mod.a)
 //=============================================================================
 //#define DAB_USE_HARDWARE_NPU
-// 默认保留 FPU 基准；CPU1_LAUNCHXL_NPU_FLASH 使用 DAB16 专用库，输入 16 项、输出 4 项 FLOAT32。
+// 默认保留 FPU 基准。CPU1_LAUNCHXL_NPU_FLASH 使用已交付的 PWCONV 库。
+// CPU1_LAUNCHXL_FC_INT8_FLASH / FC_INT4_FLASH 使用隔离的原生三维输入 FC 库。
+#if defined(DAB_NPU_FC_INT8) && defined(DAB_NPU_FC_INT4)
+#error "INT8 and INT4 FC models cannot be enabled together"
+#endif
+#if defined(DAB_NPU_FC_INT8) || defined(DAB_NPU_FC_INT4)
+#define DAB_NPU_FC_MODEL 1
+#define DAB_NPU_GENERATED_MODEL 1
+#ifndef DAB_USE_HARDWARE_NPU
+#error "FC NPU model requires DAB_USE_HARDWARE_NPU"
+#endif
 #ifdef DAB_NPU_DAB16_MODEL
+#error "FC test builds must not define DAB_NPU_DAB16_MODEL"
+#endif
+#ifdef DAB_NPU_FC_INT8
+#include "model/generated/fc_int8/dab_npu_contract.h"
+#if DAB_NPU_RUNTIME_INPUT_DIM != 16U || DAB_NPU_RUNTIME_OUTPUT_DIM != 4U
+#error "INT8 FC adapter expects 16 float inputs and 4 float outputs"
+#endif
+#else
+#include "model/generated/fc_int4/dab_npu_contract.h"
+#if DAB_NPU_RUNTIME_INPUT_DIM != 8U || DAB_NPU_RUNTIME_OUTPUT_DIM != 4U
+#error "INT4 FC adapter expects 8 float inputs and 4 float outputs"
+#endif
+#endif
+#elif defined(DAB_NPU_DAB16_MODEL)
+#define DAB_NPU_GENERATED_MODEL 1
 #ifndef DAB_USE_HARDWARE_NPU
 #error "DAB16 model requires DAB_USE_HARDWARE_NPU"
 #endif
@@ -112,6 +137,15 @@ extern volatile float g_nnBenchmarkVin;
 extern volatile Dab_NnBenchmarkState_e g_nnBenchmarkState;
 extern volatile uint32_t g_nnBenchmarkCompleted, g_nnBenchmarkWarmupCompleted;
 extern volatile uint16_t g_nnBenchmarkRejectReason; // 0 无；1 正在测试；2 输出未停；3 NN 忙/故障；4 参数错误。
+#ifndef DAB_NN_AUTO_BENCHMARK
+#define DAB_NN_AUTO_BENCHMARK 0
+#endif
+#ifndef DAB_NN_BENCH_TICK_CAP
+#define DAB_NN_BENCH_TICK_CAP 1000U
+#endif
+#if DAB_NN_AUTO_BENCHMARK
+extern volatile uint32_t g_nnBenchmarkE2eTicks[DAB_NN_BENCH_TICK_CAP];
+#endif
 bool DAB_NN_isBenchmarkActive(void);
 // 仅后台调用。true 表示本轮已由测试接管 NN 服务，主循环不再重复调用普通服务。
 bool DAB_NN_benchmarkService(bool outputsStopped);

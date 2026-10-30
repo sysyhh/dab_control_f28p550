@@ -1,0 +1,48 @@
+{
+  "ok": true,
+  "date": "2026-10-31",
+  "live_npu_untouched": true,
+  "live_npu_mod_a_sha256": "6714f8e2ee9909ecc1ba7a516df8f1c5e84369298d145549d3a5832530d99390",
+  "power_control_approved": 0,
+  "pwm_ost_latched": true,
+  "native_three_input": true,
+  "vin_fold": false,
+  "force_no_ti_c28_soft_offload": true,
+  "report": "dab_control_f28p550/model/experiments/fc/FC_native_3input_board_20261031_zh.md",
+  "accuracy": "dab_control_f28p550/model/experiments/fc/results/board_accuracy_501.json",
+  "timing_extract": "dab_control_f28p550/model/experiments/fc/results/board_timing_extract.json",
+  "board": {
+    "fpu": {
+      "endToEndMeanUs": 28.679670333862305,
+      "minUs": 23.68,
+      "maxUs": 42.13333333333333,
+      "p95Us": 36.153333333333336,
+      "summary": "tools/c2000_debug/benchmarks/20261031_003715_fc_native_fpu/summary.json"
+    },
+    "int8": {
+      "endToEndMeanUs": 147.21311950683594,
+      "minUs": 141.86,
+      "maxUs": 159.14,
+      "p95Us": 153.20666666666668,
+      "hardware_fc_layers": 4,
+      "npu_starts": 5,
+      "isr_layers": [0, 2, 1, 1, 1],
+      "max_pwm_count": 335,
+      "invalid_count": 0,
+      "summary": "tools/c2000_debug/benchmarks/20261031_003837_fc_native_int8/summary.json"
+    },
+    "int4": {
+      "endToEndMeanUs": 114.12592315673828,
+      "minUs": 111.04666666666667,
+      "maxUs": 128.3,
+      "p95Us": 122.37333333333333,
+      "hardware_fc_layers": 4,
+      "npu_starts": 5,
+      "isr_layers": [0, 2, 1, 1, 1],
+      "max_pwm_count": 1730,
+      "invalid_count": 50,
+      "board_vin90_illegal": true,
+      "summary": "tools/c2000_debug/benchmarks/20261031_004031_fc_native_int4/summary.json"
+    }
+  }
+}

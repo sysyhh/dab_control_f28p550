@@ -18,26 +18,56 @@ FIELDS = ('samples', 'lastTicks', 'minTicks', 'maxTicks', 'totalTicks', 'meanUs'
 TIMES = ('prepare', 'fpuForward', 'npuSubmit', 'npuObserved', 'npuCompletion', 'npuIsr', 'publish', 'endToEnd')
 STAGES = ('input', 'packedCopyAndPack', 'unpack', 'hiddenConvert', 'parameters',
           'instructions', 'registers', 'layer0Wait', 'layer1Wait', 'layer2Wait', 'layer3Wait', 'output')
+BACKENDS = {
+    'fpu': {'build': 'CPU1_LAUNCHXL_FLASH', 'npu': False, 'manifest': None},
+    'npu': {'build': 'CPU1_LAUNCHXL_NPU_FLASH', 'npu': True, 'manifest': APP/'model/generated/npu/manifest.json'},
+    'fc_int8': {'build': 'CPU1_LAUNCHXL_FC_INT8_FLASH', 'npu': True, 'manifest': APP/'model/generated/fc_int8/manifest.json'},
+    'fc_int4': {'build': 'CPU1_LAUNCHXL_FC_INT4_FLASH', 'npu': True, 'manifest': APP/'model/generated/fc_int4/manifest.json'},
+}
 
 def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
 
+def tick_stats(ticks, timer_hz):
+    values = [int(x) for x in ticks if int(x) > 0]
+    if not values:
+        return None
+    values.sort()
+    n = len(values)
+    mean = sum(values) / n
+    var = sum((x - mean) ** 2 for x in values) / n
+    def us(ticks_): return ticks_ * 1.0e6 / timer_hz
+    def pct(p):
+        if n == 1: return values[0]
+        idx = min(n - 1, max(0, int(round((p / 100.0) * (n - 1)))))
+        return values[idx]
+    return {
+        'samples': n, 'min_ticks': values[0], 'max_ticks': values[-1],
+        'mean_ticks': mean, 'std_ticks': var ** 0.5,
+        'p95_ticks': pct(95), 'p99_ticks': pct(99),
+        'min_us': us(values[0]), 'max_us': us(values[-1]), 'mean_us': us(mean),
+        'std_us': us(var ** 0.5), 'p95_us': us(pct(95)), 'p99_us': us(pct(99)),
+    }
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--backend', choices=('fpu', 'npu'), required=True)
+    parser.add_argument('--backend', choices=tuple(BACKENDS), required=True)
     parser.add_argument('--label', required=True)
     parser.add_argument('--repeats', type=int, default=3)
     parser.add_argument('--run-ms', type=int, default=1000)
     args = parser.parse_args()
     if not 1 <= args.repeats <= 10: parser.error('repeats must be 1..10')
+    spec = BACKENDS[args.backend]
     report_dir = ROOT / 'tools/c2000_debug/benchmarks' / (datetime.now().strftime('%Y%m%d_%H%M%S') + '_' + args.label)
     report_dir.mkdir(parents=True)
     report = {'ok': False, 'timestamp_utc': datetime.now(timezone.utc).isoformat(),
               'backend': args.backend, 'label': args.label, 'continuous_run_ms': args.run_ms,
+              'build_dir': spec['build'],
               'firmware_sources_sha256': {p: sha(APP/p) for p in ('dab_nn.c', 'dab_main.c', 'dab_board_config.h')},
               'runs': []}
-    if args.backend == 'npu':
-        report['model_manifest'] = json.loads((APP/'model/generated/npu/manifest.json').read_text(encoding='utf-8'))
-        if sha(APP/'model/generated/npu/mod.a') != report['model_manifest']['library_sha256']:
+    if spec['manifest']:
+        report['model_manifest'] = json.loads(spec['manifest'].read_text(encoding='utf-8'))
+        archive = spec['manifest'].parent / 'mod.a'
+        if sha(archive) != report['model_manifest']['library_sha256']:
             raise RuntimeError('Model archive differs from manifest; compile the model again')
     meta = ['g_debugBuildId', 'g_dabState', 'g_protectFlags.all', 'g_startRequested',
             'g_controlHeartbeat', 'g_backgroundHeartbeat', 'g_nnBenchmarkState',
@@ -56,11 +86,11 @@ def main():
     try:
         for index in range(args.repeats):
             command = [sys.executable, str(ROOT/'c2000_debug.py'), '--run-test', '--rebuild-nn',
-                       '--nn-auto-benchmark', '--build-dir',
-                       'CPU1_LAUNCHXL_NPU_FLASH' if args.backend == 'npu' else 'CPU1_LAUNCHXL_FLASH',
-                       '--run-ms', str(args.run_ms), '--samples', '1', '--timeout-ms', '60000']
+                       '--nn-auto-benchmark', '--build-dir', spec['build'],
+                       '--run-ms', str(args.run_ms), '--samples', '1', '--timeout-ms', '60000',
+                       '--read-e2e-ticks']
             for expression in expressions: command += ['--expr', expression]
-            if args.backend == 'npu' and report['model_manifest'].get('optimization_level',0) >= 5:
+            if spec['npu'] and report['model_manifest'].get('optimization_level', 0) >= 5:
                 command.append('--verify-npu-const')
             process = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, encoding='utf-8', timeout=240)
             (report_dir/f'run_{index+1}.json').write_text(process.stdout, encoding='utf-8', newline='\n')
@@ -77,14 +107,15 @@ def main():
                       'lastCalls': [values[f'g_nnNpuDetail.lastCalls[{i}]'] for i in range(12)],
                       'stage': [{f: values[f'g_nnNpuDetail.stage[{i}].{f}'] for f in FIELDS} for i in range(12)],
                       'stage_names': list(STAGES)}
+            is_npu = spec['npu']
+            is_fc = args.backend.startswith('fc_')
             checks = {
                 'benchmark_done': values['g_nnBenchmarkState'] == 2,
                 'samples_1000': values['g_nnBenchmarkCompleted'] == timing['endToEnd']['samples'] == 1000,
                 'warmup_10': values['g_nnBenchmarkWarmupCompleted'] == 10,
                 'vin_90': values['g_nnBenchmarkVin'] == 90,
-                'backend_matches': timing['backend'] == (args.backend == 'npu'),
+                'backend_matches': timing['backend'] == int(is_npu),
                 'frozen': bool(timing['frozen']),
-                'no_rejections': timing['rejectedOutputs'] == values['g_nnBenchmarkRejectReason'] == 0,
                 'no_timeout': values['g_nnTimeoutCount'] == 0,
                 'standby': values['g_dabState'] == 1,
                 'no_fault_or_start': values['g_protectFlags.all'] == values['g_startRequested'] == 0,
@@ -96,43 +127,60 @@ def main():
                 'benchmark_output_valid': values['g_nnBenchmarkOutputValid'] == 1,
                 'foreground_and_control_running': values['g_controlHeartbeat'] > 0 and values['g_backgroundHeartbeat'] > 0,
             }
+            if not is_fc:
+                checks['no_rejections'] = timing['rejectedOutputs'] == values['g_nnBenchmarkRejectReason'] == 0
+            else:
+                checks['reject_reason_clear'] = values['g_nnBenchmarkRejectReason'] == 0
             statistics = [timing[t] for t in TIMES] + detail['stage']
             checks['tick_statistics_consistent'] = all(not s['samples'] or
                 (s['minTicks'] <= s['totalTicks']/s['samples'] <= s['maxTicks'] and
                  abs(s['meanUs'] - s['totalTicks']*1.e6/s['samples']/timing['timerHz']) < .001)
                 for s in statistics)
-            if args.backend == 'fpu':
+            if not is_npu:
                 checks['forward_samples'] = timing['fpuForward']['samples'] == 1000
                 checks['no_npu_isr'] = timing['npuIsr']['samples'] == 0
             checks['snapshot_finite'] = all(x == x and abs(x) != float('inf') for x in snapshot)
-            if args.backend == 'npu':
-                if report['model_manifest'].get('optimization_level',0) >= 5:
-                    checks['ram_constants_match_flash'] = raw.get('model_constant_copy',{}).get('matches') is True
+            if is_npu:
+                if report['model_manifest'].get('optimization_level', 0) >= 5:
+                    checks['ram_constants_match_flash'] = raw.get('model_constant_copy', {}).get('matches') is True
                 checks['detail_mode_matches_library'] = bool(detail['instrumented']) == report['model_manifest']['detail_profile']
                 checks['completion_samples'] = timing['npuCompletion']['samples'] == 1000
                 checks['isr_samples'] = timing['npuIsr']['samples'] == 1000
-                checks['four_isrs'] = timing['npuIsrLastCount'] == 4
-                checks['isr_layers'] = timing['npuIsrLastLayerCount'] == [0, 1, 1, 1, 1]
-                checks['isr_invocations'] = timing['npuIsrInvocations'] == 4000
-                expected = report['model_manifest'].get('expected_vin90_output', [.4375, .25, 0., 1.])
-                checks['known_vin90_output'] = snapshot == expected
-                if detail['instrumented']:
-                    # INS 分段包围整个 Step 2；复用时仍进入该段，只是可能跳过 TINIE_mem_write。
-                    ins_calls = 4
-                    checks['four_layers'] = (detail['lastCalls'][4:7] == [4, ins_calls, 4] and
-                                             detail['lastCalls'][7:11] == [1, 1, 1, 1])
-                    checks['no_hidden_conversion'] = detail['lastCalls'][3] == 0
+                if is_fc:
+                    checks['hardware_isr_count'] = timing['npuIsrLastCount'] >= 4
+                    checks['isr_layer0_unused'] = timing['npuIsrLastLayerCount'][0] == 0
+                    checks['isr_layer_sum'] = (sum(timing['npuIsrLastLayerCount']) == timing['npuIsrLastCount'])
+                    checks['isr_invocations'] = timing['npuIsrInvocations'] == 1000 * timing['npuIsrLastCount']
+                    expected = report['model_manifest'].get('expected_vin90_output')
+                    if expected is not None:
+                        checks['vin90_output_close'] = all(abs(a - b) < 1e-4 for a, b in zip(snapshot, expected))
+                else:
+                    checks['four_isrs'] = timing['npuIsrLastCount'] == 4
+                    checks['isr_layers'] = timing['npuIsrLastLayerCount'] == [0, 1, 1, 1, 1]
+                    checks['isr_invocations'] = timing['npuIsrInvocations'] == 4000
+                    expected = report['model_manifest'].get('expected_vin90_output', [.4375, .25, 0., 1.])
+                    checks['known_vin90_output'] = snapshot == expected
+                    if detail['instrumented']:
+                        ins_calls = 4
+                        checks['four_layers'] = (detail['lastCalls'][4:7] == [4, ins_calls, 4] and
+                                                 detail['lastCalls'][7:11] == [1, 1, 1, 1])
+                        checks['no_hidden_conversion'] = detail['lastCalls'][3] == 0
             cpu_us = (timing['prepare']['meanUs'] + timing['publish']['meanUs'] +
-                      (timing['npuSubmit']['meanUs'] if args.backend == 'npu' else timing['fpuForward']['meanUs']))
-            isr_us = timing['npuIsr']['meanUs'] if args.backend == 'npu' else 0.0
+                      (timing['npuSubmit']['meanUs'] if is_npu else timing['fpuForward']['meanUs']))
+            isr_us = timing['npuIsr']['meanUs'] if is_npu else 0.0
             wait_us = 0.0
-            if args.backend == 'npu':
+            if is_npu:
                 wait_us = timing['npuCompletion']['meanUs'] - timing['npuSubmit']['meanUs'] - timing['npuIsr']['meanUs']
+            e2e = tick_stats(raw.get('e2e_ticks') or [], timing['timerHz'])
+            if e2e:
+                checks['e2e_tick_count'] = e2e['samples'] == 1000
             report['runs'].append({'raw_result': str(Path(raw['run_dir'])/'result.json'),
                                    'out_sha256': raw['out_sha256'], 'metadata': {k:values[k] for k in meta},
                                    'output': snapshot, 'live_output_after_service': live_output,
                                    'cpu_foreground_mean_us': cpu_us, 'cpu_isr_mean_us': isr_us,
                                    'cpu_total_mean_us': cpu_us + isr_us, 'npu_hw_wait_mean_us': wait_us,
+                                   'end_to_end_distribution': e2e,
+                                   'rejected_outputs': timing['rejectedOutputs'],
                                    'timing': timing, 'detail': detail, 'checks': checks})
             if not all(checks.values()): raise RuntimeError(f'Board checks failed: {checks}')
         report['ok'] = True
@@ -143,6 +191,7 @@ def main():
         (report_dir/'summary.json').write_text(json.dumps(report,ensure_ascii=False,indent=2), encoding='utf-8', newline='\n')
         print(json.dumps({'ok':report['ok'], 'report':report['report_path'], 'runs':len(report['runs']),
                           'endToEndMeanUs':[r['timing']['endToEnd']['meanUs'] for r in report['runs']],
+                          'p95Us':[(r.get('end_to_end_distribution') or {}).get('p95_us') for r in report['runs']],
                           'error':report.get('error')},ensure_ascii=False))
     return 0 if report['ok'] else 1
 

@@ -79,11 +79,17 @@ def ram_functions(code, names):
 
 def ram_constants(code):
     # 仅改变 CPU 读取常量的位置；每层向 NPU 的完整装载流程保持原样。
-    arrays=re.findall(r'static const uint32_t (PWCONV_(?:PARAMS|MMR)(?:_\d+)?)\[\]',code)
-    headers=sorted(set(re.findall(r'#include "hard/ins_asm/(PWCONV_\w+_INS)\.h"',code)))
-    if (sum(name.startswith('PWCONV_PARAMS') for name in arrays)!=4 or
-            sum(name.startswith('PWCONV_MMR') for name in arrays)!=4 or not 1 <= len(headers) <= 2):
-        raise RuntimeError('Unexpected constant layout; expected 4 parameter/4 MMR arrays and 1 or 2 instruction tables')
+    arrays=re.findall(r'static const uint32_t ((?:PWCONV|FC)_(?:PARAMS|MMR)(?:_\d+)?(?:_sub\d+)?)\[\]',code)
+    headers=sorted(set(re.findall(r'#include "hard/ins_asm/((?:PWCONV|FC)_\w+_INS)\.h"',code)))
+    n_params=sum('PARAMS' in name for name in arrays)
+    n_mmr=sum('MMR' in name for name in arrays)
+    pwconv=any(name.startswith('PWCONV_') for name in arrays)
+    if pwconv:
+        if (sum(name.startswith('PWCONV_PARAMS') for name in arrays)!=4 or
+                sum(name.startswith('PWCONV_MMR') for name in arrays)!=4 or not 1 <= len(headers) <= 2):
+            raise RuntimeError('Unexpected constant layout; expected 4 parameter/4 MMR arrays and 1 or 2 instruction tables')
+    elif n_params < 4 or n_mmr < 4 or n_params != n_mmr or not 1 <= len(headers) <= 4:
+        raise RuntimeError(f'Unexpected FC constant layout: params={n_params} mmr={n_mmr} ins={headers}')
     names=arrays+headers
     return '\n'.join(f'#pragma DATA_SECTION({name}, ".dab_npu_const")' for name in names)+'\n'+code,names
 
@@ -168,7 +174,8 @@ def instrument(code, enabled):
         slot=('DAB_NPU_PACK' if '_tinie_c28_pack' in name else
               'DAB_NPU_UNPACK' if '_tinie_c28_unpack' in name else
               'DAB_NPU_CONVERT' if '_cast_cast_multiply_nn_relu' in name else
-              'DAB_NPU_INPUT' if '_reshape_multiply_add_floor' in name else
+              'DAB_NPU_INPUT' if ('_reshape_multiply_add_floor' in name or
+                                  name.endswith('fused_multiply_add_floor_clip_cast')) else
               'DAB_NPU_OUTPUT' if output_stage(name) else None)
         if slot:
             code=function(code,name,lambda body, slot=slot: trace('DAB_NN_traceBegin('+slot+')')+body.replace('  return 0;',trace('DAB_NN_traceEnd('+slot+')')+'  return 0;'))

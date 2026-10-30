@@ -61,6 +61,19 @@ try {
         result.variables = values;
         }
     }
+    if (request.read_e2e_ticks) {
+        result.stage = 'read_e2e_ticks';
+        const addr = session.symbols.getAddress('g_nnBenchmarkE2eTicks');
+        const words = session.memory.read(addr, 2000, 16);
+        const ticks = [];
+        for (let i = 0; i < 1000; i++) {
+            const lo = Number(words[2 * i]);
+            const hi = Number(words[2 * i + 1]);
+            ticks.push((hi << 16) >>> 0 | (lo & 0xffff));
+        }
+        result.e2e_ticks = ticks;
+        result.e2e_ticks_address = addr;
+    }
     if (request.verify_npu_const) {
         result.stage = 'verify_constants';
         // 链接器符号直接给出地址/长度；通过符号表读取，避免表达式求地址报错。
