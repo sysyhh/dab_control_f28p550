@@ -10,4 +10,7 @@ enum {
 };
 void DAB_NN_traceBegin(uint16_t slot);
 void DAB_NN_traceEnd(uint16_t slot);
+/* NPU 完成中断入口/出口；只记 CPU 执行，不含 TINIE_start 之后的硬件等待。 */
+void DAB_NN_isrEnter(void);
+void DAB_NN_isrExit(uint16_t layer);
 #endif

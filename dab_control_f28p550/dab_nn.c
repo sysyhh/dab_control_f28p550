@@ -43,6 +43,8 @@ static float s_layer3[DAB_NN_LAYER3_OUT];
 #endif
 static float s_output[DAB_NN_OUTPUT_DIM];
 volatile float g_nnLastOutput[DAB_NN_OUTPUT_DIM]; // CCS 只读观察：D1、D0、D2、T；有效性由 getOutput 判断。
+volatile float g_nnBenchmarkOutput[DAB_NN_OUTPUT_DIM];
+volatile uint16_t g_nnBenchmarkOutputValid;
 static volatile bool s_valid, s_fault;
 static float s_lastVin;
 static bool s_hasInput;
@@ -79,6 +81,8 @@ static float s_benchVin;
 #ifdef DAB_USE_HARDWARE_NPU
 static volatile bool s_npuDoneStamped;
 static volatile uint32_t s_npuDoneTick;
+static volatile uint32_t s_isrEnterTick, s_isrTicks, s_isrMaxTicks;
+static volatile uint16_t s_isrCount, s_isrLayerCount[5];
 #endif
 
 static void clearTiming(void)
@@ -91,7 +95,7 @@ static void clearTiming(void)
     g_nnNpuDetail.instrumented = true;
 #endif
     g_nnTiming.timerHz = DEVICE_SYSCLK_FREQ;
-    g_nnTiming.revision = 1U;
+    g_nnTiming.revision = 2U;
 #ifdef DAB_USE_HARDWARE_NPU
     g_nnTiming.backend = 1U;
 #endif
@@ -122,10 +126,21 @@ static void addTime(volatile Dab_NnTimeStats_t *stats, uint32_t ticks)
                     ((float)DEVICE_SYSCLK_FREQ / 1000000.0f);
 }
 
+static void snapshotBenchmarkOutput(void)
+{
+    uint16_t i;
+    for (i = 0U; i < DAB_NN_OUTPUT_DIM; i++)
+        g_nnBenchmarkOutput[i] = s_output[i];
+    g_nnBenchmarkOutputValid = 1U;
+}
+
 static void finishProfile(bool valid, uint32_t observedTick, uint32_t publishedTick)
 {
 #if defined(DAB_USE_HARDWARE_NPU) && defined(DAB_NPU_DAB16_MODEL) && DAB_NPU_DETAIL_PROFILE
     uint16_t slot;
+#endif
+#ifdef DAB_USE_HARDWARE_NPU
+    uint16_t layer;
 #endif
     bool warmup = s_benchJob && g_nnBenchmarkWarmupCompleted < s_benchWarmup;
     g_nnTimingSequence++;
@@ -138,6 +153,13 @@ static void finishProfile(bool valid, uint32_t observedTick, uint32_t publishedT
         addTime(&g_nnTiming.npuObserved, s_jobRunTick - observedTick);
         if (s_npuDoneStamped)
             addTime(&g_nnTiming.npuCompletion, s_jobRunTick - s_npuDoneTick);
+        addTime(&g_nnTiming.npuIsr, s_isrTicks);
+        g_nnTiming.npuIsrInvocations += s_isrCount;
+        if (s_isrMaxTicks > g_nnTiming.npuIsrMaxSingleTicks)
+            g_nnTiming.npuIsrMaxSingleTicks = s_isrMaxTicks;
+        g_nnTiming.npuIsrLastCount = s_isrCount;
+        for (layer = 0U; layer < 5U; layer++)
+            g_nnTiming.npuIsrLastLayerCount[layer] = s_isrLayerCount[layer];
 #if defined(DAB_NPU_DAB16_MODEL) && DAB_NPU_DETAIL_PROFILE
         for (slot=0U; slot<DAB_NPU_TRACE_SLOTS; slot++)
         {
@@ -150,6 +172,7 @@ static void finishProfile(bool valid, uint32_t observedTick, uint32_t publishedT
 #endif
         addTime(&g_nnTiming.publish, observedTick - publishedTick);
         addTime(&g_nnTiming.endToEnd, s_jobBeginTick - publishedTick);
+        if (s_benchJob) snapshotBenchmarkOutput();
     }
     s_profileActive = false;
     if (s_benchJob)
@@ -202,6 +225,38 @@ void DAB_NN_noteNpuCompletion(void)
         s_npuDoneTick = CPUTimer_getTimerCount(CPUTIMER2_BASE);
         s_npuDoneStamped = true; // 完成 ISR 应在调用本钩子之后才发布 finished。
     }
+#endif
+}
+
+#ifdef DAB_USE_HARDWARE_NPU
+static void resetIsrStats(void)
+{
+    uint16_t layer;
+    s_isrTicks = s_isrMaxTicks = 0U;
+    s_isrCount = 0U;
+    for (layer = 0U; layer < 5U; layer++) s_isrLayerCount[layer] = 0U;
+}
+#endif
+
+#pragma CODE_SECTION(DAB_NN_isrEnter, ".TI.ramfunc")
+void DAB_NN_isrEnter(void)
+{
+#ifdef DAB_USE_HARDWARE_NPU
+    s_isrEnterTick = CPUTimer_getTimerCount(CPUTIMER2_BASE);
+#endif
+}
+
+#pragma CODE_SECTION(DAB_NN_isrExit, ".TI.ramfunc")
+void DAB_NN_isrExit(uint16_t layer)
+{
+#ifdef DAB_USE_HARDWARE_NPU
+    uint32_t ticks = s_isrEnterTick - CPUTimer_getTimerCount(CPUTIMER2_BASE);
+    s_isrTicks += ticks;
+    if (s_isrCount == 0U || ticks > s_isrMaxTicks) s_isrMaxTicks = ticks;
+    if (s_isrCount != 0xFFFFU) s_isrCount++;
+    if (layer < 5U && s_isrLayerCount[layer] != 0xFFFFU) s_isrLayerCount[layer]++;
+#else
+    (void)layer;
 #endif
 }
 
@@ -405,7 +460,7 @@ void DAB_NN_init(void)
     g_nnInferenceCount = g_nnTimeoutCount = 0U;
     s_profileActive = s_benchJob = s_benchCancel = false;
 #ifndef DAB_NN_AUTO_BENCHMARK
-#define DAB_NN_AUTO_BENCHMARK 1 // 实机 NN 耗时测试上电自动请求一次有限样本；关闭后不改控制逻辑。
+#define DAB_NN_AUTO_BENCHMARK 0 // 正式固件默认不自动跑性能测试；测试构建通过 --define 开启。
 #endif
 #if DAB_NN_AUTO_BENCHMARK
     g_nnBenchmarkRequested = true; g_nnBenchmarkCancelRequested = false; // 开启NN耗时测试
@@ -417,6 +472,8 @@ void DAB_NN_init(void)
     g_nnBenchmarkState = DAB_NN_BENCH_IDLE;
     g_nnBenchmarkCompleted = g_nnBenchmarkWarmupCompleted = 0U;
     g_nnBenchmarkRejectReason = 0U;
+    memset((void *)g_nnBenchmarkOutput, 0, sizeof(g_nnBenchmarkOutput));
+    g_nnBenchmarkOutputValid = 0U;
     g_nnTimingResetRequested = g_nnTimingResetAccepted = false;
     g_nnTimingSequence = 0U;
     // Shared free-running time source for NPU timeout and background telemetry.
@@ -540,6 +597,7 @@ static void serviceInference(float vin_volts, bool force)
         memset((void *)s_traceCalls, 0, sizeof(s_traceCalls));
         memset((void *)s_traceOpen, 0, sizeof(s_traceOpen));
 #endif
+        resetIsrStats();
         tvmgen_default_finished = 0;
         s_npuDoneStamped = false;
         s_started = CPUTimer_getTimerCount(CPUTIMER2_BASE);
@@ -610,6 +668,8 @@ bool DAB_NN_benchmarkService(bool outputsStopped)
             s_benchVin = g_nnBenchmarkVin;
             g_nnBenchmarkCompleted = g_nnBenchmarkWarmupCompleted = 0U;
             s_benchCancel = s_benchJob = false;
+            memset((void *)g_nnBenchmarkOutput, 0, sizeof(g_nnBenchmarkOutput));
+            g_nnBenchmarkOutputValid = 0U;
             clearTiming();
             g_nnBenchmarkState = DAB_NN_BENCH_RUNNING;
         }

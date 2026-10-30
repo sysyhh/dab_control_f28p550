@@ -1,7 +1,8 @@
 """Read finite NN benchmarks through the existing real-board debug CLI.
 
-Requires firmware's initialization to request the finite benchmark automatically.
-No expression writes, power-start commands or pauses inside the measured batch.
+Official firmware leaves DAB_NN_AUTO_BENCHMARK off. This script builds a
+separate test image with --nn-auto-benchmark. No expression writes, power-start
+commands or pauses inside the measured batch.
 """
 import argparse
 from datetime import datetime, timezone
@@ -14,7 +15,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 APP = ROOT / 'dab_control_f28p550'
 FIELDS = ('samples', 'lastTicks', 'minTicks', 'maxTicks', 'totalTicks', 'meanUs')
-TIMES = ('prepare', 'fpuForward', 'npuSubmit', 'npuObserved', 'npuCompletion', 'publish', 'endToEnd')
+TIMES = ('prepare', 'fpuForward', 'npuSubmit', 'npuObserved', 'npuCompletion', 'npuIsr', 'publish', 'endToEnd')
 STAGES = ('input', 'packedCopyAndPack', 'unpack', 'hiddenConvert', 'parameters',
           'instructions', 'registers', 'layer0Wait', 'layer1Wait', 'layer2Wait', 'layer3Wait', 'output')
 
@@ -43,15 +44,19 @@ def main():
             'g_nnBenchmarkCompleted', 'g_nnBenchmarkWarmupCompleted', 'g_nnBenchmarkIterations',
             'g_nnBenchmarkWarmup', 'g_nnBenchmarkVin', 'g_nnBenchmarkRejectReason', 'g_nnTimeoutCount']
     expressions = meta + [f'g_nnLastOutput[{i}]' for i in range(4)]
-    heads = ('timerHz', 'timerReadOverheadTicks', 'backend', 'revision', 'frozen', 'rejectedOutputs')
+    expressions += [f'g_nnBenchmarkOutput[{i}]' for i in range(4)] + ['g_nnBenchmarkOutputValid']
+    heads = ('timerHz', 'timerReadOverheadTicks', 'backend', 'revision', 'frozen', 'rejectedOutputs',
+             'npuIsrInvocations', 'npuIsrMaxSingleTicks', 'npuIsrLastCount')
     expressions += ['g_nnTiming.'+x for x in heads]
+    expressions += [f'g_nnTiming.npuIsrLastLayerCount[{i}]' for i in range(5)]
     expressions += [f'g_nnTiming.{t}.{f}' for t in TIMES for f in FIELDS]
     expressions += ['g_nnNpuDetail.instrumented', 'g_nnNpuDetail.invalidPairs']
     expressions += [f'g_nnNpuDetail.lastCalls[{i}]' for i in range(12)]
     expressions += [f'g_nnNpuDetail.stage[{i}].{f}' for i in range(12) for f in FIELDS]
     try:
         for index in range(args.repeats):
-            command = [sys.executable, str(ROOT/'c2000_debug.py'), '--run-test', '--rebuild-nn', '--build-dir',
+            command = [sys.executable, str(ROOT/'c2000_debug.py'), '--run-test', '--rebuild-nn',
+                       '--nn-auto-benchmark', '--build-dir',
                        'CPU1_LAUNCHXL_NPU_FLASH' if args.backend == 'npu' else 'CPU1_LAUNCHXL_FLASH',
                        '--run-ms', str(args.run_ms), '--samples', '1', '--timeout-ms', '60000']
             for expression in expressions: command += ['--expr', expression]
@@ -64,6 +69,9 @@ def main():
             values = raw['variables']
             timing = {key: values['g_nnTiming.'+key] for key in heads}
             for t in TIMES: timing[t] = {f: values[f'g_nnTiming.{t}.{f}'] for f in FIELDS}
+            timing['npuIsrLastLayerCount'] = [values[f'g_nnTiming.npuIsrLastLayerCount[{i}]'] for i in range(5)]
+            snapshot = [values[f'g_nnBenchmarkOutput[{i}]'] for i in range(4)]
+            live_output = [values[f'g_nnLastOutput[{i}]'] for i in range(4)]
             detail = {'instrumented': values['g_nnNpuDetail.instrumented'],
                       'invalidPairs': values['g_nnNpuDetail.invalidPairs'],
                       'lastCalls': [values[f'g_nnNpuDetail.lastCalls[{i}]'] for i in range(12)],
@@ -84,6 +92,8 @@ def main():
                                                ('EPWM7_TZFLG','EPWM4_TZFLG','EPWM5_TZFLG','EPWM10_TZFLG')),
                 'trace_pairs': detail['invalidPairs'] == 0,
                 'timer_150mhz': timing['timerHz'] == 150000000,
+                'timing_revision': timing['revision'] == 2,
+                'benchmark_output_valid': values['g_nnBenchmarkOutputValid'] == 1,
                 'foreground_and_control_running': values['g_controlHeartbeat'] > 0 and values['g_backgroundHeartbeat'] > 0,
             }
             statistics = [timing[t] for t in TIMES] + detail['stage']
@@ -91,23 +101,38 @@ def main():
                 (s['minTicks'] <= s['totalTicks']/s['samples'] <= s['maxTicks'] and
                  abs(s['meanUs'] - s['totalTicks']*1.e6/s['samples']/timing['timerHz']) < .001)
                 for s in statistics)
-            if args.backend == 'fpu': checks['forward_samples'] = timing['fpuForward']['samples'] == 1000
+            if args.backend == 'fpu':
+                checks['forward_samples'] = timing['fpuForward']['samples'] == 1000
+                checks['no_npu_isr'] = timing['npuIsr']['samples'] == 0
+            checks['snapshot_finite'] = all(x == x and abs(x) != float('inf') for x in snapshot)
             if args.backend == 'npu':
                 if report['model_manifest'].get('optimization_level',0) >= 5:
                     checks['ram_constants_match_flash'] = raw.get('model_constant_copy',{}).get('matches') is True
                 checks['detail_mode_matches_library'] = bool(detail['instrumented']) == report['model_manifest']['detail_profile']
                 checks['completion_samples'] = timing['npuCompletion']['samples'] == 1000
+                checks['isr_samples'] = timing['npuIsr']['samples'] == 1000
+                checks['four_isrs'] = timing['npuIsrLastCount'] == 4
+                checks['isr_layers'] = timing['npuIsrLastLayerCount'] == [0, 1, 1, 1, 1]
+                checks['isr_invocations'] = timing['npuIsrInvocations'] == 4000
                 expected = report['model_manifest'].get('expected_vin90_output', [.4375, .25, 0., 1.])
-                checks['known_vin90_output'] = [values[f'g_nnLastOutput[{i}]'] for i in range(4)] == expected
+                checks['known_vin90_output'] = snapshot == expected
                 if detail['instrumented']:
                     # INS 分段包围整个 Step 2；复用时仍进入该段，只是可能跳过 TINIE_mem_write。
                     ins_calls = 4
                     checks['four_layers'] = (detail['lastCalls'][4:7] == [4, ins_calls, 4] and
                                              detail['lastCalls'][7:11] == [1, 1, 1, 1])
                     checks['no_hidden_conversion'] = detail['lastCalls'][3] == 0
+            cpu_us = (timing['prepare']['meanUs'] + timing['publish']['meanUs'] +
+                      (timing['npuSubmit']['meanUs'] if args.backend == 'npu' else timing['fpuForward']['meanUs']))
+            isr_us = timing['npuIsr']['meanUs'] if args.backend == 'npu' else 0.0
+            wait_us = 0.0
+            if args.backend == 'npu':
+                wait_us = timing['npuCompletion']['meanUs'] - timing['npuSubmit']['meanUs'] - timing['npuIsr']['meanUs']
             report['runs'].append({'raw_result': str(Path(raw['run_dir'])/'result.json'),
                                    'out_sha256': raw['out_sha256'], 'metadata': {k:values[k] for k in meta},
-                                   'output': [values[f'g_nnLastOutput[{i}]'] for i in range(4)],
+                                   'output': snapshot, 'live_output_after_service': live_output,
+                                   'cpu_foreground_mean_us': cpu_us, 'cpu_isr_mean_us': isr_us,
+                                   'cpu_total_mean_us': cpu_us + isr_us, 'npu_hw_wait_mean_us': wait_us,
                                    'timing': timing, 'detail': detail, 'checks': checks})
             if not all(checks.values()): raise RuntimeError(f'Board checks failed: {checks}')
         report['ok'] = True

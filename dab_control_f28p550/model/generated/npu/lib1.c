@@ -94,11 +94,14 @@ __attribute__((weak)) void tinie_sublayer_IRQHandler() {
   return;
 }
 __attribute__((interrupt)) void tvmgen_default_IRQHandler() {
+  uint16_t dab_npu_isr_layer = (uint16_t)tinie_curr_layer;
+  DAB_NN_isrEnter();
 #if DAB_NPU_DETAIL_PROFILE
   DAB_NN_traceEnd(DAB_NPU_WAIT0 + tinie_curr_layer - 1);
 #endif
 
   (void) tvmgen_default_IRQHandlerHelper();
+  DAB_NN_isrExit(dab_npu_isr_layer);
 }
 #ifdef __cplusplus
 } // extern "C"

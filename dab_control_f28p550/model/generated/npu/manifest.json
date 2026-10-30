@@ -51,9 +51,10 @@
     "PWCONV_MMR_3",
     "PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS"
   ],
-  "runtime_sha256": "766e7d35ace1b88cd1157ffbab23f1ef60e799963b07f15f8a99c0ca6fd5866f",
+  "runtime_sha256": "7409c77725480cd4bfcf1c8acc71b7d2c7bc9f995bddc2021c3046fec45546e6",
   "driver_sha256": "1823676ba5e1da2904231a800a3628b123d61f2ae9a311d079d0d61fa900d4b3",
   "kernel_sha256": "e1d525bfc3c6e19a4eaa2fcad1fa17edd2561186fcb609291f3fae1fc556ea1f",
-  "library_sha256": "f71cd75a7805e1afdd0f42e46e766b82d4a1cbb834cdd69d5c9b0075f415a5f7",
-  "header_sha256": "5e2610b52db943c07b9c8e0c1f665c8f27a50908bd81dfa644fff3fc382927fe"
+  "library_sha256": "6714f8e2ee9909ecc1ba7a516df8f1c5e84369298d145549d3a5832530d99390",
+  "header_sha256": "5e2610b52db943c07b9c8e0c1f665c8f27a50908bd81dfa644fff3fc382927fe",
+  "isr_cpu_timing": true
 }

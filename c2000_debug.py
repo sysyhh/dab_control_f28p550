@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import time
@@ -71,6 +72,8 @@ def main():
     parser.add_argument('--build-dir', default='CPU1_RAM', help='Existing CCS-generated build directory')
     parser.add_argument('--rebuild-nn', action='store_true',
                         help='Force NN recompile/relink after restoring a generated model archive or contract')
+    parser.add_argument('--nn-auto-benchmark', action='store_true',
+                        help='Test build only: compile with DAB_NN_AUTO_BENCHMARK=1. Official firmware defaults to 0.')
     parser.add_argument('--verify-npu-const', action='store_true', help='Compare the LS3 model constants with their Flash load image')
     parser.add_argument('--ccxml', type=Path)
     parser.add_argument('--expr', action='append', help='Read scalar GEL expression; repeat for multiple expressions')
@@ -115,6 +118,18 @@ def main():
             # A restored archive/header may have older timestamps than the .out.
             # Recompiling this consumer also forces relink with the current archive.
             build_command += ['-W', '../dab_nn.c']
+        if args.nn_auto_benchmark:
+            makefile = (build_dir / 'makefile').read_text(encoding='utf-8', errors='replace')
+            match = re.search(r'^GEN_OPTS__FLAG\s*:=\s*(.*)$', makefile, re.M)
+            if not match:
+                raise RuntimeError('CCS makefile missing GEN_OPTS__FLAG; cannot enable the NN benchmark test build')
+            extra_opt = build_dir / 'dab_nn_auto_benchmark.opt'
+            extra_opt.write_text('--define=DAB_NN_AUTO_BENCHMARK=1\n', encoding='utf-8')
+            # Independent test build: official CCS FLASH/NPU_FLASH configs keep AUTO_BENCHMARK=0.
+            build_command.append(
+                'GEN_OPTS__FLAG=' + match.group(1).strip() + ' --cmd_file="dab_nn_auto_benchmark.opt"')
+            if not args.rebuild_nn:
+                build_command += ['-W', '../dab_nn.c']
         if not args.attach_only:
             rc = execute(build_command + ['all'], build_dir, run_dir / 'build.log', 180)
             result['build'] = 'PASS' if rc == 0 and out.is_file() else 'FAIL'
@@ -149,7 +164,7 @@ def main():
                     if isinstance(first, int) and isinstance(last, int):
                         checks[name + '_advanced'] = 0 < ((last - first) & 0xffffffff) < 0x80000000
             if not args.attach_only and args.expr is None and 'g_debugBuildId' in result.get('variables', {}):
-                checks['build_id_matches'] = result['variables']['g_debugBuildId'] == 0x20261009
+                checks['build_id_matches'] = result['variables']['g_debugBuildId'] == 0x20261030
                 checks['standby'] = result['variables'].get('g_dabState') == 1
                 checks['all_power_pwm_ost_latched'] = all(
                     result.get('registers', {}).get(name, 0) & 4 for name in PWM_TRIP_REGISTERS)

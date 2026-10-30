@@ -174,7 +174,13 @@ def instrument(code, enabled):
             code=function(code,name,lambda body, slot=slot: trace('DAB_NN_traceBegin('+slot+')')+body.replace('  return 0;',trace('DAB_NN_traceEnd('+slot+')')+'  return 0;'))
     if code.count('DAB_NN_traceBegin(DAB_NPU_OUTPUT)')!=1:
         raise RuntimeError('Final float output stage was not instrumented')
-    code=function(code,'tvmgen_default_IRQHandler',lambda body:trace('DAB_NN_traceEnd(DAB_NPU_WAIT0 + tinie_curr_layer - 1)')+body)
+    def wrap_irq(body):
+        return ('  uint16_t dab_npu_isr_layer = (uint16_t)tinie_curr_layer;\n'
+                '  DAB_NN_isrEnter();\n'
+                + trace('DAB_NN_traceEnd(DAB_NPU_WAIT0 + tinie_curr_layer - 1)')
+                + body
+                + '  DAB_NN_isrExit(dab_npu_isr_layer);\n')
+    code=function(code,'tvmgen_default_IRQHandler', wrap_irq)
     return '#define DAB_NPU_DETAIL_PROFILE '+str(int(enabled))+'\n#include "dab_npu_trace.h"\n'+code
 
 def instrument_driver(code, enabled):

@@ -60,6 +60,8 @@ bool DAB_NN_checkDeadline(void); // 控制中断也可检查超时，晚完成�
 extern volatile uint32_t g_nnInferenceCount;
 extern volatile uint32_t g_nnTimeoutCount;
 extern volatile float g_nnLastOutput[DAB_NN_OUTPUT_DIM]; // 调试只读；不要通过 CCS 修改，运行代码请使用 getOutput。
+extern volatile float g_nnBenchmarkOutput[DAB_NN_OUTPUT_DIM]; // 有限测试最后一次有效输出；普通推理不得覆盖。
+extern volatile uint16_t g_nnBenchmarkOutputValid;
 
 // Timer2 以 SYSCLK 向下计数；所有 Tick 差值均按 uint32_t 处理回绕。
 typedef struct {
@@ -76,11 +78,16 @@ typedef struct {
     uint32_t rejectedOutputs;
     Dab_NnTimeStats_t prepare; // 所选模型的输入准备，不含 ADC 或采样滤波。
     Dab_NnTimeStats_t fpuForward; // FPU 前向调用区间，包含期间中断占用。
-    Dab_NnTimeStats_t npuSubmit; // tvmgen_default_run 调用时间，不代表 NPU 已完成。
+    Dab_NnTimeStats_t npuSubmit; // tvmgen_default_run 调用时间，含首层装载，不含后续 ISR。
     Dab_NnTimeStats_t npuObserved; // 提交至后台发现完成，包含轮询发现延迟。
-    Dab_NnTimeStats_t npuCompletion; // 仅完成通知接入下面的钩子后才有样本。
+    Dab_NnTimeStats_t npuCompletion; // 提交至完成 ISR 钩子；含硬件等待与层间 ISR。
+    Dab_NnTimeStats_t npuIsr; // 每次推理全部完成 ISR 的 CPU 累计，不含 NPU 硬件等待。
     Dab_NnTimeStats_t publish; // 输出校验并发布到控制缓存。
     Dab_NnTimeStats_t endToEnd; // 输入准备开始至有效结果发布，统计更新不计入。
+    uint32_t npuIsrInvocations; // 本批正式样本的 ISR 总次数。
+    uint32_t npuIsrMaxSingleTicks; // 本批单次 ISR 最大 CPU 时间。
+    uint16_t npuIsrLastCount; // 最近一次推理的 ISR 次数。
+    uint16_t npuIsrLastLayerCount[5]; // 进入 ISR 时 tinie_curr_layer 的次数，0 应保持为 0。
 } Dab_NnTiming_t;
 extern volatile Dab_NnTiming_t g_nnTiming;
 typedef struct {

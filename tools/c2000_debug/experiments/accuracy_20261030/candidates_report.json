@@ -1,0 +1,368 @@
+{
+  "power_control_approved": false,
+  "baselines": {
+    "fpu_teacher": {
+      "max_abs": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "max_pwm_count": 0
+    },
+    "current_int8_npu": {
+      "max_abs": [
+        0.04886937141418457,
+        0.03708586096763611,
+        0.026949193328619003,
+        0.04887270927429199
+      ],
+      "mean_abs": [
+        0.01087767630815506,
+        0.008738316595554352,
+        0.0032313826959580183,
+        0.00950592290610075
+      ],
+      "max_pwm_count": 122,
+      "mean_pwm_count": 36.30938123752495,
+      "within_one_pwm": false,
+      "invalid_count": 4,
+      "invalid_index_sample": [
+        22,
+        23,
+        24,
+        25
+      ]
+    },
+    "compact_float": {
+      "max_abs": [
+        1.0132789611816406e-06,
+        6.556510925292969e-07,
+        6.221234798431396e-07,
+        9.5367431640625e-07
+      ],
+      "mean_abs": [
+        1.2932184745295672e-07,
+        7.392581835574674e-08,
+        6.320689749372832e-08,
+        1.4645372914401378e-07
+      ],
+      "max_pwm_count": 1,
+      "mean_pwm_count": 0.001996007984031936,
+      "within_one_pwm": true,
+      "invalid_count": 0,
+      "invalid_index_sample": []
+    }
+  },
+  "route_a_quant_config": {
+    "qconfig": {
+      "weight_qscheme": "torch.per_channel_symmetric",
+      "activation_qscheme": "torch.per_tensor_symmetric",
+      "weight_power2": true,
+      "activation_power2": true,
+      "npu_kernel_note": "TINPU default is per-channel weights and per-tensor activations, both power-of-two. Generated C for this model dequantizes all four outputs with 1/64. A per-channel output scale is not present in the delivered NNC 2.1.1 PWCONV path."
+    },
+    "variants": {
+      "ptq_step1V": {
+        "onnx": "tools/c2000_debug/experiments/accuracy_20261030/candidates/ptq_step1V.onnx",
+        "sha256": "17957231d8e3d02223af9155d96d1ed98d8eeb5d731fe817bc2b98ec40e11742",
+        "official": {
+          "max_abs": [
+            0.04886937141418457,
+            0.03708586096763611,
+            0.026949193328619003,
+            0.04887270927429199
+          ],
+          "mean_abs": [
+            0.01087767630815506,
+            0.008738316595554352,
+            0.0032313826959580183,
+            0.00950592290610075
+          ],
+          "max_pwm_count": 122,
+          "mean_pwm_count": 36.30938123752495,
+          "within_one_pwm": false,
+          "invalid_count": 4,
+          "invalid_index_sample": [
+            22,
+            23,
+            24,
+            25
+          ]
+        },
+        "holdout": {
+          "max_abs": [
+            0.04333627223968506,
+            0.03334914147853851,
+            0.02606245130300522,
+            0.045810699462890625
+          ],
+          "mean_abs": [
+            0.010837261565029621,
+            0.008658582344651222,
+            0.003201903309673071,
+            0.00940450094640255
+          ],
+          "max_pwm_count": 114,
+          "mean_pwm_count": 36.176,
+          "within_one_pwm": false,
+          "invalid_count": 4,
+          "invalid_index_sample": [
+            21,
+            22,
+            23,
+            24
+          ]
+        }
+      },
+      "ptq_step0_1V": {
+        "onnx": "tools/c2000_debug/experiments/accuracy_20261030/candidates/ptq_step0_1V.onnx",
+        "sha256": "17957231d8e3d02223af9155d96d1ed98d8eeb5d731fe817bc2b98ec40e11742",
+        "official": {
+          "max_abs": [
+            0.04886937141418457,
+            0.03708586096763611,
+            0.026949193328619003,
+            0.04887270927429199
+          ],
+          "mean_abs": [
+            0.01087767630815506,
+            0.008738316595554352,
+            0.0032313826959580183,
+            0.00950592290610075
+          ],
+          "max_pwm_count": 122,
+          "mean_pwm_count": 36.30938123752495,
+          "within_one_pwm": false,
+          "invalid_count": 4,
+          "invalid_index_sample": [
+            22,
+            23,
+            24,
+            25
+          ]
+        },
+        "holdout": {
+          "max_abs": [
+            0.04333627223968506,
+            0.03334914147853851,
+            0.02606245130300522,
+            0.045810699462890625
+          ],
+          "mean_abs": [
+            0.010837261565029621,
+            0.008658582344651222,
+            0.003201903309673071,
+            0.00940450094640255
+          ],
+          "max_pwm_count": 114,
+          "mean_pwm_count": 36.176,
+          "within_one_pwm": false,
+          "invalid_count": 4,
+          "invalid_index_sample": [
+            21,
+            22,
+            23,
+            24
+          ]
+        }
+      },
+      "ptq_step0_1V_plus_dense_92": {
+        "onnx": "tools/c2000_debug/experiments/accuracy_20261030/candidates/ptq_step0_1V_plus_dense_92.onnx",
+        "sha256": "17957231d8e3d02223af9155d96d1ed98d8eeb5d731fe817bc2b98ec40e11742",
+        "official": {
+          "max_abs": [
+            0.04886937141418457,
+            0.03708586096763611,
+            0.026949193328619003,
+            0.04887270927429199
+          ],
+          "mean_abs": [
+            0.01087767630815506,
+            0.008738316595554352,
+            0.0032313826959580183,
+            0.00950592290610075
+          ],
+          "max_pwm_count": 122,
+          "mean_pwm_count": 36.30938123752495,
+          "within_one_pwm": false,
+          "invalid_count": 4,
+          "invalid_index_sample": [
+            22,
+            23,
+            24,
+            25
+          ]
+        },
+        "holdout": {
+          "max_abs": [
+            0.04333627223968506,
+            0.03334914147853851,
+            0.02606245130300522,
+            0.045810699462890625
+          ],
+          "mean_abs": [
+            0.010837261565029621,
+            0.008658582344651222,
+            0.003201903309673071,
+            0.00940450094640255
+          ],
+          "max_pwm_count": 114,
+          "mean_pwm_count": 36.176,
+          "within_one_pwm": false,
+          "invalid_count": 4,
+          "invalid_index_sample": [
+            21,
+            22,
+            23,
+            24
+          ]
+        }
+      }
+    },
+    "unified_output_scale": {
+      "teacher_abs_max": {
+        "D1": 0.8497204184532166,
+        "D0": 0.24999289214611053,
+        "D2": 0.11676114797592163,
+        "T": 1.153952717781067
+      },
+      "int8_range_at_1_64": 1.984375,
+      "int8_range_at_1_128": 0.9921875,
+      "unified_1_128_fits_T": false,
+      "per_channel_needed_scale": {
+        "D1": 0.0078125,
+        "D0": 0.00390625,
+        "D2": 0.0009765625,
+        "T": 0.015625
+      }
+    }
+  },
+  "route_c_hybrid": {
+    "hidden3_max_abs_vs_float": 0.03177917003631592,
+    "int8_full": {
+      "max_abs": [
+        0.04886937141418457,
+        0.03708586096763611,
+        0.026949193328619003,
+        0.04887270927429199
+      ],
+      "mean_abs": [
+        0.01087767630815506,
+        0.008738316595554352,
+        0.0032313826959580183,
+        0.00950592290610075
+      ],
+      "max_pwm_count": 122,
+      "mean_pwm_count": 36.30938123752495,
+      "within_one_pwm": false,
+      "invalid_count": 4,
+      "invalid_index_sample": [
+        22,
+        23,
+        24,
+        25
+      ]
+    },
+    "hybrid_float_last": {
+      "max_abs": [
+        0.05289727449417114,
+        0.03725922107696533,
+        0.034211885184049606,
+        0.050975501537323
+      ],
+      "mean_abs": [
+        0.009957700036466122,
+        0.005100719165056944,
+        0.004972642753273249,
+        0.008778205141425133
+      ],
+      "max_pwm_count": 131,
+      "mean_pwm_count": 28.34930139720559,
+      "within_one_pwm": false,
+      "invalid_count": 35,
+      "invalid_index_sample": [
+        22,
+        23,
+        24,
+        25,
+        237,
+        238,
+        239,
+        240
+      ]
+    },
+    "recovered_pwm_counts": -9,
+    "note": "Last-layer FPU cannot undo hidden INT8 clipping; it only avoids the 1/64 output grid.",
+    "latency_note": "Board hybrid compile is deferred until accuracy clears 1 PWM count. Estimate uses current NPU minus last-layer wait plus an 8x4 FPU GEMM."
+  },
+  "route_b_qat": {
+    "onnx": "tools/c2000_debug/experiments/accuracy_20261030/candidates/qat_teacher_distill.onnx",
+    "sha256": "7f6694bc47b991f7798c55b651b7c9d4cebcf3154d66e4bf7045789cf0121920",
+    "epochs": 40,
+    "final_mse": 0.00047946881386451423,
+    "loss_start": 0.0005398798384703696,
+    "official": {
+      "max_abs": [
+        0.0567396879196167,
+        0.05108402669429779,
+        0.025623470544815063,
+        0.06141650676727295
+      ],
+      "mean_abs": [
+        0.0100493673235178,
+        0.01043900940567255,
+        0.004702420439571142,
+        0.0157790444791317
+      ],
+      "max_pwm_count": 153,
+      "mean_pwm_count": 46.56287425149701,
+      "within_one_pwm": false,
+      "invalid_count": 30,
+      "invalid_index_sample": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    "holdout": {
+      "max_abs": [
+        0.054429054260253906,
+        0.05168348550796509,
+        0.02477584034204483,
+        0.0576474666595459
+      ],
+      "mean_abs": [
+        0.010025262832641602,
+        0.010389306582510471,
+        0.004635673016309738,
+        0.01570761576294899
+      ],
+      "max_pwm_count": 144,
+      "mean_pwm_count": 46.388,
+      "within_one_pwm": false,
+      "invalid_count": 29,
+      "invalid_index_sample": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    "generalization_gap_max_abs": [
+      -0.002310633659362793,
+      0.0005994588136672974,
+      -0.0008476302027702332,
+      -0.0037690401077270508
+    ]
+  }
+}
