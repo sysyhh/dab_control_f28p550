@@ -1,0 +1,184 @@
+{
+  "name": "int8_zero_neuron",
+  "onnx": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\onnx\\int8_zero_neuron.onnx",
+  "graph": {
+    "ops": {
+      "Identity": 8,
+      "Add": 8,
+      "Mul": 20,
+      "Floor": 8,
+      "Constant": 20,
+      "Clip": 8,
+      "MatMul": 4,
+      "Relu": 3
+    },
+    "matmul": 4,
+    "conv": 0,
+    "relu": 3,
+    "pad": 0,
+    "concat": 0
+  },
+  "cal_90_140_step_1": {
+    "max_abs": [
+      0.13359171152114868,
+      0.0869760811328888,
+      0.07442108541727066,
+      0.11795282363891602
+    ],
+    "mean_abs": [
+      0.022239021956920624,
+      0.01322434563189745,
+      0.007403875235468149,
+      0.02681785449385643
+    ],
+    "max_pwm_count": 334,
+    "mean_pwm_count": 77.33333333333333,
+    "pwm_tbprd_max": 295,
+    "pwm_cmpA2_max": 334,
+    "pwm_cmpA4_max": 184,
+    "pwm_phase34_max": 217,
+    "within_one_pwm": false,
+    "invalid_count": 0,
+    "invalid_vins": [],
+    "worst_abs_vin": 133.0,
+    "worst_abs": [
+      0.13359171152114868,
+      0.06477481126785278,
+      0.07442108541727066,
+      0.11795282363891602
+    ],
+    "worst_pwm_vin": 133.0,
+    "worst_pwm_count": 334,
+    "teacher_invalid": 0
+  },
+  "official_90_140_step_0_1": {
+    "max_abs": [
+      0.1340186595916748,
+      0.0869760811328888,
+      0.07950194180011749,
+      0.11865949630737305
+    ],
+    "mean_abs": [
+      0.021616822108626366,
+      0.012749912217259407,
+      0.007221552077680826,
+      0.026215920224785805
+    ],
+    "max_pwm_count": 335,
+    "mean_pwm_count": 74.39920159680639,
+    "pwm_tbprd_max": 296,
+    "pwm_cmpA2_max": 335,
+    "pwm_cmpA4_max": 196,
+    "pwm_phase34_max": 217,
+    "within_one_pwm": false,
+    "invalid_count": 0,
+    "invalid_vins": [],
+    "worst_abs_vin": 133.6,
+    "worst_abs": [
+      0.1340186595916748,
+      0.05956852436065674,
+      0.06934024393558502,
+      0.11724615097045898
+    ],
+    "worst_pwm_vin": 133.3,
+    "worst_pwm_count": 335,
+    "teacher_invalid": 0
+  },
+  "dense_92_2_92_5": {
+    "max_abs": [
+      0.017891764640808105,
+      0.02215006947517395,
+      7.881224155426025e-05,
+      0.014962077140808105
+    ],
+    "mean_abs": [
+      0.008931543678045273,
+      0.012713718228042126,
+      4.634645665646531e-05,
+      0.008584483526647091
+    ],
+    "max_pwm_count": 56,
+    "mean_pwm_count": 32.38709677419355,
+    "pwm_tbprd_max": 37,
+    "pwm_cmpA2_max": 45,
+    "pwm_cmpA4_max": 0,
+    "pwm_phase34_max": 56,
+    "within_one_pwm": false,
+    "invalid_count": 0,
+    "invalid_vins": [],
+    "worst_abs_vin": 92.5,
+    "worst_abs": [
+      0.017891764640808105,
+      0.02215006947517395,
+      7.881224155426025e-05,
+      0.014962077140808105
+    ],
+    "worst_pwm_vin": 92.5,
+    "worst_pwm_count": 56,
+    "teacher_invalid": 0
+  },
+  "holdout_90_140_step_0_1_offset": {
+    "max_abs": [
+      0.1340542435646057,
+      0.08381104469299316,
+      0.07992521673440933,
+      0.11871826648712158
+    ],
+    "mean_abs": [
+      0.02190748043358326,
+      0.012872590683400631,
+      0.00734894210472703,
+      0.026365432888269424
+    ],
+    "max_pwm_count": 335,
+    "mean_pwm_count": 74.842,
+    "pwm_tbprd_max": 297,
+    "pwm_cmpA2_max": 335,
+    "pwm_cmpA4_max": 197,
+    "pwm_phase34_max": 209,
+    "within_one_pwm": false,
+    "invalid_count": 0,
+    "invalid_vins": [],
+    "worst_abs_vin": 133.65,
+    "worst_abs": [
+      0.1340542435646057,
+      0.05913466215133667,
+      0.06891685724258423,
+      0.1171872615814209
+    ],
+    "worst_pwm_vin": 133.25,
+    "worst_pwm_count": 335,
+    "teacher_invalid": 0
+  },
+  "relu_float_ranges": [
+    {
+      "layer": 1,
+      "pre_min": -0.751581609249115,
+      "pre_max": 0.5174916386604309,
+      "relu_post_max": 0.5174916386604309,
+      "negative_pre_exists": true
+    },
+    {
+      "layer": 2,
+      "pre_min": -3.9183239936828613,
+      "pre_max": 0.7275521755218506,
+      "relu_post_max": 0.7275521755218506,
+      "negative_pre_exists": true
+    },
+    {
+      "layer": 3,
+      "pre_min": -0.9764711260795593,
+      "pre_max": 0.7124674320220947,
+      "relu_post_max": 0.7124674320220947,
+      "negative_pre_exists": true
+    }
+  ],
+  "macs": 1248,
+  "structure": [
+    16,
+    29,
+    16,
+    16,
+    4
+  ]
+}

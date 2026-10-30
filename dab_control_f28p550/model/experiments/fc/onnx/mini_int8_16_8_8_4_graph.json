@@ -1,0 +1,21 @@
+{
+  "ops": {
+    "Identity": 1,
+    "Add": 4,
+    "Mul": 9,
+    "Floor": 4,
+    "Constant": 13,
+    "Clip": 6,
+    "MatMul": 3,
+    "Relu": 2
+  },
+  "matmul": 3,
+  "conv": 0,
+  "relu": 2,
+  "pad": 0,
+  "concat": 0,
+  "name": "mini_int8_16_8_8_4",
+  "bits": 8,
+  "in_width": 16,
+  "onnx": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\onnx\\mini_int8_16_8_8_4.onnx"
+}

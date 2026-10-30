@@ -1,0 +1,109 @@
+{
+  "out": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\generated\\int4_zero_neuron_force_hw",
+  "returncode": 0,
+  "force_no_c28_soft_offload": true,
+  "onnx": {
+    "path": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\onnx\\int4_zero_neuron.onnx",
+    "ops": {
+      "Identity": 2,
+      "Add": 8,
+      "Mul": 20,
+      "Floor": 8,
+      "Constant": 20,
+      "Clip": 8,
+      "MatMul": 4,
+      "Relu": 3
+    },
+    "matmul": 4,
+    "conv": 0,
+    "relu": 3,
+    "pad": 0,
+    "input_shape": [
+      1,
+      8
+    ],
+    "output_shape": [
+      1,
+      4
+    ],
+    "node_names": [
+      "MatMul:/layers.0/layers.0.0/MatMul",
+      "Relu:/Relu",
+      "MatMul:/layers.1/layers.1.0/MatMul",
+      "Relu:/Relu_1",
+      "MatMul:/layers.2/layers.2.0/MatMul",
+      "Relu:/Relu_2",
+      "MatMul:/layers.3/layers.3.0/MatMul"
+    ]
+  },
+  "header_ti_npu": true,
+  "header_ti_npu_soft": false,
+  "offloaded_log": {
+    "FC": 4
+  },
+  "cpu_fallback_log": {
+    "add": 4,
+    "multiply": 12,
+    "floor": 4,
+    "clip": 4,
+    "cast": 4,
+    "qnn.dequantize": 4,
+    "nn.relu": 3
+  },
+  "log_fc_offloaded": 4,
+  "log_fc_cpu": 0,
+  "log_relu_cpu": 3,
+  "log_pad_offloaded": 0,
+  "log_pad_cpu": 0,
+  "tinie_fullyConnectedNHWC": 16,
+  "tinie_fullyConnected_soft_calls": 0,
+  "fc_ins_tables": [
+    "FC_iB8_oB8_kB4_iCm8_oC2L_INS",
+    "FC_iB8_oB8_kB4_iCm8_oCm4_INS"
+  ],
+  "pwconv_symbols": [],
+  "params_arrays": [
+    "FC_PARAMS",
+    "FC_PARAMS_1",
+    "FC_PARAMS_2",
+    "FC_PARAMS_3"
+  ],
+  "tinie_setup": 1,
+  "tinie_start": 1,
+  "tinie_layer_increments": 4,
+  "host_postproc": false,
+  "hardware_fc_mapped": true,
+  "software_fc_library": false,
+  "cpu_generated_fc": false,
+  "conv_rewrite_detected": false,
+  "iC_warnings": [],
+  "fc_offload_info": [],
+  "file_bytes": {
+    "lib0.c": 3379,
+    "lib1.c": 17324,
+    "lib2.c": 11625,
+    "mod.a": 267642,
+    "tvmgen_default.h": 4741,
+    "compile.log": 5663
+  },
+  "sha256": {
+    "lib0.c": "d0ca1b8f8bba6618f38dd34b151ad33dd1f2107b6fff5a62e7b8d179af52bbca",
+    "lib1.c": "63e489885c15063343fd03d5c40887f4580e2748402a10c874e3fc0aeb0dadb7",
+    "lib2.c": "00cd941260ff0213a46925e860d19da17da6b4fa993b49635a3ffb757940a4a2",
+    "mod.a": "8a313eb4305c2b1a84be699df0f4cfecbd78729281fd20ed9627c6f23b6b0703",
+    "tvmgen_default.h": "abf2907eb37e68b201c26f99a7d89dd3ff69ab57ef4447cba9b0b6c6396dcaed",
+    "compile.log": "909adcd1186cf78016a77c516ef3584cd3b70cfe66553aba8136305f3728fc6e"
+  },
+  "abi": [
+    [
+      "1, 8",
+      "float32"
+    ],
+    [
+      "1, 4",
+      "float32"
+    ]
+  ],
+  "note": "FC [X] in the NNC log is not hardware proof: C28 default maps TINIE_fullyConnected (software/DMAC). Hardware requires TINIE_fullyConnectedNHWC, FC_*_INS tables, and tinie_curr_layer.",
+  "ti_mcu_nnc": "2.1.1"
+}

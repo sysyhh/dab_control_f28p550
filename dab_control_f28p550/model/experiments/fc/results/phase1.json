@@ -1,0 +1,140 @@
+{
+  "candidates": [
+    {
+      "name": "int8_input_pad",
+      "bits": 8,
+      "method": "input_and_intermediate_zero_pad",
+      "in_width": 16,
+      "structure": [
+        16,
+        29,
+        12,
+        6,
+        4
+      ],
+      "copied_from": [
+        3,
+        29,
+        12,
+        6,
+        4
+      ],
+      "macs": 972,
+      "original_macs": 531,
+      "pwconv_macs": 640,
+      "runtime_pad_ops": 2,
+      "input_zero_pad": 13,
+      "fp32_max_abs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "extra_neuron_max_abs": 0.0,
+      "fp32_equivalent": true,
+      "extra_neurons_zero": true
+    },
+    {
+      "name": "int8_zero_neuron",
+      "bits": 8,
+      "method": "zero_output_neurons",
+      "in_width": 16,
+      "structure": [
+        16,
+        29,
+        16,
+        16,
+        4
+      ],
+      "copied_from": [
+        3,
+        29,
+        12,
+        6,
+        4
+      ],
+      "macs": 1248,
+      "original_macs": 531,
+      "pwconv_macs": 640,
+      "runtime_pad_ops": 0,
+      "input_zero_pad": 13,
+      "fp32_max_abs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "extra_neuron_max_abs": 0.0,
+      "fp32_equivalent": true,
+      "extra_neurons_zero": true
+    },
+    {
+      "name": "int4_input_pad",
+      "bits": 4,
+      "method": "input_and_intermediate_zero_pad",
+      "in_width": 8,
+      "structure": [
+        8,
+        29,
+        12,
+        6,
+        4
+      ],
+      "copied_from": [
+        3,
+        29,
+        12,
+        6,
+        4
+      ],
+      "macs": 684,
+      "original_macs": 531,
+      "pwconv_macs": 640,
+      "runtime_pad_ops": 1,
+      "input_zero_pad": 5,
+      "fp32_max_abs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "extra_neuron_max_abs": 0.0,
+      "fp32_equivalent": true,
+      "extra_neurons_zero": true
+    },
+    {
+      "name": "int4_zero_neuron",
+      "bits": 4,
+      "method": "zero_output_neurons",
+      "in_width": 8,
+      "structure": [
+        8,
+        29,
+        12,
+        8,
+        4
+      ],
+      "copied_from": [
+        3,
+        29,
+        12,
+        6,
+        4
+      ],
+      "macs": 708,
+      "original_macs": 531,
+      "pwconv_macs": 640,
+      "runtime_pad_ops": 0,
+      "input_zero_pad": 5,
+      "fp32_max_abs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "extra_neuron_max_abs": 0.0,
+      "fp32_equivalent": true,
+      "extra_neurons_zero": true
+    }
+  ]
+}
