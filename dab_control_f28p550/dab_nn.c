@@ -32,7 +32,7 @@ extern uint16_t DabNpuConstLoadStart, DabNpuConstLoadSize, DabNpuConstRunStart;
 
 // Intermediate buffers
 #ifdef DAB_NPU_DAB16_MODEL
-static float s_input[DAB_NPU_RUNTIME_INPUT_DIM]; // NPU 模型补齐为 16 项，完成前不得改写。
+static float s_input[DAB_NPU_RUNTIME_INPUT_DIM]; // NPU 模型输入宽度由生成契约给出，完成前不得改写。
 #else
 static float s_input[DAB_NN_INPUT_DIM]; // FPU 使用原始三项归一化输入。
 #endif
@@ -404,8 +404,14 @@ void DAB_NN_init(void)
     s_valid = s_fault = s_hasInput = false;
     g_nnInferenceCount = g_nnTimeoutCount = 0U;
     s_profileActive = s_benchJob = s_benchCancel = false;
+#ifndef DAB_NN_AUTO_BENCHMARK
+#define DAB_NN_AUTO_BENCHMARK 1 // 实机 NN 耗时测试上电自动请求一次有限样本；关闭后不改控制逻辑。
+#endif
+#if DAB_NN_AUTO_BENCHMARK
+    g_nnBenchmarkRequested = true; g_nnBenchmarkCancelRequested = false; // 开启NN耗时测试
+#else
     g_nnBenchmarkRequested = g_nnBenchmarkCancelRequested = false; // 关闭NN耗时测试
-    // g_nnBenchmarkRequested = true; g_nnBenchmarkCancelRequested = false; // 开启NN耗时测试
+#endif
     g_nnBenchmarkIterations = 1000U; g_nnBenchmarkWarmup = 10U;
     g_nnBenchmarkVin = DAB_NOMINAL_VIN;
     g_nnBenchmarkState = DAB_NN_BENCH_IDLE;
@@ -519,7 +525,7 @@ static void serviceInference(float vin_volts, bool force)
     s_jobBeginTick = CPUTimer_getTimerCount(CPUTIMER2_BASE);
 #ifdef DAB_NPU_DAB16_MODEL
     memset(s_input, 0, sizeof(s_input));
-    s_input[1] = vin_volts / 25.0f - 4.6f; // 两项常量已折入第一层，Vin 居中缩放；其余 15 项保持为零。
+    s_input[1] = vin_volts / 25.0f - 4.6f; // 两项常量已折入第一层，Vin 居中缩放；其余输入保持为零。
 #else
     s_input[0] = -0.5f; // 保留原始常量归一化输入，具体物理意义不能从当前代码确认。
     s_input[1] = vin_volts / 140.0f; // Vin 按 140 V 归一化，不表示已知完整训练域为 0～140 V。

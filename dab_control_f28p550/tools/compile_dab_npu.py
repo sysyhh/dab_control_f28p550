@@ -23,10 +23,23 @@ def main():
     parser.add_argument("--detail-profile", action="store_true", help="Enable intrusive stage timing; off for performance comparison")
     parser.add_argument("--optimization-level", type=int, choices=range(6), default=5,
                         help="0: original; 1: hidden identity; 2: packed transitions; 3: RAM runtime; 4: unrolled loads; 5: RAM constants")
+    parser.add_argument("--skip-normalize", action="store_true",
+                        help="Ask NNC 2.1.1 to prune float input normalization; kept independent of level 0-5")
+    parser.add_argument("--vin-channel-quant", action="store_true",
+                        help="Quantize only the live Vin channel; other inputs stay the original zero code")
+    parser.add_argument("--reuse-instructions", action="store_true",
+                        help="Reload NPU instructions only when the table pointer or length changes")
+    parser.add_argument("--onnx", type=Path, default=None,
+                        help="Existing 1x1-conv ONNX; default rebuilds the DAB16 candidate")
     args = parser.parse_args()
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from prepare_npu_conv import prepare
-    model = prepare()
+    if args.onnx is None:
+        from prepare_npu_conv import prepare
+        model = prepare()
+    else:
+        model = args.onnx.resolve()
+        if not model.exists():
+            raise RuntimeError(f"Missing ONNX: {model}")
     import onnx
     from importlib.metadata import version
     nnc_version = version("ti_mcu_nnc")
@@ -36,10 +49,11 @@ def main():
     onnx.checker.check_model(network)
     inp, out = network.graph.input, network.graph.output
     shape = lambda tensor: [d.dim_value for d in tensor.type.tensor_type.shape.dim]
-    if len(inp) != 1 or len(out) != 1 or shape(inp[0]) != [1, 16] or shape(out[0]) != [1, 1, 1, 4]:
-        raise RuntimeError("This adapter is only for the checked DAB16 candidate, not arbitrary models")
+    in_shape, out_shape = shape(inp[0]), shape(out[0])
+    if len(inp) != 1 or len(out) != 1 or out_shape != [1, 1, 1, 4] or in_shape not in ([1, 16], [1, 4]):
+        raise RuntimeError(f"This adapter only accepts checked DAB conv models, got {in_shape} -> {out_shape}")
     if inp[0].type.tensor_type.elem_type != 1 or out[0].type.tensor_type.elem_type != 1:
-        raise RuntimeError("DAB16 adapter requires FLOAT32 model input and output")
+        raise RuntimeError("Adapter requires FLOAT32 model input and output")
     compiler = args.cgt.resolve() / "bin/cl2000.exe"
     if not compiler.exists() or not (args.sdk / "device_support/f28p55x/common/include/driverlib.h").exists():
         raise RuntimeError("C2000 compiler or F28P55x SDK is missing")
@@ -54,7 +68,8 @@ def main():
                C2000_DEVICE="f28p55x", C2000_DEVICE_FPU="fpu32", CL2000_OPTIONS=cross,
                PYTHONIOENCODING="utf-8")
     env["PATH"] = str(compiler.parent) + os.pathsep + env.get("PATH", "")
-    command = [sys.executable, "-m", "tvm.driver.tvmc", "compile", "--target=c, ti-npu",
+    target = "c, ti-npu skip_normalize=true" if args.skip_normalize else "c, ti-npu"
+    command = [sys.executable, "-m", "tvm.driver.tvmc", "compile", f"--target={target}",
                "--target-c-mcpu=c28", str(model), "-o", str(output / "mod.a"),
                "--cross-compiler=cl2000", f"--cross-compiler-options={cross}"]
     completed = subprocess.run(command, cwd=APP, env=env, capture_output=True, text=True, errors="replace")
@@ -68,8 +83,23 @@ def main():
         raise RuntimeError("Generated library is not a hardware-NPU model")
     tensors = re.findall(r"Tensor\[\(([^)]*)\),\s*(\w+)\]", text)
     dimensions = [([int(v.strip()) for v in dims.split(",") if v.strip()], kind) for dims, kind in tensors]
-    if dimensions != [([1, 16], "float32"), ([1, 1, 1, 4], "float32")]:
-        raise RuntimeError(f"Generated ABI does not match the DAB16 adapter: {dimensions}")
+    skip_normalize_applied = False
+    float_ok = (dimensions[0][1] == "float32" and dimensions[1] == ([1, 1, 1, 4], "float32")
+                and dimensions[0][0] in ([1, 16], [1, 4]))
+    int_abi = dimensions[0][1] in ("int8", "uint8") and dimensions[1] == ([1, 1, 1, 4], "float32")
+    int_shape_ok = dimensions[0][0] in ([1, 16], [1, 16, 1, 1], [1, 4], [1, 4, 1, 1])
+    if args.skip_normalize:
+        if float_ok:
+            skip_normalize_applied = False
+        elif int_abi and int_shape_ok:
+            skip_normalize_applied = True
+        else:
+            raise RuntimeError(f"skip_normalize produced an unexpected ABI: {dimensions}")
+    elif not float_ok:
+        raise RuntimeError(f"Generated ABI does not match a checked DAB adapter: {dimensions}")
+    input_width = dimensions[0][0][1]
+    if skip_normalize_applied and args.out.resolve() == (APP / "model/generated/npu").resolve():
+        raise RuntimeError("skip_normalize integer ABI is not wired to dab_nn.c; compile to a side directory or use --vin-channel-quant")
     # A hardware macro alone is insufficient: dense graphs can fall back to CPU.
     kernel = (output / "lib2.c").read_text(encoding="utf-8")
     if kernel.count("tinie_curr_layer += 1;") != 4 or "TINIE_layer_t" not in kernel:
@@ -82,12 +112,15 @@ def main():
         "  tvmgen_default_finished = 1;",
         "  DAB_NN_noteNpuCompletion(); /* Final output is ready; stamp before publication. */\n  tvmgen_default_finished = 1;")
     (output / "lib1.reference.c").write_text(code, encoding="utf-8", newline="\n")
-    from patch_npu_runtime import instrument, instrument_driver, hidden_identity, packed_transitions, ram_functions, load_unroll, ram_constants
+    from patch_npu_runtime import (instrument, instrument_driver, hidden_identity, packed_transitions,
+                                   ram_functions, load_unroll, ram_constants, vin_channel_quant, reuse_instructions)
     constant_symbols=[]
     if args.optimization_level >= 1:
         code = hidden_identity(code, (output / "lib0.c").read_text())
     if args.optimization_level >= 2:
         code = packed_transitions(code)
+    if args.vin_channel_quant:
+        code = vin_channel_quant(code)
     code = instrument(code, args.detail_profile)
     if args.optimization_level >= 3:
         names=re.findall(r'\b(tvmgen_default_\w+|dab_npu_copy_words|tinie_sublayer_IRQHandler)\([^;{}]*\)\s*\{',code)
@@ -119,6 +152,8 @@ def main():
                 'TINIE_mem_write(params, layer->num_params, layer->params);' not in driver_code or
                 'TINIE_mem_write(ins, layer->num_ins, layer->ins);' not in driver_code):
             raise RuntimeError("Unexpected NNC 2.1.1 loading implementation")
+    if args.reuse_instructions:
+        driver_code = reuse_instructions(driver_code)
     if args.optimization_level >= 3:
         driver_names=["TINIE_setup","TINIE_start","write_configMMR","TINIE_clearInterruptACK"]
         if nnc_version == "2.1.1": driver_names.append("TINIE_mem_write")
@@ -134,14 +169,25 @@ def main():
     subprocess.run([str(compiler.parent / "ar2000.exe"), "r", "mod.a"]+objects,
                    cwd=output, check=True, capture_output=True)
     for obj in objects: (output / obj).unlink()
+    import numpy as np
+    import onnxruntime as ort
+    session = ort.InferenceSession(str(model), providers=["CPUExecutionProvider"])
+    features = np.zeros((1, in_shape[1]), np.float32)
+    features[0, 1] = np.float32(90) / np.float32(25) - np.float32(4.6)
+    expected_vin90 = [float(value) for value in session.run(None, {session.get_inputs()[0].name: features})[0].ravel()]
     manifest = {"model": model.name, "model_sha256": sha(model), "ti_mcu_nnc": nnc_version,
                 "target": "c, ti-npu", "cgt": str(args.cgt), "sdk": str(args.sdk), "cross_options": cross,
-                "input_shape": [1, 16], "output_shape": [1, 1, 1, 4], "io_dtype": "float32",
+                "input_shape": list(in_shape), "output_shape": [1, 1, 1, 4], "io_dtype": "float32",
                 "input": "features[1]=Vin/25-4.6; all other features zero; Vin 90..140 V",
+                "expected_vin90_output": expected_vin90,
                 "output_order": ["D1", "D0", "D2", "T"], "power_control_approved": False,
                 "hardware_stages": 4, "completion_hook": "after final output dequantization, before finished=1",
                 "detail_profile": args.detail_profile,
                 "optimization_level": args.optimization_level,
+                "skip_normalize_requested": args.skip_normalize,
+                "skip_normalize_applied": skip_normalize_applied,
+                "vin_channel_quant": args.vin_channel_quant,
+                "reuse_instructions": args.reuse_instructions,
                 "loading_implementation": "ti_2.1.1_native" if nnc_version == "2.1.1" else ("dab_unroll4" if args.optimization_level >= 4 else "ti_2.1.0_original"),
                 "ram_constant_symbols": constant_symbols,
                 "runtime_sha256": sha(runtime), "driver_sha256": sha(driver),
@@ -150,11 +196,18 @@ def main():
     (output / "dab_npu_contract.h").write_text(
         "/* Generated only after the TI NNC header ABI has been checked. */\n"
         "#ifndef DAB_NPU_CONTRACT_H_\n#define DAB_NPU_CONTRACT_H_\n"
-        "#define DAB_NPU_RUNTIME_INPUT_DIM 16U\n#define DAB_NPU_RUNTIME_OUTPUT_DIM 4U\n"
+        f"#define DAB_NPU_RUNTIME_INPUT_DIM {input_width}U\n#define DAB_NPU_RUNTIME_OUTPUT_DIM 4U\n"
         "#define DAB_NPU_MIN_VIN 90.0f\n#define DAB_NPU_MAX_VIN 140.0f\n"
         "#define DAB_NPU_POWER_CONTROL_APPROVED 0\n#endif\n", encoding="utf-8", newline="\n")
     contract=output / "dab_npu_contract.h"
-    contract.write_text(contract.read_text().replace("#endif", f"#define DAB_NPU_DETAIL_PROFILE {int(args.detail_profile)}\n#define DAB_NPU_RAM_RUNTIME {int(args.optimization_level >= 3)}\n#define DAB_NPU_RAM_CONSTANTS {int(args.optimization_level >= 5)}\n#endif"), encoding="utf-8", newline="\n")
+    contract.write_text(contract.read_text().replace(
+        "#endif",
+        f"#define DAB_NPU_DETAIL_PROFILE {int(args.detail_profile)}\n"
+        f"#define DAB_NPU_RAM_RUNTIME {int(args.optimization_level >= 3)}\n"
+        f"#define DAB_NPU_RAM_CONSTANTS {int(args.optimization_level >= 5)}\n"
+        f"#define DAB_NPU_VIN_CHANNEL_QUANT {int(args.vin_channel_quant)}\n"
+        f"#define DAB_NPU_REUSE_INSTRUCTIONS {int(args.reuse_instructions)}\n#endif"),
+        encoding="utf-8", newline="\n")
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8", newline="\n")
     print(json.dumps(manifest, indent=2))
 

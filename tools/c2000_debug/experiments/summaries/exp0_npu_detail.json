@@ -1,0 +1,794 @@
+{
+  "ok": true,
+  "timestamp_utc": "2026-10-30T07:58:33.181490+00:00",
+  "backend": "npu",
+  "label": "exp0_npu_detail",
+  "continuous_run_ms": 1000,
+  "firmware_sources_sha256": {
+    "dab_nn.c": "d838a2213041284d8eee5c06d417be43547478373ac4786a56ebef2053e35ab2",
+    "dab_main.c": "39e5897a64e2fab94a004d0696cdb288f9b2f8acd3a9b97d2c3406e56d8207b6",
+    "dab_board_config.h": "528a4b2c22fbb341bf514e30747998972d486d30da03566a171c90efbaec0560"
+  },
+  "runs": [
+    {
+      "raw_result": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\tools\\c2000_debug\\runs\\20261030_155833_326978\\result.json",
+      "out_sha256": "746ded818a3d411b77b5001ec54a3f56f02accb0d6fb54bd051380426e9f3cd4",
+      "metadata": {
+        "g_debugBuildId": 539365385,
+        "g_dabState": 1,
+        "g_protectFlags.all": 0,
+        "g_startRequested": 0,
+        "g_controlHeartbeat": 10266,
+        "g_backgroundHeartbeat": 241208,
+        "g_nnBenchmarkState": 2,
+        "g_nnBenchmarkCompleted": 1000,
+        "g_nnBenchmarkWarmupCompleted": 10,
+        "g_nnBenchmarkIterations": 1000,
+        "g_nnBenchmarkWarmup": 10,
+        "g_nnBenchmarkVin": 90,
+        "g_nnBenchmarkRejectReason": 0,
+        "g_nnTimeoutCount": 0
+      },
+      "output": [
+        0.4375,
+        0.25,
+        0,
+        1
+      ],
+      "timing": {
+        "timerHz": 150000000,
+        "timerReadOverheadTicks": 1,
+        "backend": 1,
+        "revision": 1,
+        "frozen": 1,
+        "rejectedOutputs": 0,
+        "prepare": {
+          "samples": 1000,
+          "lastTicks": 277,
+          "minTicks": 277,
+          "maxTicks": 1943,
+          "totalTicks": 322056,
+          "meanUs": 2.1470398902893066
+        },
+        "fpuForward": {
+          "samples": 0,
+          "lastTicks": 0,
+          "minTicks": 0,
+          "maxTicks": 0,
+          "totalTicks": 0,
+          "meanUs": 0
+        },
+        "npuSubmit": {
+          "samples": 1000,
+          "lastTicks": 6007,
+          "minTicks": 6001,
+          "maxTicks": 10703,
+          "totalTicks": 6751260,
+          "meanUs": 45.00839614868164
+        },
+        "npuObserved": {
+          "samples": 1000,
+          "lastTicks": 16488,
+          "minTicks": 16474,
+          "maxTicks": 19566,
+          "totalTicks": 16963296,
+          "meanUs": 113.08863067626953
+        },
+        "npuCompletion": {
+          "samples": 1000,
+          "lastTicks": 16287,
+          "minTicks": 16214,
+          "maxTicks": 18944,
+          "totalTicks": 16547835,
+          "meanUs": 110.31888580322266
+        },
+        "publish": {
+          "samples": 1000,
+          "lastTicks": 858,
+          "minTicks": 400,
+          "maxTicks": 2292,
+          "totalTicks": 451600,
+          "meanUs": 3.0106663703918457
+        },
+        "endToEnd": {
+          "samples": 1000,
+          "lastTicks": 17683,
+          "minTicks": 17214,
+          "maxTicks": 20306,
+          "totalTicks": 17806174,
+          "meanUs": 118.70782470703125
+        }
+      },
+      "detail": {
+        "instrumented": 1,
+        "invalidPairs": 0,
+        "lastCalls": [
+          1,
+          4,
+          1,
+          0,
+          4,
+          4,
+          4,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "stage": [
+          {
+            "samples": 1000,
+            "lastTicks": 2349,
+            "minTicks": 1893,
+            "maxTicks": 4010,
+            "totalTicks": 2271402,
+            "meanUs": 15.142678260803223
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 410,
+            "minTicks": 410,
+            "maxTicks": 2313,
+            "totalTicks": 435539,
+            "meanUs": 2.903593063354492
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 92,
+            "minTicks": 92,
+            "maxTicks": 92,
+            "totalTicks": 92000,
+            "meanUs": 0.6133333444595337
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 3512,
+            "minTicks": 3511,
+            "maxTicks": 5624,
+            "totalTicks": 3810475,
+            "meanUs": 25.403165817260742
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 2819,
+            "minTicks": 2818,
+            "maxTicks": 4927,
+            "totalTicks": 2970227,
+            "meanUs": 19.801511764526367
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 1444,
+            "minTicks": 1443,
+            "maxTicks": 3556,
+            "totalTicks": 1517856,
+            "meanUs": 10.119039535522461
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 455,
+            "minTicks": 455,
+            "maxTicks": 2522,
+            "totalTicks": 543179,
+            "meanUs": 3.6211929321289062
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 584,
+            "minTicks": 415,
+            "maxTicks": 2243,
+            "totalTicks": 846605,
+            "meanUs": 5.644032955169678
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 1801,
+            "minTicks": 287,
+            "maxTicks": 2282,
+            "totalTicks": 757515,
+            "meanUs": 5.0500993728637695
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 178,
+            "minTicks": 175,
+            "maxTicks": 2240,
+            "totalTicks": 477365,
+            "meanUs": 3.1824331283569336
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 63,
+            "minTicks": 63,
+            "maxTicks": 63,
+            "totalTicks": 63000,
+            "meanUs": 0.41999998688697815
+          }
+        ],
+        "stage_names": [
+          "input",
+          "packedCopyAndPack",
+          "unpack",
+          "hiddenConvert",
+          "parameters",
+          "instructions",
+          "registers",
+          "layer0Wait",
+          "layer1Wait",
+          "layer2Wait",
+          "layer3Wait",
+          "output"
+        ]
+      },
+      "checks": {
+        "benchmark_done": true,
+        "samples_1000": true,
+        "warmup_10": true,
+        "vin_90": true,
+        "backend_matches": true,
+        "frozen": true,
+        "no_rejections": true,
+        "no_timeout": true,
+        "standby": true,
+        "no_fault_or_start": true,
+        "all_power_pwm_ost_latched": true,
+        "trace_pairs": true,
+        "timer_150mhz": true,
+        "foreground_and_control_running": true,
+        "tick_statistics_consistent": true,
+        "ram_constants_match_flash": true,
+        "detail_mode_matches_library": true,
+        "completion_samples": true,
+        "known_vin90_output": true,
+        "four_layers": true,
+        "no_hidden_conversion": true
+      }
+    },
+    {
+      "raw_result": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\tools\\c2000_debug\\runs\\20261030_155856_605597\\result.json",
+      "out_sha256": "746ded818a3d411b77b5001ec54a3f56f02accb0d6fb54bd051380426e9f3cd4",
+      "metadata": {
+        "g_debugBuildId": 539365385,
+        "g_dabState": 1,
+        "g_protectFlags.all": 0,
+        "g_startRequested": 0,
+        "g_controlHeartbeat": 9971,
+        "g_backgroundHeartbeat": 232579,
+        "g_nnBenchmarkState": 2,
+        "g_nnBenchmarkCompleted": 1000,
+        "g_nnBenchmarkWarmupCompleted": 10,
+        "g_nnBenchmarkIterations": 1000,
+        "g_nnBenchmarkWarmup": 10,
+        "g_nnBenchmarkVin": 90,
+        "g_nnBenchmarkRejectReason": 0,
+        "g_nnTimeoutCount": 0
+      },
+      "output": [
+        0.4375,
+        0.25,
+        0,
+        1
+      ],
+      "timing": {
+        "timerHz": 150000000,
+        "timerReadOverheadTicks": 1,
+        "backend": 1,
+        "revision": 1,
+        "frozen": 1,
+        "rejectedOutputs": 0,
+        "prepare": {
+          "samples": 1000,
+          "lastTicks": 277,
+          "minTicks": 277,
+          "maxTicks": 1943,
+          "totalTicks": 322056,
+          "meanUs": 2.1470398902893066
+        },
+        "fpuForward": {
+          "samples": 0,
+          "lastTicks": 0,
+          "minTicks": 0,
+          "maxTicks": 0,
+          "totalTicks": 0,
+          "meanUs": 0
+        },
+        "npuSubmit": {
+          "samples": 1000,
+          "lastTicks": 6007,
+          "minTicks": 6001,
+          "maxTicks": 10703,
+          "totalTicks": 6751260,
+          "meanUs": 45.00839614868164
+        },
+        "npuObserved": {
+          "samples": 1000,
+          "lastTicks": 16488,
+          "minTicks": 16474,
+          "maxTicks": 19566,
+          "totalTicks": 16963296,
+          "meanUs": 113.08863067626953
+        },
+        "npuCompletion": {
+          "samples": 1000,
+          "lastTicks": 16287,
+          "minTicks": 16214,
+          "maxTicks": 18944,
+          "totalTicks": 16547835,
+          "meanUs": 110.31888580322266
+        },
+        "publish": {
+          "samples": 1000,
+          "lastTicks": 858,
+          "minTicks": 400,
+          "maxTicks": 2292,
+          "totalTicks": 451600,
+          "meanUs": 3.0106663703918457
+        },
+        "endToEnd": {
+          "samples": 1000,
+          "lastTicks": 17683,
+          "minTicks": 17214,
+          "maxTicks": 20306,
+          "totalTicks": 17806174,
+          "meanUs": 118.70782470703125
+        }
+      },
+      "detail": {
+        "instrumented": 1,
+        "invalidPairs": 0,
+        "lastCalls": [
+          1,
+          4,
+          1,
+          0,
+          4,
+          4,
+          4,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "stage": [
+          {
+            "samples": 1000,
+            "lastTicks": 2349,
+            "minTicks": 1893,
+            "maxTicks": 4010,
+            "totalTicks": 2271402,
+            "meanUs": 15.142678260803223
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 410,
+            "minTicks": 410,
+            "maxTicks": 2313,
+            "totalTicks": 435539,
+            "meanUs": 2.903593063354492
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 92,
+            "minTicks": 92,
+            "maxTicks": 92,
+            "totalTicks": 92000,
+            "meanUs": 0.6133333444595337
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 3512,
+            "minTicks": 3511,
+            "maxTicks": 5624,
+            "totalTicks": 3810475,
+            "meanUs": 25.403165817260742
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 2819,
+            "minTicks": 2818,
+            "maxTicks": 4927,
+            "totalTicks": 2970227,
+            "meanUs": 19.801511764526367
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 1444,
+            "minTicks": 1443,
+            "maxTicks": 3556,
+            "totalTicks": 1517856,
+            "meanUs": 10.119039535522461
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 455,
+            "minTicks": 455,
+            "maxTicks": 2522,
+            "totalTicks": 543179,
+            "meanUs": 3.6211929321289062
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 584,
+            "minTicks": 415,
+            "maxTicks": 2243,
+            "totalTicks": 846605,
+            "meanUs": 5.644032955169678
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 1801,
+            "minTicks": 287,
+            "maxTicks": 2282,
+            "totalTicks": 757515,
+            "meanUs": 5.0500993728637695
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 178,
+            "minTicks": 175,
+            "maxTicks": 2240,
+            "totalTicks": 477365,
+            "meanUs": 3.1824331283569336
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 63,
+            "minTicks": 63,
+            "maxTicks": 63,
+            "totalTicks": 63000,
+            "meanUs": 0.41999998688697815
+          }
+        ],
+        "stage_names": [
+          "input",
+          "packedCopyAndPack",
+          "unpack",
+          "hiddenConvert",
+          "parameters",
+          "instructions",
+          "registers",
+          "layer0Wait",
+          "layer1Wait",
+          "layer2Wait",
+          "layer3Wait",
+          "output"
+        ]
+      },
+      "checks": {
+        "benchmark_done": true,
+        "samples_1000": true,
+        "warmup_10": true,
+        "vin_90": true,
+        "backend_matches": true,
+        "frozen": true,
+        "no_rejections": true,
+        "no_timeout": true,
+        "standby": true,
+        "no_fault_or_start": true,
+        "all_power_pwm_ost_latched": true,
+        "trace_pairs": true,
+        "timer_150mhz": true,
+        "foreground_and_control_running": true,
+        "tick_statistics_consistent": true,
+        "ram_constants_match_flash": true,
+        "detail_mode_matches_library": true,
+        "completion_samples": true,
+        "known_vin90_output": true,
+        "four_layers": true,
+        "no_hidden_conversion": true
+      }
+    },
+    {
+      "raw_result": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\tools\\c2000_debug\\runs\\20261030_155918_229743\\result.json",
+      "out_sha256": "746ded818a3d411b77b5001ec54a3f56f02accb0d6fb54bd051380426e9f3cd4",
+      "metadata": {
+        "g_debugBuildId": 539365385,
+        "g_dabState": 1,
+        "g_protectFlags.all": 0,
+        "g_startRequested": 0,
+        "g_controlHeartbeat": 10009,
+        "g_backgroundHeartbeat": 233685,
+        "g_nnBenchmarkState": 2,
+        "g_nnBenchmarkCompleted": 1000,
+        "g_nnBenchmarkWarmupCompleted": 10,
+        "g_nnBenchmarkIterations": 1000,
+        "g_nnBenchmarkWarmup": 10,
+        "g_nnBenchmarkVin": 90,
+        "g_nnBenchmarkRejectReason": 0,
+        "g_nnTimeoutCount": 0
+      },
+      "output": [
+        0.4375,
+        0.25,
+        0,
+        1
+      ],
+      "timing": {
+        "timerHz": 150000000,
+        "timerReadOverheadTicks": 1,
+        "backend": 1,
+        "revision": 1,
+        "frozen": 1,
+        "rejectedOutputs": 0,
+        "prepare": {
+          "samples": 1000,
+          "lastTicks": 277,
+          "minTicks": 277,
+          "maxTicks": 1943,
+          "totalTicks": 322056,
+          "meanUs": 2.1470398902893066
+        },
+        "fpuForward": {
+          "samples": 0,
+          "lastTicks": 0,
+          "minTicks": 0,
+          "maxTicks": 0,
+          "totalTicks": 0,
+          "meanUs": 0
+        },
+        "npuSubmit": {
+          "samples": 1000,
+          "lastTicks": 6007,
+          "minTicks": 6001,
+          "maxTicks": 10703,
+          "totalTicks": 6751260,
+          "meanUs": 45.00839614868164
+        },
+        "npuObserved": {
+          "samples": 1000,
+          "lastTicks": 16488,
+          "minTicks": 16474,
+          "maxTicks": 19566,
+          "totalTicks": 16963296,
+          "meanUs": 113.08863067626953
+        },
+        "npuCompletion": {
+          "samples": 1000,
+          "lastTicks": 16287,
+          "minTicks": 16214,
+          "maxTicks": 18944,
+          "totalTicks": 16547835,
+          "meanUs": 110.31888580322266
+        },
+        "publish": {
+          "samples": 1000,
+          "lastTicks": 858,
+          "minTicks": 400,
+          "maxTicks": 2292,
+          "totalTicks": 451600,
+          "meanUs": 3.0106663703918457
+        },
+        "endToEnd": {
+          "samples": 1000,
+          "lastTicks": 17683,
+          "minTicks": 17214,
+          "maxTicks": 20306,
+          "totalTicks": 17806174,
+          "meanUs": 118.70782470703125
+        }
+      },
+      "detail": {
+        "instrumented": 1,
+        "invalidPairs": 0,
+        "lastCalls": [
+          1,
+          4,
+          1,
+          0,
+          4,
+          4,
+          4,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "stage": [
+          {
+            "samples": 1000,
+            "lastTicks": 2349,
+            "minTicks": 1893,
+            "maxTicks": 4010,
+            "totalTicks": 2271402,
+            "meanUs": 15.142678260803223
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 410,
+            "minTicks": 410,
+            "maxTicks": 2313,
+            "totalTicks": 435539,
+            "meanUs": 2.903593063354492
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 92,
+            "minTicks": 92,
+            "maxTicks": 92,
+            "totalTicks": 92000,
+            "meanUs": 0.6133333444595337
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 3512,
+            "minTicks": 3511,
+            "maxTicks": 5624,
+            "totalTicks": 3810475,
+            "meanUs": 25.403165817260742
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 2819,
+            "minTicks": 2818,
+            "maxTicks": 4927,
+            "totalTicks": 2970227,
+            "meanUs": 19.801511764526367
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 1444,
+            "minTicks": 1443,
+            "maxTicks": 3556,
+            "totalTicks": 1517856,
+            "meanUs": 10.119039535522461
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 455,
+            "minTicks": 455,
+            "maxTicks": 2522,
+            "totalTicks": 543179,
+            "meanUs": 3.6211929321289062
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 584,
+            "minTicks": 415,
+            "maxTicks": 2243,
+            "totalTicks": 846605,
+            "meanUs": 5.644032955169678
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 1801,
+            "minTicks": 287,
+            "maxTicks": 2282,
+            "totalTicks": 757515,
+            "meanUs": 5.0500993728637695
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 178,
+            "minTicks": 175,
+            "maxTicks": 2240,
+            "totalTicks": 477365,
+            "meanUs": 3.1824331283569336
+          },
+          {
+            "samples": 1000,
+            "lastTicks": 63,
+            "minTicks": 63,
+            "maxTicks": 63,
+            "totalTicks": 63000,
+            "meanUs": 0.41999998688697815
+          }
+        ],
+        "stage_names": [
+          "input",
+          "packedCopyAndPack",
+          "unpack",
+          "hiddenConvert",
+          "parameters",
+          "instructions",
+          "registers",
+          "layer0Wait",
+          "layer1Wait",
+          "layer2Wait",
+          "layer3Wait",
+          "output"
+        ]
+      },
+      "checks": {
+        "benchmark_done": true,
+        "samples_1000": true,
+        "warmup_10": true,
+        "vin_90": true,
+        "backend_matches": true,
+        "frozen": true,
+        "no_rejections": true,
+        "no_timeout": true,
+        "standby": true,
+        "no_fault_or_start": true,
+        "all_power_pwm_ost_latched": true,
+        "trace_pairs": true,
+        "timer_150mhz": true,
+        "foreground_and_control_running": true,
+        "tick_statistics_consistent": true,
+        "ram_constants_match_flash": true,
+        "detail_mode_matches_library": true,
+        "completion_samples": true,
+        "known_vin90_output": true,
+        "four_layers": true,
+        "no_hidden_conversion": true
+      }
+    }
+  ],
+  "model_manifest": {
+    "model": "dab_npu_tinpu_conv.onnx",
+    "model_sha256": "502716d85fb9872aa234e7fd2ca234b013f3ce92a3762a472d3ea7f3c79a9a08",
+    "ti_mcu_nnc": "2.1.1",
+    "target": "c, ti-npu",
+    "cgt": "E:\\Software_Download\\ti\\ccs2020\\ccs\\tools\\compiler\\ti-cgt-c2000_22.6.2.LTS",
+    "sdk": "E:\\Software_Download\\ti\\c2000\\C2000Ware_DigitalPower_SDK_5_05_01_00\\c2000ware",
+    "cross_options": "--abi=eabi -O3 --opt_for_speed=5 --c99 -v28 -ml -mt --gen_func_subsections --float_support=fpu32 -IE:/Software_Download/ti/ccs2020/ccs/tools/compiler/ti-cgt-c2000_22.6.2.LTS/include -IE:/Software_Download/ti/c2000/C2000Ware_DigitalPower_SDK_5_05_01_00/c2000ware/driverlib/f28p55x/driverlib -IE:/Software_Download/ti/c2000/C2000Ware_DigitalPower_SDK_5_05_01_00/c2000ware/device_support/f28p55x/common/include -I.",
+    "input_shape": [
+      1,
+      16
+    ],
+    "output_shape": [
+      1,
+      1,
+      1,
+      4
+    ],
+    "io_dtype": "float32",
+    "input": "features[1]=Vin/25-4.6; all other features zero; Vin 90..140 V",
+    "output_order": [
+      "D1",
+      "D0",
+      "D2",
+      "T"
+    ],
+    "power_control_approved": false,
+    "hardware_stages": 4,
+    "completion_hook": "after final output dequantization, before finished=1",
+    "detail_profile": true,
+    "optimization_level": 5,
+    "loading_implementation": "ti_2.1.1_native",
+    "ram_constant_symbols": [
+      "PWCONV_PARAMS",
+      "PWCONV_MMR",
+      "PWCONV_PARAMS_1",
+      "PWCONV_MMR_1",
+      "PWCONV_PARAMS_2",
+      "PWCONV_MMR_2",
+      "PWCONV_PARAMS_3",
+      "PWCONV_MMR_3",
+      "PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS",
+      "PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS"
+    ],
+    "runtime_sha256": "dafc56dcb469b8ba84cd2d1d0fd36a1c8719287e2983ac560c6e0f46a9ceaac8",
+    "driver_sha256": "5f52721471e816d10b7f79f410c27b14b3d8c2e174e0460409ae2ff55d6b8d10",
+    "kernel_sha256": "889f91251042f3a6d7b6b23f94ebdcca779b24e631c19a15a04d5f122a39e1c2",
+    "library_sha256": "344b9a84a7519418037d5ac2e63b59d4da59d2955ea1a55ae93c85001c8d38a8",
+    "header_sha256": "0f0042043848bacbaaca9e4f9d612b8f1678b3b656b035e22edec8bd4c97d5ac"
+  },
+  "report_path": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\tools\\c2000_debug\\benchmarks\\20261030_155833_exp0_npu_detail\\summary.json"
+}

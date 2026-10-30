@@ -97,9 +97,13 @@ def main():
                     checks['ram_constants_match_flash'] = raw.get('model_constant_copy',{}).get('matches') is True
                 checks['detail_mode_matches_library'] = bool(detail['instrumented']) == report['model_manifest']['detail_profile']
                 checks['completion_samples'] = timing['npuCompletion']['samples'] == 1000
-                checks['known_vin90_output'] = [values[f'g_nnLastOutput[{i}]'] for i in range(4)] == [.4375,.25,0.,1.]
+                expected = report['model_manifest'].get('expected_vin90_output', [.4375, .25, 0., 1.])
+                checks['known_vin90_output'] = [values[f'g_nnLastOutput[{i}]'] for i in range(4)] == expected
                 if detail['instrumented']:
-                    checks['four_layers'] = detail['lastCalls'][4:7] == [4,4,4] and detail['lastCalls'][7:11] == [1,1,1,1]
+                    # INS 分段包围整个 Step 2；复用时仍进入该段，只是可能跳过 TINIE_mem_write。
+                    ins_calls = 4
+                    checks['four_layers'] = (detail['lastCalls'][4:7] == [4, ins_calls, 4] and
+                                             detail['lastCalls'][7:11] == [1, 1, 1, 1])
                     checks['no_hidden_conversion'] = detail['lastCalls'][3] == 0
             report['runs'].append({'raw_result': str(Path(raw['run_dir'])/'result.json'),
                                    'out_sha256': raw['out_sha256'], 'metadata': {k:values[k] for k in meta},

@@ -1,6 +1,6 @@
 {
-  "model": "dab_npu_tinpu_conv.onnx",
-  "model_sha256": "502716d85fb9872aa234e7fd2ca234b013f3ce92a3762a472d3ea7f3c79a9a08",
+  "model": "dab_npu_narrow_conv.onnx",
+  "model_sha256": "f28369d0e499c73977cd361ed902a05ce20efc6eb7353d7d78bbfe4e5007a191",
   "ti_mcu_nnc": "2.1.1",
   "target": "c, ti-npu",
   "cgt": "E:\\Software_Download\\ti\\ccs2020\\ccs\\tools\\compiler\\ti-cgt-c2000_22.6.2.LTS",
@@ -8,7 +8,7 @@
   "cross_options": "--abi=eabi -O3 --opt_for_speed=5 --c99 -v28 -ml -mt --gen_func_subsections --float_support=fpu32 -IE:/Software_Download/ti/ccs2020/ccs/tools/compiler/ti-cgt-c2000_22.6.2.LTS/include -IE:/Software_Download/ti/c2000/C2000Ware_DigitalPower_SDK_5_05_01_00/c2000ware/driverlib/f28p55x/driverlib -IE:/Software_Download/ti/c2000/C2000Ware_DigitalPower_SDK_5_05_01_00/c2000ware/device_support/f28p55x/common/include -I.",
   "input_shape": [
     1,
-    16
+    4
   ],
   "output_shape": [
     1,
@@ -18,6 +18,12 @@
   ],
   "io_dtype": "float32",
   "input": "features[1]=Vin/25-4.6; all other features zero; Vin 90..140 V",
+  "expected_vin90_output": [
+    0.4375,
+    0.25,
+    0.0,
+    1.0
+  ],
   "output_order": [
     "D1",
     "D0",
@@ -29,6 +35,10 @@
   "completion_hook": "after final output dequantization, before finished=1",
   "detail_profile": false,
   "optimization_level": 5,
+  "skip_normalize_requested": false,
+  "skip_normalize_applied": false,
+  "vin_channel_quant": true,
+  "reuse_instructions": true,
   "loading_implementation": "ti_2.1.1_native",
   "ram_constant_symbols": [
     "PWCONV_PARAMS",
@@ -39,12 +49,11 @@
     "PWCONV_MMR_2",
     "PWCONV_PARAMS_3",
     "PWCONV_MMR_3",
-    "PWCONV_iB8_oB8_kB8_iCm8b16_oCm8_INS",
     "PWCONV_iB8_oB8_kB8_iHiW1_iCm4_oCm4_INS"
   ],
-  "runtime_sha256": "af5f1c56faaeb5704a2208d11f918f2a6d8e14d41b410d15b90c0dba9ba9b762",
-  "driver_sha256": "aa28d08f883377bbac9352220402c690bc6e3cd7ae53efc619ad60cd922f044d",
-  "kernel_sha256": "889f91251042f3a6d7b6b23f94ebdcca779b24e631c19a15a04d5f122a39e1c2",
-  "library_sha256": "9fb39378b0b1a01e33c42c1d58d0e9a822f2b2e7b89349d8fa21fe7f36035b3c",
-  "header_sha256": "0f0042043848bacbaaca9e4f9d612b8f1678b3b656b035e22edec8bd4c97d5ac"
+  "runtime_sha256": "766e7d35ace1b88cd1157ffbab23f1ef60e799963b07f15f8a99c0ca6fd5866f",
+  "driver_sha256": "1823676ba5e1da2904231a800a3628b123d61f2ae9a311d079d0d61fa900d4b3",
+  "kernel_sha256": "e1d525bfc3c6e19a4eaa2fcad1fa17edd2561186fcb609291f3fae1fc556ea1f",
+  "library_sha256": "f71cd75a7805e1afdd0f42e46e766b82d4a1cbb834cdd69d5c9b0075f415a5f7",
+  "header_sha256": "5e2610b52db943c07b9c8e0c1f665c8f27a50908bd81dfa644fff3fc382927fe"
 }

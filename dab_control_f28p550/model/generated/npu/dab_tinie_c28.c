@@ -196,6 +196,9 @@ static void write_configMMR(TINIE_layer_t *layer)
 }
 
 
+static const uint32_t *dab_npu_loaded_ins;
+static uint32_t dab_npu_loaded_ins_count;
+
 void TINIE_setup(TINIE_layer_t *layer)
 {
 
@@ -221,7 +224,13 @@ void TINIE_setup(TINIE_layer_t *layer)
     volatile uint32_t *ins = (uint32_t *) (TINIE_BASE_ADDR + TINIE_INS_MEM_OFS);
     if (layer->num_ins > 0)
     {
-        TINIE_mem_write(ins, layer->num_ins, layer->ins);
+        /* 指令区在层执行后保持；仅在表指针或长度变化时重写。参数区仍每层覆盖。 */
+        if (layer->ins != dab_npu_loaded_ins || layer->num_ins != dab_npu_loaded_ins_count)
+        {
+            TINIE_mem_write(ins, layer->num_ins, layer->ins);
+            dab_npu_loaded_ins = layer->ins;
+            dab_npu_loaded_ins_count = layer->num_ins;
+        }
     }
 
 
@@ -271,6 +280,9 @@ void TINIE_clearInterruptACK(void)
 
 void TI_NPU_init(void)
 {
+    dab_npu_loaded_ins = 0;
+    dab_npu_loaded_ins_count = 0U;
+
     // Configure TI NPU clock speed, enable TI NPU clock (i.e. enable TI NPU)
     SysCtl_setNPUClockDivider(SYSCTL_NPUCLK_DIV_1);
     SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_NPU);

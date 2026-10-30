@@ -25,8 +25,8 @@
 #error "DAB16 model requires DAB_USE_HARDWARE_NPU"
 #endif
 #include "model/generated/npu/dab_npu_contract.h"
-#if DAB_NPU_RUNTIME_INPUT_DIM != 16U || DAB_NPU_RUNTIME_OUTPUT_DIM != 4U
-#error "DAB16 model dimensions changed; review the adapter"
+#if (DAB_NPU_RUNTIME_INPUT_DIM != 16U && DAB_NPU_RUNTIME_INPUT_DIM != 4U) || DAB_NPU_RUNTIME_OUTPUT_DIM != 4U
+#error "NPU model dimensions changed; review the adapter"
 #endif
 #endif
 

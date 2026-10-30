@@ -1,5 +1,8 @@
 # NPU 耗时优化记录
 
+2026-10-30 实机优化实验（重建 HEAD 基线、单通道量化、指令复用、紧凑模型及组合）见 [NPU_opt_campaign_20261030_zh.md](NPU_opt_campaign_20261030_zh.md)。正式组合端到端 56.433 μs，原始 `summary.json` 在 `tools/c2000_debug/experiments/summaries/`。
+
+
 所有轮次保留功率输出禁止、1 ms 超时和现有输出检查。软件验证通过表示构建及程序逻辑通过，实际耗时和硬件输出仍须开发板复测。
 
 已提交历史：基线 `8344686`、P0 `aeb8cd4`、P1 `1bd4abe`、P2 `ef9a527`。后续提交通过项目根目录下 `git log --oneline` 查看；不必切换历史版本即可用下述选项逐级复测。

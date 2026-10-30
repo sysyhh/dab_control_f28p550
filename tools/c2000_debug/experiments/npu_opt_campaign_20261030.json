@@ -1,0 +1,31 @@
+{
+  "conditions": {
+    "board": "LAUNCHXL-F28P55X",
+    "sysclk_hz": 150000000,
+    "pwm": "OST latched, power conversion off",
+    "vin_v": 90,
+    "warmup": 10,
+    "samples": 1000,
+    "repeats": 3,
+    "official_detail_profile": false
+  },
+  "results_us": {
+    "exp0_fpu": {"endToEnd": 28.959570, "min": 23.893333, "max": 42.386667, "cpu_foreground": 28.959570, "fpuForward": 23.715313},
+    "exp0_npu": {"endToEnd": 98.135345, "min": 87.486667, "max": 119.286667, "npuSubmit": 38.958702, "npuCompletion": 90.003357, "cpu_foreground": 45.888822},
+    "exp1_vin_channel_quant": {"endToEnd": 86.946075, "min": 79.860000, "max": 94.166667, "npuSubmit": 26.399078, "npuCompletion": 79.552414, "cpu_foreground": 31.360512},
+    "exp2_reuse_instructions": {"endToEnd": 90.098351, "min": 77.946667, "max": 95.766667, "npuSubmit": 41.477489, "npuCompletion": 81.754463, "cpu_foreground": 47.004482},
+    "exp12_vin_quant_reuse": {"endToEnd": 75.778107, "min": 66.860000, "max": 86.126667, "npuSubmit": 26.958332, "npuCompletion": 68.194084, "cpu_foreground": 32.576038},
+    "exp3_compact": {"endToEnd": 67.282341, "min": 57.746667, "max": 78.586667, "npuSubmit": 19.632137, "npuCompletion": 58.701477, "cpu_foreground": 25.305784},
+    "exp3c_compact_vin_reuse": {"endToEnd": 56.432972, "min": 47.400000, "max": 65.246667, "npuSubmit": 15.579800, "npuCompletion": 48.618416, "cpu_foreground": 20.041786}
+  },
+  "keep": {
+    "vin_channel_quant": true,
+    "reuse_instructions": true,
+    "compact_4x32x12x8x4_for_speed": true,
+    "compact_for_power_control": false,
+    "skip_normalize": false,
+    "mmr_differential": false
+  },
+  "npu90_output": [0.4375, 0.25, 0.0, 1.0],
+  "summaries": "tools/c2000_debug/experiments/summaries"
+}
