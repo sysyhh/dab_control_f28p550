@@ -105,7 +105,7 @@
     "generated/compressed_raw/relay_graph.quantized.txt": "674fbd31dac4163340e47c96f151a1578b22ef5a272e8fe9e84c5a99c974573f",
     "generated/compressed_raw/tvmgen_default.h": "d23de5cf8734674b89931cbeb086ff3c0086af0f4c865a5885f55f07b68348b4",
     "MMR_AUDIT_zh.md": "b6507278eac705ab767d576f213ae698e8ac5c7e437ce606d80edc5737833b04",
-    "PARAMETER_AUDIT_zh.md": "519bf060086e2cc11f4146933c723606c21a92d3006cf15170cff42885bfdb2b",
+    "PARAMETER_AUDIT_zh.md": "c5543d71bc5b2a5a582b8f41f31ee27f4f69d68c669a1050df014c69f5c1007e",
     "parameter_candidate.py": "785937a49f5247488a23890f82d3670406c5799b9c60083e498e27ee3395d01a",
     "provenance.json": "d09114d8cbde212dcf3592237d7ed73c9566478bc9db06e9607c44054ae57f40",
     "REPORT_zh.md": "b398cd7d86490515a6feea79fa975bfbda720aa8211f125a764a80b4418cd738",
@@ -663,6 +663,6 @@
     "verify_mmr_host.py": "37d0ee43d55cd014599a1feffbc36923b7abf85d39535f7bdf201995766398e6",
     "verify_results_c.py": "764fa6e2fc8729158e1e0aab9bfd2dba7d4a1bf4faeafa1be3625e00aaf877c8",
     "verify_transfer_host.py": "2a8766bc18cf76e52d202196f38a41470c156a502a3216413def1b20379cb63e",
-    "write_report.py": "6b9d78076af8139201744c3ff9c5a675fe23a63b7179658c8e6c65c985f8e909"
+    "write_report.py": "f76f3953394187992fa49af83e395aa55441b1ff352c206bb10163b1c095d01e"
   }
 }

@@ -2,7 +2,7 @@
 
 ## 实际代码与存储位置
 
-`TINIE_setup()` 的参数阶段调用当前工程编译进去的 `TINIE_mem_write(params,num_params,params_source)`。审计由接受的 B1 驱动源码重新以相同 cl2000 22.6.2.LTS、EABI、-O3、opt_for_speed=5、FPU32 生成汇编和 listing，未反推 C 代码代替汇编。见 [原始汇编](assembly/baseline/dab_tinie_c28.asm)、[listing](assembly/baseline/dab_tinie_c28.lst)、[编译命令与实机审计材料](assembly/AUDIT/)。
+`TINIE_setup()` 的参数阶段调用当前工程编译进去的 `TINIE_mem_write(params,num_params,params_source)`。审计由接受的 B1 驱动源码重新以相同 cl2000 22.6.2.LTS、EABI、-O3、opt_for_speed=5、FPU32 生成汇编和 listing，未反推 C 代码代替汇编。见 [原始汇编](assembly/baseline/dab_tinie_c28.asm)、[listing](assembly/baseline/dab_tinie_c28.lst)、[编译命令与实机审计材料](assembly/audit/)。
 
 链接 map 确认驱动运行于 LS2(0x9000)，参数运行于 LS3(0x9800 起)，Flash 是加载镜像，不是推理中的参数读取位置。全体普通版本 workspace=0xe000、packed input=0xe060，原有对齐和容量不变。参数源四个实际 C28 地址依次为 0x9bd4, 0x9a84, 0x99b4, 0x9800，每个 uint32 占两个 16 位地址单元；参数总数 208+168+104+26=506 个 uint32，即 2024 个逻辑 8 位字节。
 

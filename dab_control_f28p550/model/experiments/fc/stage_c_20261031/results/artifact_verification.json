@@ -1,8 +1,8 @@
 {
   "ok": true,
-  "manifest_sha256": "27029fe423755fbba42a2b49ff96f90bf201f27ce7c7ccd86afe88dfce79e6a7",
+  "manifest_sha256": "1766dcc3316242374246cc85322b08da3c1605c8fd091453aad2dddf3ad3bae2",
   "files": 663,
-  "logical_bytes": 27902530,
+  "logical_bytes": 27902708,
   "report_local_links": 30,
   "all_manifest_hashes_rechecked": true,
   "best": "C4",
