@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "variants": [
+    "Baseline",
+    "A1",
+    "A2",
+    "A3",
+    "A4"
+  ],
+  "points_per_variant": 570,
+  "official_points": 501,
+  "adjacent_boundary_probes": 69,
+  "comparison": "exact packed input, all four raw layer images, all final float bits; padding masked only at unused byte 29"
+}

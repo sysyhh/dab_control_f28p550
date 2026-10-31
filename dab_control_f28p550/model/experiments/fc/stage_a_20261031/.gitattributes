@@ -1,0 +1,7 @@
+# Preserve exact bytes of measured artifacts and raw evidence across checkouts.
+* -text whitespace=cr-at-eol
+*.a binary
+# These are immutable generated sources, input snapshots, and debugger records.
+validated/** -whitespace
+original_drafts/** -whitespace
+results/** -whitespace

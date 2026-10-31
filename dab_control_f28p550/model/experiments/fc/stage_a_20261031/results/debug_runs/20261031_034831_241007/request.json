@@ -1,0 +1,27 @@
+{
+  "ccs": "E:\\Software_Download\\ti\\ccs2020\\ccs",
+  "ccxml": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_a_20261031\\results\\debug_runs\\20261031_034831_241007\\attach_no_gel.ccxml",
+  "out": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_a_20261031\\work\\A3\\dab_control_f28p550\\CPU1_LAUNCHXL_FC_INT8_FLASH\\dab_control_f28p550.out",
+  "result": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_a_20261031\\results\\debug_runs\\20261031_034831_241007\\hardware.json",
+  "expressions": [
+    "*((unsigned int*)0xAC10)",
+    "*((unsigned int*)0xAC11)",
+    "*((unsigned int*)0xAC12)",
+    "*((unsigned int*)0xAC17)"
+  ],
+  "registers": [
+    "PC"
+  ],
+  "memory_registers": {
+    "EPWM7_TZFLG": 18067,
+    "EPWM4_TZFLG": 17299,
+    "EPWM5_TZFLG": 17555,
+    "EPWM10_TZFLG": 18835
+  },
+  "verify_npu_const": false,
+  "read_e2e_ticks": false,
+  "attach_only": true,
+  "run_ms": 250,
+  "samples": 2,
+  "timeout_ms": 20000
+}

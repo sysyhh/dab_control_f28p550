@@ -1,0 +1,47 @@
+{
+  "connected": true,
+  "state": "halted",
+  "loaded": false,
+  "variables": {
+    "*((unsigned int*)0xAC10)": 10720,
+    "*((unsigned int*)0xAC11)": 18,
+    "*((unsigned int*)0xAC12)": 0,
+    "*((unsigned int*)0xAC17)": 0
+  },
+  "registers": {
+    "PC": 534276,
+    "EPWM7_TZFLG": 4,
+    "EPWM4_TZFLG": 4,
+    "EPWM5_TZFLG": 4,
+    "EPWM10_TZFLG": 4
+  },
+  "errors": [],
+  "samples": [
+    {
+      "index": 0,
+      "values": {
+        "*((unsigned int*)0xAC10)": 10720,
+        "*((unsigned int*)0xAC11)": 18,
+        "*((unsigned int*)0xAC12)": 0,
+        "*((unsigned int*)0xAC17)": 0
+      },
+      "pc": 534276
+    }
+  ],
+  "stage": "complete",
+  "cores": {
+    "cores": [
+      "Texas Instruments XDS110 USB Debug Probe_0/C28xx_CPU1",
+      "Texas Instruments XDS110 USB Debug Probe_0/CPU1_CLA1"
+    ],
+    "nonDebugCores": [
+      "Texas Instruments XDS110 USB Debug Probe_0/IcePick_C_0",
+      "Texas Instruments XDS110 USB Debug Probe_0/JLM"
+    ]
+  },
+  "attach_pc_before_symbols": 534276,
+  "symbols_loaded": true,
+  "attach_pc_after_symbols": 534276,
+  "program_verified": true,
+  "debugger_closed": true
+}

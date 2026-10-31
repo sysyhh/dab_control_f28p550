@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "variant": "A2",
+  "detail_profile": false,
+  "correctness_report": "../../results/board_correctness.json",
+  "formal_summary": "results\\benchmarks\\20261031_034503_fc_stage_a_A2\\summary.json",
+  "artifact": {
+    "all_measured_images_match_retained_image": true,
+    "image_sha256": "8ed07a8a6cbfeb6eb817d4b3e8ed2305e37ac7f1d8ae09f439b16654bcd1e3f8",
+    "current_library_sha256": "204fbec869a417070d36d6e185b20f6c9d963e4cbe1d35e2765ac0922ad15e5d",
+    "generated_runtime_matches_patch": true,
+    "application_matches_patch": true,
+    "kernel_and_driver_identical_to_baseline": true,
+    "manifest_note": "Initial summary model_manifest is a pre-rebuild snapshot. Per-run out_sha256 identifies each actual measured image; all match the retained independently rebuilt image."
+  },
+  "power_control_approved": false
+}
