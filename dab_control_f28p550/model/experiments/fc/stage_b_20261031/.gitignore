@@ -1,0 +1,11 @@
+/work/
+/host/
+/host_tools/
+/evidence/spruj53.pdf
+/__pycache__/
+/debug_cli.py
+/capture_cli.py
+/capture_worker.js
+!generated/**/*.log
+!results/**/*.log
+!results/**/*.out

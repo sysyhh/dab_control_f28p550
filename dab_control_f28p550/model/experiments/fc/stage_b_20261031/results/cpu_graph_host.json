@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "variants": {
+    "A4": {
+      "ok": true,
+      "source_sha256": "ae749dcfc54fb518c1321abb489b8f624569868d81ae9622b57a077de7686ce4",
+      "message": "PASS: 24 reachable codes x 8 dirty workspaces, exact four-layer transport and final float bits"
+    },
+    "B1": {
+      "ok": true,
+      "source_sha256": "566cacde21d8bb1a4d812b094538af777a5a9666794126cdab5d823cbbae29ec",
+      "message": "PASS: 24 reachable codes x 8 dirty workspaces, exact four-layer transport and final float bits"
+    }
+  },
+  "protect_guard_words_each_side": 16,
+  "runtime_workspace_units": 96,
+  "source": "actual compiled lib1, Stage A input helper and C28 word/byte emulation"
+}

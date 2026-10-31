@@ -1,0 +1,221 @@
+{
+  "ok": true,
+  "board_allowed": true,
+  "A4": {
+    "layers": [
+      {
+        "layer": 0,
+        "subtasks": 2,
+        "parameters": [
+          "FC_PARAMS_1",
+          "FC_PARAMS_1_sub1"
+        ],
+        "mmrs": [
+          "FC_MMR_1",
+          "FC_MMR_1_sub1"
+        ],
+        "instructions": [
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS",
+          "FC_iB8_oB8_kB8_iCm8b16_oC1LL_INS"
+        ],
+        "parameter_bytes": [
+          728,
+          32
+        ],
+        "parameter_address_registers": [
+          {
+            "21": 0,
+            "25": 56,
+            "27": 84
+          },
+          {
+            "21": 0,
+            "25": 2,
+            "27": 3
+          }
+        ]
+      },
+      {
+        "layer": 1,
+        "subtasks": 1,
+        "parameters": [
+          "FC_PARAMS_2"
+        ],
+        "mmrs": [
+          "FC_MMR_2"
+        ],
+        "instructions": [
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "parameter_bytes": [
+          672
+        ],
+        "parameter_address_registers": [
+          {
+            "21": 0,
+            "25": 64,
+            "27": 80
+          }
+        ]
+      },
+      {
+        "layer": 2,
+        "subtasks": 1,
+        "parameters": [
+          "FC_PARAMS_3"
+        ],
+        "mmrs": [
+          "FC_MMR_3"
+        ],
+        "instructions": [
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "parameter_bytes": [
+          416
+        ],
+        "parameter_address_registers": [
+          {
+            "21": 0,
+            "25": 32,
+            "27": 48
+          }
+        ]
+      },
+      {
+        "layer": 3,
+        "subtasks": 1,
+        "parameters": [
+          "FC_PARAMS"
+        ],
+        "mmrs": [
+          "FC_MMR"
+        ],
+        "instructions": [
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "parameter_bytes": [
+          104
+        ],
+        "parameter_address_registers": [
+          {
+            "21": 0,
+            "25": 8,
+            "27": 12
+          }
+        ]
+      }
+    ],
+    "hardware_tasks": 5,
+    "parameter_total_bytes": 1952,
+    "fc_instruction_tables": [
+      "FC_iB8_oB8_kB8_iCm8b16_oC1LL_INS",
+      "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+    ],
+    "lib2_sha256": "51fdfab9dcab06462d088925d2edc5baf89d4b136b8d020ba58130e6dfd6240b"
+  },
+  "B1": {
+    "layers": [
+      {
+        "layer": 0,
+        "subtasks": 1,
+        "parameters": [
+          "FC_PARAMS_1"
+        ],
+        "mmrs": [
+          "FC_MMR_1"
+        ],
+        "instructions": [
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "parameter_bytes": [
+          832
+        ],
+        "parameter_address_registers": [
+          {
+            "21": 0,
+            "25": 64,
+            "27": 96
+          }
+        ]
+      },
+      {
+        "layer": 1,
+        "subtasks": 1,
+        "parameters": [
+          "FC_PARAMS_3"
+        ],
+        "mmrs": [
+          "FC_MMR_3"
+        ],
+        "instructions": [
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "parameter_bytes": [
+          672
+        ],
+        "parameter_address_registers": [
+          {
+            "21": 0,
+            "25": 64,
+            "27": 80
+          }
+        ]
+      },
+      {
+        "layer": 2,
+        "subtasks": 1,
+        "parameters": [
+          "FC_PARAMS_2"
+        ],
+        "mmrs": [
+          "FC_MMR_2"
+        ],
+        "instructions": [
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "parameter_bytes": [
+          416
+        ],
+        "parameter_address_registers": [
+          {
+            "21": 0,
+            "25": 32,
+            "27": 48
+          }
+        ]
+      },
+      {
+        "layer": 3,
+        "subtasks": 1,
+        "parameters": [
+          "FC_PARAMS"
+        ],
+        "mmrs": [
+          "FC_MMR"
+        ],
+        "instructions": [
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "parameter_bytes": [
+          104
+        ],
+        "parameter_address_registers": [
+          {
+            "21": 0,
+            "25": 8,
+            "27": 12
+          }
+        ]
+      }
+    ],
+    "hardware_tasks": 4,
+    "parameter_total_bytes": 2024,
+    "fc_instruction_tables": [
+      "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+    ],
+    "lib2_sha256": "e2137b519c0338bb8d1f8258fad824abc47eee87800d51e41cceeed64d36e11f"
+  },
+  "first_layer_partition_reason": "NNC config_fc_no_host_postproc chooses 4/2/1 output blocks; 29=7*4+1, 32=8*4. Both 32-channel FC parameter blocks fit the 2048-byte internal limit.",
+  "alignment_minimum_for_no_tail": 4,
+  "smallest_extension_preserving_29_active_outputs": 32
+}

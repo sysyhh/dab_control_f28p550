@@ -1,0 +1,6 @@
+* -text whitespace=cr-at-eol
+*.a binary
+evidence/** -whitespace
+generated/** -whitespace
+results/** -whitespace
+validated/** -whitespace

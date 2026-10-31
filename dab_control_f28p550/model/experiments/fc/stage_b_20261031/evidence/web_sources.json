@@ -1,0 +1,29 @@
+{
+  "access_date_local": "2026-10-31",
+  "timezone": "Asia/Shanghai",
+  "sources": [
+    {
+      "title": "TMS320F28P55x Technical Reference Manual SPRUJ53D",
+      "url": "https://www.ti.com/lit/pdf/spruj53",
+      "revision": "D, April 2026",
+      "download_sha256": "d6d44eec8b8eeab5097a2d4f3fe7b954d8f3150b466894ca43caa3c97a50b97b",
+      "download_bytes": 35093713,
+      "relevant_pages": [
+        1056,
+        1057
+      ],
+      "next_chapter_page": 1058,
+      "observation": "NPU chapter contains introduction and toolchain links, no internal NPU register map or FC parameter-rebase contract"
+    },
+    {
+      "title": "TI NPU Configuration Guidelines",
+      "url": "https://software-dl.ti.com/C2000/esd/mcu_ai/user_guide/NPU_CONFIGURATION_GUIDELINES.html",
+      "scope": "public FC input constraints; actual experiments pin NNC 2.1.1"
+    },
+    {
+      "title": "F28P550SJ product page",
+      "url": "https://www.ti.com/product/TMS320F28P550SJ",
+      "scope": "150 MHz C28x and TinyEngine NPU device context"
+    }
+  ]
+}

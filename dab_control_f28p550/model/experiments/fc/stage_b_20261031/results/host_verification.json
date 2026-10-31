@@ -1,0 +1,42 @@
+{
+  "ok": true,
+  "all_finite_float32_vin_count": 5767169,
+  "range": [
+    90,
+    140
+  ],
+  "unique_input_codes": [
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64
+  ],
+  "input_sequence_sha256": "0bb296c1bde6332493a2028d4a5bea168e538331d0ecf937a94982363db363e8",
+  "canonical_onnx_input_and_original_A4_formula_exact": true,
+  "decoded_active_parameters_exact": true,
+  "new_channels_zero": true,
+  "all_reachable_input_codes_layerwise_exact": true,
+  "matches_stage_A_real_board_golden_points": 570,
+  "final_float_bits_exact": true,
+  "note": "Integer decoded-kernel host model is checked against all Stage-A real-board golden traces; no host timing is reported as hardware performance."
+}

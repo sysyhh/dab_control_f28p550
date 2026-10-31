@@ -1,0 +1,75 @@
+{
+  "application_sha256": "63351f92c487ba1adb96a600bea74308dcd54b0ef895003d2aad951400bd5ead",
+  "delay_header": "#define FC_STAGE_B_DELAY_TICKS 2550UL\n",
+  "library": {
+    "kind": "native_3input_fc",
+    "model": "int8_zero_neuron.onnx",
+    "model_sha256": "e8188b8f4d545b7687fc60a7781e13ad153da03b8ef6f3c6acfc9d1f249acd98",
+    "source_generated": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\generated\\int8_zero_neuron_force_hw",
+    "ti_mcu_nnc": "2.1.1",
+    "force_no_c28_soft_offload": true,
+    "input_shape": [
+      1,
+      16
+    ],
+    "output_shape": [
+      1,
+      4
+    ],
+    "io_dtype": "packed_int8_input_float32_output",
+    "input": "features[0]=-0.5; features[1]=Vin/140; features[2]=0.285714; remaining channels zero; no Vin fold",
+    "expected_vin90_output": [
+      0.453125,
+      0.25,
+      0.0,
+      1.0
+    ],
+    "output_order": [
+      "D1",
+      "D0",
+      "D2",
+      "T"
+    ],
+    "power_control_approved": false,
+    "hardware_stages": 4,
+    "completion_hook": "after final output dequantization, before finished=1",
+    "detail_profile": false,
+    "optimization_level": 5,
+    "vin_channel_quant": false,
+    "reuse_instructions": true,
+    "hidden_identity": true,
+    "packed_transitions": true,
+    "ram_constant_symbols": [
+      "FC_PARAMS",
+      "FC_MMR",
+      "FC_PARAMS_1",
+      "FC_MMR_1",
+      "FC_PARAMS_1_sub1",
+      "FC_MMR_1_sub1",
+      "FC_PARAMS_2",
+      "FC_MMR_2",
+      "FC_PARAMS_3",
+      "FC_MMR_3",
+      "FC_iB8_oB8_kB8_iCm8b16_oC1LL_INS",
+      "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+    ],
+    "runtime_sha256": "7bf9ffa626abe01ac7c5e450df0ba96edbc919d73ecbd2bc17ccdb365513ec08",
+    "driver_sha256": "1823676ba5e1da2904231a800a3628b123d61f2ae9a311d079d0d61fa900d4b3",
+    "kernel_sha256": "51fdfab9dcab06462d088925d2edc5baf89d4b136b8d020ba58130e6dfd6240b",
+    "library_sha256": "1fe704a7848ce52d8b73691defc47af4e09e29e306e0d0b56aed103f070d86c7",
+    "header_sha256": "3dde59a205ed31178c2dfba896bd4e38c994e65823b5d122792ddb651ca97175",
+    "hardware_fc_mapped": true,
+    "fc_ins_tables": [
+      "FC_iB8_oB8_kB8_iCm8b16_oC1LL_INS",
+      "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+    ],
+    "tinie_layer_increments": 4,
+    "tinie_fullyConnectedNHWC": 16,
+    "stage_a_variant": "A4",
+    "validation_capture": false,
+    "application_prequant": true,
+    "stage_b_variant": "A4",
+    "hardware_tasks": 5,
+    "resident_parameters": false
+  }
+}

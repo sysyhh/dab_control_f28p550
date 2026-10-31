@@ -1,0 +1,61 @@
+{
+  "kind": "native_3input_fc",
+  "model": "B1_16_32_16_16_4.onnx",
+  "model_sha256": "1e5bb84558f3b1b7dda70020a159466e857d825ffc09207dba98134d4d510db7",
+  "source_generated": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_b_20261031\\generated\\B1_raw",
+  "ti_mcu_nnc": "2.1.1",
+  "force_no_c28_soft_offload": true,
+  "input_shape": [
+    1,
+    16
+  ],
+  "output_shape": [
+    1,
+    4
+  ],
+  "io_dtype": "float32",
+  "input": "features[0]=-0.5; features[1]=Vin/140; features[2]=0.285714; remaining channels zero; no Vin fold",
+  "expected_vin90_output": [
+    0.453125,
+    0.25,
+    0.0,
+    1.0
+  ],
+  "output_order": [
+    "D1",
+    "D0",
+    "D2",
+    "T"
+  ],
+  "power_control_approved": false,
+  "hardware_stages": 4,
+  "completion_hook": "after final output dequantization, before finished=1",
+  "detail_profile": false,
+  "optimization_level": 5,
+  "vin_channel_quant": false,
+  "reuse_instructions": true,
+  "hidden_identity": false,
+  "packed_transitions": false,
+  "ram_constant_symbols": [
+    "FC_PARAMS",
+    "FC_MMR",
+    "FC_PARAMS_1",
+    "FC_MMR_1",
+    "FC_PARAMS_2",
+    "FC_MMR_2",
+    "FC_PARAMS_3",
+    "FC_MMR_3",
+    "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+  ],
+  "runtime_sha256": "9ab7eecca0e1de1ffa8d3cd8a1abeeb311326bd29ad883b0aefadc782a1d3b07",
+  "driver_sha256": "1823676ba5e1da2904231a800a3628b123d61f2ae9a311d079d0d61fa900d4b3",
+  "kernel_sha256": "59a4fd689af19f256122224baba87c54f90da4e9d3398f9f26432facdaa9aba8",
+  "library_sha256": "81a3babadbfe47132ffcda8257818ace47414b835c8950f9dcb8cf63da12efd5",
+  "header_sha256": "d23de5cf8734674b89931cbeb086ff3c0086af0f4c865a5885f55f07b68348b4",
+  "hardware_fc_mapped": true,
+  "fc_ins_tables": [
+    "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+  ],
+  "tinie_layer_increments": 4,
+  "tinie_fullyConnectedNHWC": 16
+}

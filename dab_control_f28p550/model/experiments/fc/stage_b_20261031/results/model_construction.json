@@ -1,0 +1,82 @@
+{
+  "ok": true,
+  "source_sha256": "e8188b8f4d545b7687fc60a7781e13ad153da03b8ef6f3c6acfc9d1f249acd98",
+  "candidate_sha256": "1e5bb84558f3b1b7dda70020a159466e857d825ffc09207dba98134d4d510db7",
+  "changes": [
+    {
+      "name": "layers.0.1.offset",
+      "before": [
+        1,
+        29
+      ],
+      "after": [
+        1,
+        32
+      ]
+    },
+    {
+      "name": "layers.0.1.mult",
+      "before": [
+        1,
+        29
+      ],
+      "after": [
+        1,
+        32
+      ]
+    },
+    {
+      "name": "layers.0.1.shift_mult",
+      "before": [
+        1,
+        29
+      ],
+      "after": [
+        1,
+        32
+      ]
+    },
+    {
+      "name": "onnx::MatMul_118",
+      "before": [
+        16,
+        29
+      ],
+      "after": [
+        16,
+        32
+      ]
+    },
+    {
+      "name": "onnx::MatMul_123",
+      "before": [
+        29,
+        16
+      ],
+      "after": [
+        32,
+        16
+      ]
+    }
+  ],
+  "active_weights_and_quantization_unchanged": true,
+  "zero_point": 0,
+  "zero_real_value": 0,
+  "zero_new_channels_proof": "zero integer weights and zero integer bias -> zero accumulator -> scale * 0 -> floor(0) -> unsigned code 0 -> real 0",
+  "baseline_shape": [
+    16,
+    29,
+    16,
+    16,
+    4
+  ],
+  "candidate_shape": [
+    16,
+    32,
+    16,
+    16,
+    4
+  ],
+  "baseline_macs": 1248,
+  "candidate_macs": 1344
+}
