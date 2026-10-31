@@ -1,0 +1,1187 @@
+{
+  "ok": true,
+  "timestamp_utc": "2026-10-31T06:46:29.415537+00:00",
+  "backend": "fc_int8",
+  "label": "fc_stage_c_C4",
+  "continuous_run_ms": 1000,
+  "build_dir": "CPU1_LAUNCHXL_FC_INT8_FLASH",
+  "firmware_sources_sha256": {
+    "dab_nn.c": "63351f92c487ba1adb96a600bea74308dcd54b0ef895003d2aad951400bd5ead",
+    "dab_main.c": "7a7dab7ef6d93716ece248ae7fd21a16028ca8a774d42ca312cabda95b53b533",
+    "dab_board_config.h": "528a4b2c22fbb341bf514e30747998972d486d30da03566a171c90efbaec0560"
+  },
+  "runs": [
+    {
+      "round_manifest": {
+        "kind": "native_3input_fc",
+        "model": "B1_16_32_16_16_4.onnx",
+        "model_sha256": "1e5bb84558f3b1b7dda70020a159466e857d825ffc09207dba98134d4d510db7",
+        "source_generated": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_b_20261031\\generated\\B1_raw",
+        "ti_mcu_nnc": "2.1.1",
+        "force_no_c28_soft_offload": true,
+        "input_shape": [
+          1,
+          16
+        ],
+        "output_shape": [
+          1,
+          4
+        ],
+        "io_dtype": "packed_int8_input_float32_output",
+        "input": "features[0]=-0.5; features[1]=Vin/140; features[2]=0.285714; remaining channels zero; no Vin fold",
+        "expected_vin90_output": [
+          0.453125,
+          0.25,
+          0.0,
+          1.0
+        ],
+        "output_order": [
+          "D1",
+          "D0",
+          "D2",
+          "T"
+        ],
+        "power_control_approved": false,
+        "hardware_stages": 4,
+        "completion_hook": "after final output dequantization, before finished=1",
+        "detail_profile": false,
+        "optimization_level": 5,
+        "vin_channel_quant": false,
+        "reuse_instructions": true,
+        "hidden_identity": true,
+        "packed_transitions": true,
+        "ram_constant_symbols": [
+          "FC_PARAMS",
+          "FC_MMR",
+          "FC_PARAMS_1",
+          "FC_MMR_1",
+          "FC_PARAMS_2",
+          "FC_MMR_2",
+          "FC_PARAMS_3",
+          "FC_MMR_3",
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "runtime_sha256": "f40d76f479e75cada6bb889b2a21d1ee8ef39175aa45c916c440c8118b36c7f7",
+        "driver_sha256": "39386858caf37bdf198035a232ac805dcfb91d941b9dafdc5ddc2be0a681477e",
+        "kernel_sha256": "59a4fd689af19f256122224baba87c54f90da4e9d3398f9f26432facdaa9aba8",
+        "library_sha256": "a8385e0d303af8218a246b03692bd65f21f32eae215c1c9722152cb0d181ce48",
+        "header_sha256": "d93b3a12eed092d2057e0d2202566beeadf03704fec20c662ced5aef1a057b29",
+        "hardware_fc_mapped": true,
+        "fc_ins_tables": [
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "tinie_layer_increments": 4,
+        "tinie_fullyConnectedNHWC": 16,
+        "stage_b_variant": "B1",
+        "validation_capture": false,
+        "hardware_tasks": 4,
+        "application_prequant": true,
+        "resident_parameters": false,
+        "stage_c_variant": "C4",
+        "compressed_mmr": false,
+        "fast_parameter_copy": false,
+        "static_mmr": true
+      },
+      "raw_result": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_c_20261031\\results\\debug_runs\\20261031_144631_889250\\result.json",
+      "out_sha256": "c9d7fc50f6a54489d6ec46e63e2328c7e8f23e67c170054995fa4a4f393b92eb",
+      "metadata": {
+        "g_debugBuildId": 539365424,
+        "g_dabState": 1,
+        "g_protectFlags.all": 0,
+        "g_startRequested": 0,
+        "g_controlHeartbeat": 9969,
+        "g_backgroundHeartbeat": 262420,
+        "g_nnBenchmarkState": 2,
+        "g_nnBenchmarkCompleted": 1000,
+        "g_nnBenchmarkWarmupCompleted": 10,
+        "g_nnBenchmarkIterations": 1000,
+        "g_nnBenchmarkWarmup": 10,
+        "g_nnBenchmarkVin": 90,
+        "g_nnBenchmarkRejectReason": 0,
+        "g_nnTimeoutCount": 0,
+        "g_fcStageBDelayTicks": 0,
+        "g_fcStageBActualDelayTicks": 12,
+        "g_fcStageBFirstFormalTick": 4294775270
+      },
+      "output": [
+        0.453125,
+        0.25,
+        0,
+        1
+      ],
+      "live_output_after_service": [
+        0.453125,
+        0.25,
+        0,
+        1
+      ],
+      "cpu_foreground_mean_us": 19.62500548362732,
+      "cpu_isr_mean_us": 22.94884490966797,
+      "cpu_total_mean_us": 42.57385039329529,
+      "npu_hw_wait_mean_us": 9.250700950622559,
+      "end_to_end_distribution": {
+        "samples": 1000,
+        "min_ticks": 7765,
+        "max_ticks": 10874,
+        "mean_ticks": 8038.719,
+        "std_ticks": 574.2645975845977,
+        "p95_ticks": 9666,
+        "p99_ticks": 10407,
+        "min_us": 51.766666666666666,
+        "max_us": 72.49333333333334,
+        "mean_us": 53.59146,
+        "std_us": 3.828430650563985,
+        "p95_us": 64.44,
+        "p99_us": 69.38
+      },
+      "rejected_outputs": 0,
+      "timing": {
+        "timerHz": 150000000,
+        "timerReadOverheadTicks": 1,
+        "backend": 1,
+        "revision": 2,
+        "frozen": 1,
+        "rejectedOutputs": 0,
+        "npuIsrInvocations": 4000,
+        "npuIsrMaxSingleTicks": 1505,
+        "npuIsrLastCount": 4,
+        "prepare": {
+          "samples": 1000,
+          "lastTicks": 363,
+          "minTicks": 363,
+          "maxTicks": 2468,
+          "totalTicks": 430364,
+          "meanUs": 2.869093179702759
+        },
+        "fpuForward": {
+          "samples": 0,
+          "lastTicks": 0,
+          "minTicks": 0,
+          "maxTicks": 0,
+          "totalTicks": 0,
+          "meanUs": 0
+        },
+        "npuSubmit": {
+          "samples": 1000,
+          "lastTicks": 2088,
+          "minTicks": 2088,
+          "maxTicks": 4199,
+          "totalTicks": 2122021,
+          "meanUs": 14.146805763244629
+        },
+        "npuObserved": {
+          "samples": 1000,
+          "lastTicks": 6967,
+          "minTicks": 6967,
+          "maxTicks": 9623,
+          "totalTicks": 7169884,
+          "meanUs": 47.799224853515625
+        },
+        "npuCompletion": {
+          "samples": 1000,
+          "lastTicks": 6851,
+          "minTicks": 6847,
+          "maxTicks": 9250,
+          "totalTicks": 6951953,
+          "meanUs": 46.346351623535156
+        },
+        "npuIsr": {
+          "samples": 1000,
+          "lastTicks": 3442,
+          "minTicks": 3442,
+          "maxTicks": 3445,
+          "totalTicks": 3442327,
+          "meanUs": 22.94884490966797
+        },
+        "publish": {
+          "samples": 1000,
+          "lastTicks": 390,
+          "minTicks": 390,
+          "maxTicks": 848,
+          "totalTicks": 391366,
+          "meanUs": 2.6091065406799316
+        },
+        "endToEnd": {
+          "samples": 1000,
+          "lastTicks": 7765,
+          "minTicks": 7765,
+          "maxTicks": 10874,
+          "totalTicks": 8038719,
+          "meanUs": 53.59145736694336
+        },
+        "npuIsrLastLayerCount": [
+          0,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "detail": {
+        "instrumented": 0,
+        "invalidPairs": 0,
+        "lastCalls": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "stage": [
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          }
+        ],
+        "stage_names": [
+          "input",
+          "packedCopyAndPack",
+          "unpack",
+          "hiddenConvert",
+          "parameters",
+          "instructions",
+          "registers",
+          "layer0Wait",
+          "layer1Wait",
+          "layer2Wait",
+          "layer3Wait",
+          "output"
+        ]
+      },
+      "checks": {
+        "benchmark_done": true,
+        "samples_1000": true,
+        "warmup_10": true,
+        "vin_90": true,
+        "backend_matches": true,
+        "frozen": true,
+        "no_timeout": true,
+        "standby": true,
+        "no_fault_or_start": true,
+        "all_power_pwm_ost_latched": true,
+        "trace_pairs": true,
+        "timer_150mhz": true,
+        "timing_revision": true,
+        "benchmark_output_valid": true,
+        "foreground_and_control_running": true,
+        "reject_reason_clear": true,
+        "tick_statistics_consistent": true,
+        "snapshot_finite": true,
+        "ram_constants_match_flash": true,
+        "detail_mode_matches_library": true,
+        "completion_samples": true,
+        "isr_samples": true,
+        "hardware_isr_count": true,
+        "isr_layer0_unused": true,
+        "isr_layer_sum": true,
+        "isr_invocations": true,
+        "vin90_output_close": true,
+        "e2e_tick_count": true
+      }
+    },
+    {
+      "round_manifest": {
+        "kind": "native_3input_fc",
+        "model": "B1_16_32_16_16_4.onnx",
+        "model_sha256": "1e5bb84558f3b1b7dda70020a159466e857d825ffc09207dba98134d4d510db7",
+        "source_generated": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_b_20261031\\generated\\B1_raw",
+        "ti_mcu_nnc": "2.1.1",
+        "force_no_c28_soft_offload": true,
+        "input_shape": [
+          1,
+          16
+        ],
+        "output_shape": [
+          1,
+          4
+        ],
+        "io_dtype": "packed_int8_input_float32_output",
+        "input": "features[0]=-0.5; features[1]=Vin/140; features[2]=0.285714; remaining channels zero; no Vin fold",
+        "expected_vin90_output": [
+          0.453125,
+          0.25,
+          0.0,
+          1.0
+        ],
+        "output_order": [
+          "D1",
+          "D0",
+          "D2",
+          "T"
+        ],
+        "power_control_approved": false,
+        "hardware_stages": 4,
+        "completion_hook": "after final output dequantization, before finished=1",
+        "detail_profile": false,
+        "optimization_level": 5,
+        "vin_channel_quant": false,
+        "reuse_instructions": true,
+        "hidden_identity": true,
+        "packed_transitions": true,
+        "ram_constant_symbols": [
+          "FC_PARAMS",
+          "FC_MMR",
+          "FC_PARAMS_1",
+          "FC_MMR_1",
+          "FC_PARAMS_2",
+          "FC_MMR_2",
+          "FC_PARAMS_3",
+          "FC_MMR_3",
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "runtime_sha256": "f40d76f479e75cada6bb889b2a21d1ee8ef39175aa45c916c440c8118b36c7f7",
+        "driver_sha256": "39386858caf37bdf198035a232ac805dcfb91d941b9dafdc5ddc2be0a681477e",
+        "kernel_sha256": "59a4fd689af19f256122224baba87c54f90da4e9d3398f9f26432facdaa9aba8",
+        "library_sha256": "d2a4255b7561cb91a1699cd6460dc49f2445beac34820df709fa2c15ba3de46c",
+        "header_sha256": "d93b3a12eed092d2057e0d2202566beeadf03704fec20c662ced5aef1a057b29",
+        "hardware_fc_mapped": true,
+        "fc_ins_tables": [
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "tinie_layer_increments": 4,
+        "tinie_fullyConnectedNHWC": 16,
+        "stage_b_variant": "B1",
+        "validation_capture": false,
+        "hardware_tasks": 4,
+        "application_prequant": true,
+        "resident_parameters": false,
+        "stage_c_variant": "C4",
+        "compressed_mmr": false,
+        "fast_parameter_copy": false,
+        "static_mmr": true
+      },
+      "raw_result": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_c_20261031\\results\\debug_runs\\20261031_144701_282471\\result.json",
+      "out_sha256": "eb87b67cbac755c370ef4cf0fc20bf3ad1818f5bbb6c44fc8a43f6cf9ab2ec3f",
+      "metadata": {
+        "g_debugBuildId": 539365424,
+        "g_dabState": 1,
+        "g_protectFlags.all": 0,
+        "g_startRequested": 0,
+        "g_controlHeartbeat": 10041,
+        "g_backgroundHeartbeat": 264477,
+        "g_nnBenchmarkState": 2,
+        "g_nnBenchmarkCompleted": 1000,
+        "g_nnBenchmarkWarmupCompleted": 10,
+        "g_nnBenchmarkIterations": 1000,
+        "g_nnBenchmarkWarmup": 10,
+        "g_nnBenchmarkVin": 90,
+        "g_nnBenchmarkRejectReason": 0,
+        "g_nnTimeoutCount": 0,
+        "g_fcStageBDelayTicks": 2550,
+        "g_fcStageBActualDelayTicks": 2559,
+        "g_fcStageBFirstFormalTick": 4294772723
+      },
+      "output": [
+        0.453125,
+        0.25,
+        0,
+        1
+      ],
+      "live_output_after_service": [
+        0.453125,
+        0.25,
+        0,
+        1
+      ],
+      "cpu_foreground_mean_us": 19.57437801361084,
+      "cpu_isr_mean_us": 22.948772430419922,
+      "cpu_total_mean_us": 42.52315044403076,
+      "npu_hw_wait_mean_us": 9.258455276489258,
+      "end_to_end_distribution": {
+        "samples": 1000,
+        "min_ticks": 7765,
+        "max_ticks": 10870,
+        "mean_ticks": 8029.047,
+        "std_ticks": 565.638910251938,
+        "p95_ticks": 8762,
+        "p99_ticks": 10411,
+        "min_us": 51.766666666666666,
+        "max_us": 72.46666666666667,
+        "mean_us": 53.52698,
+        "std_us": 3.7709260683462533,
+        "p95_us": 58.413333333333334,
+        "p99_us": 69.40666666666667
+      },
+      "rejected_outputs": 0,
+      "timing": {
+        "timerHz": 150000000,
+        "timerReadOverheadTicks": 1,
+        "backend": 1,
+        "revision": 2,
+        "frozen": 1,
+        "rejectedOutputs": 0,
+        "npuIsrInvocations": 4000,
+        "npuIsrMaxSingleTicks": 1505,
+        "npuIsrLastCount": 4,
+        "prepare": {
+          "samples": 1000,
+          "lastTicks": 363,
+          "minTicks": 363,
+          "maxTicks": 2466,
+          "totalTicks": 423084,
+          "meanUs": 2.8205597400665283
+        },
+        "fpuForward": {
+          "samples": 0,
+          "lastTicks": 0,
+          "minTicks": 0,
+          "maxTicks": 0,
+          "totalTicks": 0,
+          "meanUs": 0
+        },
+        "npuSubmit": {
+          "samples": 1000,
+          "lastTicks": 2088,
+          "minTicks": 2088,
+          "maxTicks": 4199,
+          "totalTicks": 2118255,
+          "meanUs": 14.121698379516602
+        },
+        "npuObserved": {
+          "samples": 1000,
+          "lastTicks": 6967,
+          "minTicks": 6967,
+          "maxTicks": 9625,
+          "totalTicks": 7162150,
+          "meanUs": 47.74766540527344
+        },
+        "npuCompletion": {
+          "samples": 1000,
+          "lastTicks": 6851,
+          "minTicks": 6847,
+          "maxTicks": 9252,
+          "totalTicks": 6949339,
+          "meanUs": 46.32892608642578
+        },
+        "npuIsr": {
+          "samples": 1000,
+          "lastTicks": 3442,
+          "minTicks": 3442,
+          "maxTicks": 3445,
+          "totalTicks": 3442316,
+          "meanUs": 22.948772430419922
+        },
+        "publish": {
+          "samples": 1000,
+          "lastTicks": 390,
+          "minTicks": 390,
+          "maxTicks": 2492,
+          "totalTicks": 394818,
+          "meanUs": 2.63211989402771
+        },
+        "endToEnd": {
+          "samples": 1000,
+          "lastTicks": 7765,
+          "minTicks": 7765,
+          "maxTicks": 10870,
+          "totalTicks": 8029047,
+          "meanUs": 53.5269775390625
+        },
+        "npuIsrLastLayerCount": [
+          0,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "detail": {
+        "instrumented": 0,
+        "invalidPairs": 0,
+        "lastCalls": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "stage": [
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          }
+        ],
+        "stage_names": [
+          "input",
+          "packedCopyAndPack",
+          "unpack",
+          "hiddenConvert",
+          "parameters",
+          "instructions",
+          "registers",
+          "layer0Wait",
+          "layer1Wait",
+          "layer2Wait",
+          "layer3Wait",
+          "output"
+        ]
+      },
+      "checks": {
+        "benchmark_done": true,
+        "samples_1000": true,
+        "warmup_10": true,
+        "vin_90": true,
+        "backend_matches": true,
+        "frozen": true,
+        "no_timeout": true,
+        "standby": true,
+        "no_fault_or_start": true,
+        "all_power_pwm_ost_latched": true,
+        "trace_pairs": true,
+        "timer_150mhz": true,
+        "timing_revision": true,
+        "benchmark_output_valid": true,
+        "foreground_and_control_running": true,
+        "reject_reason_clear": true,
+        "tick_statistics_consistent": true,
+        "snapshot_finite": true,
+        "ram_constants_match_flash": true,
+        "detail_mode_matches_library": true,
+        "completion_samples": true,
+        "isr_samples": true,
+        "hardware_isr_count": true,
+        "isr_layer0_unused": true,
+        "isr_layer_sum": true,
+        "isr_invocations": true,
+        "vin90_output_close": true,
+        "e2e_tick_count": true
+      }
+    },
+    {
+      "round_manifest": {
+        "kind": "native_3input_fc",
+        "model": "B1_16_32_16_16_4.onnx",
+        "model_sha256": "1e5bb84558f3b1b7dda70020a159466e857d825ffc09207dba98134d4d510db7",
+        "source_generated": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_b_20261031\\generated\\B1_raw",
+        "ti_mcu_nnc": "2.1.1",
+        "force_no_c28_soft_offload": true,
+        "input_shape": [
+          1,
+          16
+        ],
+        "output_shape": [
+          1,
+          4
+        ],
+        "io_dtype": "packed_int8_input_float32_output",
+        "input": "features[0]=-0.5; features[1]=Vin/140; features[2]=0.285714; remaining channels zero; no Vin fold",
+        "expected_vin90_output": [
+          0.453125,
+          0.25,
+          0.0,
+          1.0
+        ],
+        "output_order": [
+          "D1",
+          "D0",
+          "D2",
+          "T"
+        ],
+        "power_control_approved": false,
+        "hardware_stages": 4,
+        "completion_hook": "after final output dequantization, before finished=1",
+        "detail_profile": false,
+        "optimization_level": 5,
+        "vin_channel_quant": false,
+        "reuse_instructions": true,
+        "hidden_identity": true,
+        "packed_transitions": true,
+        "ram_constant_symbols": [
+          "FC_PARAMS",
+          "FC_MMR",
+          "FC_PARAMS_1",
+          "FC_MMR_1",
+          "FC_PARAMS_2",
+          "FC_MMR_2",
+          "FC_PARAMS_3",
+          "FC_MMR_3",
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "runtime_sha256": "f40d76f479e75cada6bb889b2a21d1ee8ef39175aa45c916c440c8118b36c7f7",
+        "driver_sha256": "39386858caf37bdf198035a232ac805dcfb91d941b9dafdc5ddc2be0a681477e",
+        "kernel_sha256": "59a4fd689af19f256122224baba87c54f90da4e9d3398f9f26432facdaa9aba8",
+        "library_sha256": "2184b2553595bd1532da1c5da4f7648c83f3138644a1bccbf4bae5f9c2445f09",
+        "header_sha256": "d93b3a12eed092d2057e0d2202566beeadf03704fec20c662ced5aef1a057b29",
+        "hardware_fc_mapped": true,
+        "fc_ins_tables": [
+          "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+        ],
+        "tinie_layer_increments": 4,
+        "tinie_fullyConnectedNHWC": 16,
+        "stage_b_variant": "B1",
+        "validation_capture": false,
+        "hardware_tasks": 4,
+        "application_prequant": true,
+        "resident_parameters": false,
+        "stage_c_variant": "C4",
+        "compressed_mmr": false,
+        "fast_parameter_copy": false,
+        "static_mmr": true
+      },
+      "raw_result": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_c_20261031\\results\\debug_runs\\20261031_144726_616648\\result.json",
+      "out_sha256": "d5a30f2be4480e6e200b36ad22681ba37c3cc746e3d4d49d1d592b3499496453",
+      "metadata": {
+        "g_debugBuildId": 539365424,
+        "g_dabState": 1,
+        "g_protectFlags.all": 0,
+        "g_startRequested": 0,
+        "g_controlHeartbeat": 10008,
+        "g_backgroundHeartbeat": 263492,
+        "g_nnBenchmarkState": 2,
+        "g_nnBenchmarkCompleted": 1000,
+        "g_nnBenchmarkWarmupCompleted": 10,
+        "g_nnBenchmarkIterations": 1000,
+        "g_nnBenchmarkWarmup": 10,
+        "g_nnBenchmarkVin": 90,
+        "g_nnBenchmarkRejectReason": 0,
+        "g_nnTimeoutCount": 0,
+        "g_fcStageBDelayTicks": 6450,
+        "g_fcStageBActualDelayTicks": 6711,
+        "g_fcStageBFirstFormalTick": 4294768571
+      },
+      "output": [
+        0.453125,
+        0.25,
+        0,
+        1
+      ],
+      "live_output_after_service": [
+        0.453125,
+        0.25,
+        0,
+        1
+      ],
+      "cpu_foreground_mean_us": 19.747084379196167,
+      "cpu_isr_mean_us": 22.948925018310547,
+      "cpu_total_mean_us": 42.696009397506714,
+      "npu_hw_wait_mean_us": 16.735027313232422,
+      "end_to_end_distribution": {
+        "samples": 1000,
+        "min_ticks": 7765,
+        "max_ticks": 10870,
+        "mean_ticks": 9169.572,
+        "std_ticks": 457.3261055483275,
+        "p95_ticks": 9987,
+        "p99_ticks": 10226,
+        "min_us": 51.766666666666666,
+        "max_us": 72.46666666666667,
+        "mean_us": 61.13048,
+        "std_us": 3.0488407036555167,
+        "p95_us": 66.58,
+        "p99_us": 68.17333333333333
+      },
+      "rejected_outputs": 0,
+      "timing": {
+        "timerHz": 150000000,
+        "timerReadOverheadTicks": 1,
+        "backend": 1,
+        "revision": 2,
+        "frozen": 1,
+        "rejectedOutputs": 0,
+        "npuIsrInvocations": 4000,
+        "npuIsrMaxSingleTicks": 1505,
+        "npuIsrLastCount": 4,
+        "prepare": {
+          "samples": 1000,
+          "lastTicks": 363,
+          "minTicks": 363,
+          "maxTicks": 2468,
+          "totalTicks": 444301,
+          "meanUs": 2.9620065689086914
+        },
+        "fpuForward": {
+          "samples": 0,
+          "lastTicks": 0,
+          "minTicks": 0,
+          "maxTicks": 0,
+          "totalTicks": 0,
+          "meanUs": 0
+        },
+        "npuSubmit": {
+          "samples": 1000,
+          "lastTicks": 2088,
+          "minTicks": 2088,
+          "maxTicks": 4199,
+          "totalTicks": 2119580,
+          "meanUs": 14.130531311035156
+        },
+        "npuObserved": {
+          "samples": 1000,
+          "lastTicks": 8187,
+          "minTicks": 6967,
+          "maxTicks": 9623,
+          "totalTicks": 8282089,
+          "meanUs": 55.213924407958984
+        },
+        "npuCompletion": {
+          "samples": 1000,
+          "lastTicks": 8071,
+          "minTicks": 6837,
+          "maxTicks": 9249,
+          "totalTicks": 8072173,
+          "meanUs": 53.814483642578125
+        },
+        "npuIsr": {
+          "samples": 1000,
+          "lastTicks": 3442,
+          "minTicks": 3442,
+          "maxTicks": 3445,
+          "totalTicks": 3442339,
+          "meanUs": 22.948925018310547
+        },
+        "publish": {
+          "samples": 1000,
+          "lastTicks": 390,
+          "minTicks": 390,
+          "maxTicks": 848,
+          "totalTicks": 398182,
+          "meanUs": 2.6545464992523193
+        },
+        "endToEnd": {
+          "samples": 1000,
+          "lastTicks": 8985,
+          "minTicks": 7765,
+          "maxTicks": 10870,
+          "totalTicks": 9169572,
+          "meanUs": 61.13047409057617
+        },
+        "npuIsrLastLayerCount": [
+          0,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "detail": {
+        "instrumented": 0,
+        "invalidPairs": 0,
+        "lastCalls": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "stage": [
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          },
+          {
+            "samples": 0,
+            "lastTicks": 0,
+            "minTicks": 0,
+            "maxTicks": 0,
+            "totalTicks": 0,
+            "meanUs": 0
+          }
+        ],
+        "stage_names": [
+          "input",
+          "packedCopyAndPack",
+          "unpack",
+          "hiddenConvert",
+          "parameters",
+          "instructions",
+          "registers",
+          "layer0Wait",
+          "layer1Wait",
+          "layer2Wait",
+          "layer3Wait",
+          "output"
+        ]
+      },
+      "checks": {
+        "benchmark_done": true,
+        "samples_1000": true,
+        "warmup_10": true,
+        "vin_90": true,
+        "backend_matches": true,
+        "frozen": true,
+        "no_timeout": true,
+        "standby": true,
+        "no_fault_or_start": true,
+        "all_power_pwm_ost_latched": true,
+        "trace_pairs": true,
+        "timer_150mhz": true,
+        "timing_revision": true,
+        "benchmark_output_valid": true,
+        "foreground_and_control_running": true,
+        "reject_reason_clear": true,
+        "tick_statistics_consistent": true,
+        "snapshot_finite": true,
+        "ram_constants_match_flash": true,
+        "detail_mode_matches_library": true,
+        "completion_samples": true,
+        "isr_samples": true,
+        "hardware_isr_count": true,
+        "isr_layer0_unused": true,
+        "isr_layer_sum": true,
+        "isr_invocations": true,
+        "vin90_output_close": true,
+        "e2e_tick_count": true
+      }
+    }
+  ],
+  "model_manifest": {
+    "kind": "native_3input_fc",
+    "model": "B1_16_32_16_16_4.onnx",
+    "model_sha256": "1e5bb84558f3b1b7dda70020a159466e857d825ffc09207dba98134d4d510db7",
+    "source_generated": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_b_20261031\\generated\\B1_raw",
+    "ti_mcu_nnc": "2.1.1",
+    "force_no_c28_soft_offload": true,
+    "input_shape": [
+      1,
+      16
+    ],
+    "output_shape": [
+      1,
+      4
+    ],
+    "io_dtype": "packed_int8_input_float32_output",
+    "input": "features[0]=-0.5; features[1]=Vin/140; features[2]=0.285714; remaining channels zero; no Vin fold",
+    "expected_vin90_output": [
+      0.453125,
+      0.25,
+      0.0,
+      1.0
+    ],
+    "output_order": [
+      "D1",
+      "D0",
+      "D2",
+      "T"
+    ],
+    "power_control_approved": false,
+    "hardware_stages": 4,
+    "completion_hook": "after final output dequantization, before finished=1",
+    "detail_profile": false,
+    "optimization_level": 5,
+    "vin_channel_quant": false,
+    "reuse_instructions": true,
+    "hidden_identity": true,
+    "packed_transitions": true,
+    "ram_constant_symbols": [
+      "FC_PARAMS",
+      "FC_MMR",
+      "FC_PARAMS_1",
+      "FC_MMR_1",
+      "FC_PARAMS_2",
+      "FC_MMR_2",
+      "FC_PARAMS_3",
+      "FC_MMR_3",
+      "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+    ],
+    "runtime_sha256": "f40d76f479e75cada6bb889b2a21d1ee8ef39175aa45c916c440c8118b36c7f7",
+    "driver_sha256": "39386858caf37bdf198035a232ac805dcfb91d941b9dafdc5ddc2be0a681477e",
+    "kernel_sha256": "59a4fd689af19f256122224baba87c54f90da4e9d3398f9f26432facdaa9aba8",
+    "library_sha256": "8879af8a2c6dbd5ace9eb3ab00bc4af7d82650c62626573a126dbe67a0e1c956",
+    "header_sha256": "d93b3a12eed092d2057e0d2202566beeadf03704fec20c662ced5aef1a057b29",
+    "hardware_fc_mapped": true,
+    "fc_ins_tables": [
+      "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+    ],
+    "tinie_layer_increments": 4,
+    "tinie_fullyConnectedNHWC": 16,
+    "stage_b_variant": "B1",
+    "validation_capture": false,
+    "hardware_tasks": 4,
+    "application_prequant": true,
+    "resident_parameters": false,
+    "stage_c_variant": "C4",
+    "compressed_mmr": false,
+    "fast_parameter_copy": false,
+    "static_mmr": true
+  },
+  "report_path": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_c_20261031\\results\\benchmarks\\20261031_144629_fc_stage_c_C4\\summary.json"
+}

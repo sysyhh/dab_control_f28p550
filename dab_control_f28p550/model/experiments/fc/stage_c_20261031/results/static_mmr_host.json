@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "dirty_four_layer_chains": 1000,
+  "actual_C_body_compiled": true,
+  "driver_sha256": "52eab41fc3c2d473cd2514ca563619ba0d29ebb83f2c452a8816964419abc68a",
+  "registers": [
+    3,
+    5,
+    8,
+    9,
+    12,
+    18,
+    21,
+    24,
+    25,
+    27
+  ],
+  "dynamic_registers": [
+    4,
+    29,
+    30
+  ],
+  "writes_each_layer": 13,
+  "admission": "Only frozen B1 full 33-word tables, no residual FC; no cross-layer value caching. All live fields reinitialized every task.",
+  "motivation": "native compressed decoder is slower; remove decoding while preserving the exact same write set",
+  "message": "PASS: actual decoder, 1000 dirty four-layer chains, all live registers, unchanged omissions, high-mask boundary"
+}

@@ -1,0 +1,8 @@
+* -text whitespace=cr-at-eol
+*.a binary
+assembly/** -whitespace
+evidence/** -whitespace
+generated/** -whitespace
+results/** -whitespace
+validated/** -whitespace
+candidates/static_mmr_driver.c -whitespace

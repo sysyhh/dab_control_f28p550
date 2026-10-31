@@ -1,0 +1,19 @@
+{
+  "ok": false,
+  "build": "FAIL",
+  "connected": false,
+  "state": "unknown",
+  "timestamp_utc": "2026-10-31T06:23:14.074035+00:00",
+  "run_dir": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_c_20261031\\results\\debug_runs\\20261031_142314_073644",
+  "errors": [
+    {
+      "stage": "cli",
+      "message": "Build failed; see build.log. No program loaded."
+    }
+  ],
+  "ccs": "E:\\Software_Download\\ti\\ccs2020\\ccs",
+  "project": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_c_20261031\\work\\AUDIT\\dab_control_f28p550",
+  "build_dir": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_c_20261031\\work\\AUDIT\\dab_control_f28p550\\CPU1_LAUNCHXL_FC_INT8_FLASH",
+  "ccxml": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_c_20261031\\work\\AUDIT\\dab_control_f28p550\\targetConfigs\\TMS320F28P550SJ9_LaunchPad.ccxml",
+  "elapsed_s": 1.874
+}

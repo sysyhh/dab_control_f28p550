@@ -1,0 +1,75 @@
+#[version = "0.0.5"]
+def @main(%features: Tensor[(1, 16), float32] /* ty=Tensor[(1, 16), float32] span=/oss_5/Add.features:0:0 */) -> Tensor[(1, 4), float32] {
+  %0 = add(%features, 0.0078125f /* ty=float32 span=/oss_5/Add.oss_5.offset:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_5/Add:0:0 */;
+  %1 = multiply(%0, 2048f /* ty=float32 span=Identity_21.oss_5.mult:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_5/Mul:0:0 */;
+  %2 = multiply(%1, 0.03125f /* ty=float32 span=/oss_5/Mul_1.oss_5.shift_mult:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_5/Mul_1:0:0 */;
+  %3 = floor(%2) /* ty=Tensor[(1, 16), float32] span=/oss_5/Floor:0:0 */;
+  %4 = clip(%3, a_min=-128f, a_max=127f) /* ty=Tensor[(1, 16), float32] span=/oss_5/Clip:0:0 */;
+  %5 = qnn.quantize(%4, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="int8") /* ty=Tensor[(1, 16), int8] */;
+  %6 = qnn.dequantize(%5, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="float32") /* ty=Tensor[(1, 16), float32] */;
+  %7 = nn.dense(%6, meta[relay.Constant][0] /* ty=Tensor[(32, 16), float32] span=/layers.0/layers.0.0/MatMul:0:0 */, units=None, out_dtype="float32") /* ty=Tensor[(1, 32), float32] span=/layers.0/layers.0.0/MatMul:0:0 */;
+  %8 = nn.bias_add(%7, meta[relay.Constant][1] /* ty=Tensor[(32), float32] */) /* ty=Tensor[(1, 32), float32] */;
+  %9 = multiply(%8, meta[relay.Constant][2] /* ty=Tensor[(1, 32), float32] span=/layers.0/layers.0.1/Mul.layers.0.1.mult:0:0 */) /* ty=Tensor[(1, 32), float32] span=/layers.0/layers.0.1/Mul:0:0 */;
+  %10 = multiply(%9, meta[relay.Constant][3] /* ty=Tensor[(1, 32), float32] span=/layers.0/layers.0.1/Mul_1.layers.0.1.shift_mult:0:0 */) /* ty=Tensor[(1, 32), float32] span=/layers.0/layers.0.1/Mul_1:0:0 */;
+  %11 = floor(%10) /* ty=Tensor[(1, 32), float32] span=/layers.0/layers.0.1/Floor:0:0 */;
+  %12 = clip(%11, a_min=0f, a_max=255f) /* ty=Tensor[(1, 32), float32] span=/layers.0/layers.0.1/Clip:0:0 */;
+  %13 = qnn.quantize(%12, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="uint8") /* ty=Tensor[(1, 32), uint8] */;
+  %14 = qnn.dequantize(%13, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="float32") /* ty=Tensor[(1, 32), float32] */;
+  %15 = multiply(%14, 0.00390625f /* ty=float32 span=/identity_multiplymodule_9/identity_multiplymodule_9.1/Constant:0:0 */) /* ty=Tensor[(1, 32), float32] span=/identity_multiplymodule_9/identity_multiplymodule_9.1/Mul:0:0 */;
+  %16 = nn.relu(%15) /* ty=Tensor[(1, 32), float32] span=/Relu:0:0 */;
+  %17 = add(%16, 0.00195312f /* ty=float32 span=Identity_22.oss_6.offset:0:0 */) /* ty=Tensor[(1, 32), float32] span=/oss_6/Add:0:0 */;
+  %18 = multiply(%17, 2048f /* ty=float32 span=Identity_26:0:0 */) /* ty=Tensor[(1, 32), float32] span=/oss_6/Mul:0:0 */;
+  %19 = multiply(%18, 0.125f /* ty=float32 span=Identity_20.oss_6.shift_mult:0:0 */) /* ty=Tensor[(1, 32), float32] span=/oss_6/Mul_1:0:0 */;
+  %20 = floor(%19) /* ty=Tensor[(1, 32), float32] span=/oss_6/Floor:0:0 */;
+  %21 = clip(%20, a_min=0f, a_max=255f) /* ty=Tensor[(1, 32), float32] span=/oss_6/Clip:0:0 */;
+  %22 = qnn.quantize(%21, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="uint8") /* ty=Tensor[(1, 32), uint8] */;
+  %23 = qnn.dequantize(%22, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="float32") /* ty=Tensor[(1, 32), float32] */;
+  %24 = nn.dense(%23, meta[relay.Constant][4] /* ty=Tensor[(16, 32), float32] span=/layers.1/layers.1.0/MatMul:0:0 */, units=None, out_dtype="float32") /* ty=Tensor[(1, 16), float32] span=/layers.1/layers.1.0/MatMul:0:0 */;
+  %25 = nn.bias_add(%24, meta[relay.Constant][5] /* ty=Tensor[(16), float32] */) /* ty=Tensor[(1, 16), float32] */;
+  %26 = multiply(%25, meta[relay.Constant][6] /* ty=Tensor[(1, 16), float32] span=Identity_27.layers.1.1.mult:0:0 */) /* ty=Tensor[(1, 16), float32] span=/layers.1/layers.1.1/Mul:0:0 */;
+  %27 = multiply(%26, meta[relay.Constant][7] /* ty=Tensor[(1, 16), float32] span=/layers.1/layers.1.1/Mul_1.layers.1.1.shift_mult:0:0 */) /* ty=Tensor[(1, 16), float32] span=/layers.1/layers.1.1/Mul_1:0:0 */;
+  %28 = floor(%27) /* ty=Tensor[(1, 16), float32] span=/layers.1/layers.1.1/Floor:0:0 */;
+  %29 = clip(%28, a_min=0f, a_max=255f) /* ty=Tensor[(1, 16), float32] span=/layers.1/layers.1.1/Clip:0:0 */;
+  %30 = qnn.quantize(%29, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="uint8") /* ty=Tensor[(1, 16), uint8] */;
+  %31 = qnn.dequantize(%30, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="float32") /* ty=Tensor[(1, 16), float32] */;
+  %32 = multiply(%31, 0.00390625f /* ty=float32 span=/identity_multiplymodule_10/identity_multiplymodule_10.1/Constant:0:0 */) /* ty=Tensor[(1, 16), float32] span=/identity_multiplymodule_10/identity_multiplymodule_10.1/Mul:0:0 */;
+  %33 = nn.relu(%32) /* ty=Tensor[(1, 16), float32] span=/Relu_1:0:0 */;
+  %34 = add(%33, 0.00195312f /* ty=float32 span=Identity_25:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_7/Add:0:0 */;
+  %35 = multiply(%34, 2048f /* ty=float32 span=Identity_24:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_7/Mul:0:0 */;
+  %36 = multiply(%35, 0.125f /* ty=float32 span=Identity_23:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_7/Mul_1:0:0 */;
+  %37 = floor(%36) /* ty=Tensor[(1, 16), float32] span=/oss_7/Floor:0:0 */;
+  %38 = clip(%37, a_min=0f, a_max=255f) /* ty=Tensor[(1, 16), float32] span=/oss_7/Clip:0:0 */;
+  %39 = qnn.quantize(%38, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="uint8") /* ty=Tensor[(1, 16), uint8] */;
+  %40 = qnn.dequantize(%39, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="float32") /* ty=Tensor[(1, 16), float32] */;
+  %41 = nn.dense(%40, meta[relay.Constant][8] /* ty=Tensor[(16, 16), float32] span=/layers.2/layers.2.0/MatMul:0:0 */, units=None, out_dtype="float32") /* ty=Tensor[(1, 16), float32] span=/layers.2/layers.2.0/MatMul:0:0 */;
+  %42 = nn.bias_add(%41, meta[relay.Constant][9] /* ty=Tensor[(16), float32] */) /* ty=Tensor[(1, 16), float32] */;
+  %43 = multiply(%42, meta[relay.Constant][10] /* ty=Tensor[(1, 16), float32] span=Identity_27:0:0 */) /* ty=Tensor[(1, 16), float32] span=/layers.2/layers.2.1/Mul:0:0 */;
+  %44 = multiply(%43, meta[relay.Constant][11] /* ty=Tensor[(1, 16), float32] span=/layers.2/layers.2.1/Mul_1.layers.2.1.shift_mult:0:0 */) /* ty=Tensor[(1, 16), float32] span=/layers.2/layers.2.1/Mul_1:0:0 */;
+  %45 = floor(%44) /* ty=Tensor[(1, 16), float32] span=/layers.2/layers.2.1/Floor:0:0 */;
+  %46 = clip(%45, a_min=0f, a_max=255f) /* ty=Tensor[(1, 16), float32] span=/layers.2/layers.2.1/Clip:0:0 */;
+  %47 = qnn.quantize(%46, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="uint8") /* ty=Tensor[(1, 16), uint8] */;
+  %48 = qnn.dequantize(%47, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="float32") /* ty=Tensor[(1, 16), float32] */;
+  %49 = multiply(%48, 0.00390625f /* ty=float32 span=/identity_multiplymodule_11/identity_multiplymodule_11.1/Constant:0:0 */) /* ty=Tensor[(1, 16), float32] span=/identity_multiplymodule_11/identity_multiplymodule_11.1/Mul:0:0 */;
+  %50 = nn.relu(%49) /* ty=Tensor[(1, 16), float32] span=/Relu_2:0:0 */;
+  %51 = add(%50, 0.00195312f /* ty=float32 span=Identity_22:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_8/Add:0:0 */;
+  %52 = multiply(%51, 2048f /* ty=float32 span=Identity_21:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_8/Mul:0:0 */;
+  %53 = multiply(%52, 0.125f /* ty=float32 span=Identity_20:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_8/Mul_1:0:0 */;
+  %54 = floor(%53) /* ty=Tensor[(1, 16), float32] span=/oss_8/Floor:0:0 */;
+  %55 = clip(%54, a_min=0f, a_max=255f) /* ty=Tensor[(1, 16), float32] span=/oss_8/Clip:0:0 */;
+  %56 = qnn.quantize(%55, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="uint8") /* ty=Tensor[(1, 16), uint8] */;
+  %57 = qnn.dequantize(%56, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="float32") /* ty=Tensor[(1, 16), float32] */;
+  %58 = nn.dense(%57, meta[relay.Constant][12] /* ty=Tensor[(4, 16), float32] span=/layers.3/layers.3.0/MatMul:0:0 */, units=None, out_dtype="float32") /* ty=Tensor[(1, 4), float32] span=/layers.3/layers.3.0/MatMul:0:0 */;
+  %59 = nn.bias_add(%58, meta[relay.Constant][13] /* ty=Tensor[(4), float32] */) /* ty=Tensor[(1, 4), float32] */;
+  %60 = multiply(%59, meta[relay.Constant][14] /* ty=Tensor[(1, 4), float32] span=/layers.3/layers.3.1/Mul.layers.3.1.mult:0:0 */) /* ty=Tensor[(1, 4), float32] span=/layers.3/layers.3.1/Mul:0:0 */;
+  %61 = multiply(%60, meta[relay.Constant][15] /* ty=Tensor[(1, 4), float32] span=/layers.3/layers.3.1/Mul_1.layers.3.1.shift_mult:0:0 */) /* ty=Tensor[(1, 4), float32] span=/layers.3/layers.3.1/Mul_1:0:0 */;
+  %62 = floor(%61) /* ty=Tensor[(1, 4), float32] span=/layers.3/layers.3.1/Floor:0:0 */;
+  %63 = clip(%62, a_min=-128f, a_max=127f) /* ty=Tensor[(1, 4), float32] span=/layers.3/layers.3.1/Clip:0:0 */;
+  %64 = qnn.quantize(%63, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="int8") /* ty=Tensor[(1, 4), int8] */;
+  %65 = qnn.dequantize(%64, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="float32") /* ty=Tensor[(1, 4), float32] */;
+  multiply(%65, 0.015625f /* ty=float32 span=/identity_multiplymodule_12/identity_multiplymodule_12.1/Constant:0:0 */) /* ty=Tensor[(1, 4), float32] span=/identity_multiplymodule_12/identity_multiplymodule_12.1/Mul:0:0 */
+}
+
+/* For debugging purposes the metadata section has been omitted.
+ * If you would like to see the full metadata section you can set the 
+ * option to `True` when invoking `astext`. 
+ */

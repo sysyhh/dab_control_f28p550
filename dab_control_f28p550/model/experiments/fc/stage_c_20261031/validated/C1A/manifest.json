@@ -1,0 +1,69 @@
+{
+  "kind": "native_3input_fc",
+  "model": "B1_16_32_16_16_4.onnx",
+  "model_sha256": "1e5bb84558f3b1b7dda70020a159466e857d825ffc09207dba98134d4d510db7",
+  "source_generated": "D:\\Project_File\\Design_Optimization\\F28P550Project\\ccs_projects\\dab_control_f28p550\\model\\experiments\\fc\\stage_b_20261031\\generated\\B1_raw",
+  "ti_mcu_nnc": "2.1.1",
+  "force_no_c28_soft_offload": true,
+  "input_shape": [
+    1,
+    16
+  ],
+  "output_shape": [
+    1,
+    4
+  ],
+  "io_dtype": "packed_int8_input_float32_output",
+  "input": "features[0]=-0.5; features[1]=Vin/140; features[2]=0.285714; remaining channels zero; no Vin fold",
+  "expected_vin90_output": [
+    0.453125,
+    0.25,
+    0.0,
+    1.0
+  ],
+  "output_order": [
+    "D1",
+    "D0",
+    "D2",
+    "T"
+  ],
+  "power_control_approved": false,
+  "hardware_stages": 4,
+  "completion_hook": "after final output dequantization, before finished=1",
+  "detail_profile": false,
+  "optimization_level": 5,
+  "vin_channel_quant": false,
+  "reuse_instructions": true,
+  "hidden_identity": true,
+  "packed_transitions": true,
+  "ram_constant_symbols": [
+    "FC_PARAMS",
+    "FC_MMR",
+    "FC_PARAMS_1",
+    "FC_MMR_1",
+    "FC_PARAMS_2",
+    "FC_MMR_2",
+    "FC_PARAMS_3",
+    "FC_MMR_3",
+    "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+  ],
+  "runtime_sha256": "f40d76f479e75cada6bb889b2a21d1ee8ef39175aa45c916c440c8118b36c7f7",
+  "driver_sha256": "1823676ba5e1da2904231a800a3628b123d61f2ae9a311d079d0d61fa900d4b3",
+  "kernel_sha256": "59a4fd689af19f256122224baba87c54f90da4e9d3398f9f26432facdaa9aba8",
+  "library_sha256": "1fcda3c8a1904c0dfef550376bc036574329855bfda4eae504ec5c9785ba6e23",
+  "header_sha256": "d93b3a12eed092d2057e0d2202566beeadf03704fec20c662ced5aef1a057b29",
+  "hardware_fc_mapped": true,
+  "fc_ins_tables": [
+    "FC_iB8_oB8_kB8_iCm8b16_oCm4_INS"
+  ],
+  "tinie_layer_increments": 4,
+  "tinie_fullyConnectedNHWC": 16,
+  "stage_b_variant": "B1",
+  "validation_capture": false,
+  "hardware_tasks": 4,
+  "application_prequant": true,
+  "resident_parameters": false,
+  "stage_c_variant": "C1A",
+  "compressed_mmr": false,
+  "fast_parameter_copy": false
+}

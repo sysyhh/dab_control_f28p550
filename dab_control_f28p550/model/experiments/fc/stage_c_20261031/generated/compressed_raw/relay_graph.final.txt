@@ -1,0 +1,103 @@
+#[version = "0.0.5"]
+def @main(%features: Tensor[(1, 16), float32] /* ty=Tensor[(1, 16), float32] span=/oss_5/Add.features:0:0 */) -> Tensor[(1, 4), float32] {
+  %0 = add(%features, 0.0078125f /* ty=float32 span=/oss_5/Add.oss_5.offset:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_5/Add:0:0 */;
+  %1 = multiply(%0, 2048f /* ty=float32 span=Identity_21.oss_5.mult:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_5/Mul:0:0 */;
+  %2 = multiply(%1, 0.03125f /* ty=float32 span=/oss_5/Mul_1.oss_5.shift_mult:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_5/Mul_1:0:0 */;
+  %3 = floor(%2) /* ty=Tensor[(1, 16), float32] span=/oss_5/Floor:0:0 */;
+  %4 = clip(%3, a_min=-128f, a_max=127f) /* ty=Tensor[(1, 16), float32] span=/oss_5/Clip:0:0 */;
+  %5 = cast(%4, dtype="int8") /* ty=Tensor[(1, 16), int8] */;
+  %6 = tinie_c28_pack(%5) /* ty=Tensor[(1, 16), int8] */;
+  %7 = @tvmgen_ti_npu_main_0(%6) /* ty=Tensor[(1, 32), uint8] */;
+  %8 = tinie_c28_unpack(%7) /* ty=Tensor[(1, 32), uint8] */;
+  %9 = qnn.dequantize(%8, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="float32") /* ty=Tensor[(1, 32), float32] */;
+  %10 = multiply(%9, 0.00390625f /* ty=float32 span=/identity_multiplymodule_9/identity_multiplymodule_9.1/Constant:0:0 */) /* ty=Tensor[(1, 32), float32] span=/identity_multiplymodule_9/identity_multiplymodule_9.1/Mul:0:0 */;
+  %11 = nn.relu(%10) /* ty=Tensor[(1, 32), float32] span=/Relu:0:0 */;
+  %12 = add(%11, 0.00195312f /* ty=float32 span=Identity_22.oss_6.offset:0:0 */) /* ty=Tensor[(1, 32), float32] span=/oss_6/Add:0:0 */;
+  %13 = multiply(%12, 2048f /* ty=float32 span=Identity_26:0:0 */) /* ty=Tensor[(1, 32), float32] span=/oss_6/Mul:0:0 */;
+  %14 = multiply(%13, 0.125f /* ty=float32 span=Identity_20.oss_6.shift_mult:0:0 */) /* ty=Tensor[(1, 32), float32] span=/oss_6/Mul_1:0:0 */;
+  %15 = floor(%14) /* ty=Tensor[(1, 32), float32] span=/oss_6/Floor:0:0 */;
+  %16 = clip(%15, a_min=0f, a_max=255f) /* ty=Tensor[(1, 32), float32] span=/oss_6/Clip:0:0 */;
+  %17 = cast(%16, dtype="uint8") /* ty=Tensor[(1, 32), uint8] */;
+  %18 = tinie_c28_pack(%17) /* ty=Tensor[(1, 32), uint8] */;
+  %19 = @tvmgen_ti_npu_main_1(%18) /* ty=Tensor[(1, 16), uint8] */;
+  %20 = tinie_c28_unpack(%19) /* ty=Tensor[(1, 16), uint8] */;
+  %21 = qnn.dequantize(%20, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="float32") /* ty=Tensor[(1, 16), float32] */;
+  %22 = multiply(%21, 0.00390625f /* ty=float32 span=/identity_multiplymodule_10/identity_multiplymodule_10.1/Constant:0:0 */) /* ty=Tensor[(1, 16), float32] span=/identity_multiplymodule_10/identity_multiplymodule_10.1/Mul:0:0 */;
+  %23 = nn.relu(%22) /* ty=Tensor[(1, 16), float32] span=/Relu_1:0:0 */;
+  %24 = add(%23, 0.00195312f /* ty=float32 span=Identity_25:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_7/Add:0:0 */;
+  %25 = multiply(%24, 2048f /* ty=float32 span=Identity_24:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_7/Mul:0:0 */;
+  %26 = multiply(%25, 0.125f /* ty=float32 span=Identity_23:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_7/Mul_1:0:0 */;
+  %27 = floor(%26) /* ty=Tensor[(1, 16), float32] span=/oss_7/Floor:0:0 */;
+  %28 = clip(%27, a_min=0f, a_max=255f) /* ty=Tensor[(1, 16), float32] span=/oss_7/Clip:0:0 */;
+  %29 = cast(%28, dtype="uint8") /* ty=Tensor[(1, 16), uint8] */;
+  %30 = tinie_c28_pack(%29) /* ty=Tensor[(1, 16), uint8] */;
+  %31 = @tvmgen_ti_npu_main_2(%30) /* ty=Tensor[(1, 16), uint8] */;
+  %32 = tinie_c28_unpack(%31) /* ty=Tensor[(1, 16), uint8] */;
+  %33 = qnn.dequantize(%32, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="float32") /* ty=Tensor[(1, 16), float32] */;
+  %34 = multiply(%33, 0.00390625f /* ty=float32 span=/identity_multiplymodule_11/identity_multiplymodule_11.1/Constant:0:0 */) /* ty=Tensor[(1, 16), float32] span=/identity_multiplymodule_11/identity_multiplymodule_11.1/Mul:0:0 */;
+  %35 = nn.relu(%34) /* ty=Tensor[(1, 16), float32] span=/Relu_2:0:0 */;
+  %36 = add(%35, 0.00195312f /* ty=float32 span=Identity_22:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_8/Add:0:0 */;
+  %37 = multiply(%36, 2048f /* ty=float32 span=Identity_21:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_8/Mul:0:0 */;
+  %38 = multiply(%37, 0.125f /* ty=float32 span=Identity_20:0:0 */) /* ty=Tensor[(1, 16), float32] span=/oss_8/Mul_1:0:0 */;
+  %39 = floor(%38) /* ty=Tensor[(1, 16), float32] span=/oss_8/Floor:0:0 */;
+  %40 = clip(%39, a_min=0f, a_max=255f) /* ty=Tensor[(1, 16), float32] span=/oss_8/Clip:0:0 */;
+  %41 = cast(%40, dtype="uint8") /* ty=Tensor[(1, 16), uint8] */;
+  %42 = tinie_c28_pack(%41) /* ty=Tensor[(1, 16), uint8] */;
+  %43 = @tvmgen_ti_npu_main_3(%42) /* ty=Tensor[(1, 4), int8] */;
+  %44 = tinie_c28_unpack(%43) /* ty=Tensor[(1, 4), int8] */;
+  %45 = qnn.dequantize(%44, 1f /* ty=float32 */, 0 /* ty=int32 */, out_dtype="float32") /* ty=Tensor[(1, 4), float32] */;
+  multiply(%45, 0.015625f /* ty=float32 span=/identity_multiplymodule_12/identity_multiplymodule_12.1/Constant:0:0 */) /* ty=Tensor[(1, 4), float32] span=/identity_multiplymodule_12/identity_multiplymodule_12.1/Mul:0:0 */
+}
+
+def @tvmgen_ti_npu_main_0(%ti-npu_0_i0: Tensor[(1, 16), int8] /* ty=Tensor[(1, 16), int8] */, Compiler="ti-npu", Primitive=1, in_bitwidth=8, Inline=1, out_bitwidth=8, global_symbol="tvmgen_ti_npu_main_0") -> Tensor[(1, 32), uint8] {
+  %51 = fn (%FunctionVar_3_0: Tensor[(1, 16), int8] /* ty=Tensor[(1, 16), int8] */, PartitionedFromPattern="qnn.dense_nn.bias_add_multiply_right_shift_clip_cast_", Composite="ti-npu.TINIE_fullyConnectedNHWC") -> Tensor[(1, 32), uint8] {
+    %46 = qnn.dense(%FunctionVar_3_0, meta[relay.Constant][0] /* ty=Tensor[(32, 16), int8] */, 0 /* ty=int32 */, 0 /* ty=int32 */, 1f /* ty=float32 */, 1f /* ty=float32 */, units=None, out_dtype="int32") /* ty=Tensor[(1, 32), int32] */;
+    %47 = nn.bias_add(%46, meta[relay.Constant][1] /* ty=Tensor[(32), int32] */) /* ty=Tensor[(1, 32), int32] */;
+    %48 = multiply(%47, meta[relay.Constant][2] /* ty=Tensor[(1, 32), int32] */) /* ty=Tensor[(1, 32), int32] */;
+    %49 = right_shift(%48, meta[relay.Constant][3] /* ty=Tensor[(1, 32), int32] */) /* ty=Tensor[(1, 32), int32] */;
+    %50 = clip(%49, a_min=0f, a_max=255f) /* ty=Tensor[(1, 32), int32] */;
+    cast(%50, dtype="uint8") /* ty=Tensor[(1, 32), uint8] */
+  } /* ty=fn (Tensor[(1, 16), int8]) -> Tensor[(1, 32), uint8] */;
+  %51(%ti-npu_0_i0) /* ty=Tensor[(1, 32), uint8] */
+}
+
+def @tvmgen_ti_npu_main_1(%ti-npu_1_i0: Tensor[(1, 32), uint8] /* ty=Tensor[(1, 32), uint8] */, Compiler="ti-npu", Primitive=1, in_bitwidth=8, Inline=1, out_bitwidth=8, global_symbol="tvmgen_ti_npu_main_1") -> Tensor[(1, 16), uint8] {
+  %57 = fn (%FunctionVar_2_0: Tensor[(1, 32), uint8] /* ty=Tensor[(1, 32), uint8] */, PartitionedFromPattern="qnn.dense_nn.bias_add_multiply_right_shift_clip_cast_", Composite="ti-npu.TINIE_fullyConnectedNHWC") -> Tensor[(1, 16), uint8] {
+    %52 = qnn.dense(%FunctionVar_2_0, meta[relay.Constant][4] /* ty=Tensor[(16, 32), int8] */, 0 /* ty=int32 */, 0 /* ty=int32 */, 1f /* ty=float32 */, 1f /* ty=float32 */, units=None, out_dtype="int32") /* ty=Tensor[(1, 16), int32] */;
+    %53 = nn.bias_add(%52, meta[relay.Constant][5] /* ty=Tensor[(16), int32] */) /* ty=Tensor[(1, 16), int32] */;
+    %54 = multiply(%53, meta[relay.Constant][6] /* ty=Tensor[(1, 16), int32] */) /* ty=Tensor[(1, 16), int32] */;
+    %55 = right_shift(%54, meta[relay.Constant][7] /* ty=Tensor[(1, 16), int32] */) /* ty=Tensor[(1, 16), int32] */;
+    %56 = clip(%55, a_min=0f, a_max=255f) /* ty=Tensor[(1, 16), int32] */;
+    cast(%56, dtype="uint8") /* ty=Tensor[(1, 16), uint8] */
+  } /* ty=fn (Tensor[(1, 32), uint8]) -> Tensor[(1, 16), uint8] */;
+  %57(%ti-npu_1_i0) /* ty=Tensor[(1, 16), uint8] */
+}
+
+def @tvmgen_ti_npu_main_2(%ti-npu_2_i0: Tensor[(1, 16), uint8] /* ty=Tensor[(1, 16), uint8] */, Compiler="ti-npu", Primitive=1, in_bitwidth=8, Inline=1, out_bitwidth=8, global_symbol="tvmgen_ti_npu_main_2") -> Tensor[(1, 16), uint8] {
+  %63 = fn (%FunctionVar_1_0: Tensor[(1, 16), uint8] /* ty=Tensor[(1, 16), uint8] */, PartitionedFromPattern="qnn.dense_nn.bias_add_multiply_right_shift_clip_cast_", Composite="ti-npu.TINIE_fullyConnectedNHWC") -> Tensor[(1, 16), uint8] {
+    %58 = qnn.dense(%FunctionVar_1_0, meta[relay.Constant][8] /* ty=Tensor[(16, 16), int8] */, 0 /* ty=int32 */, 0 /* ty=int32 */, 1f /* ty=float32 */, 1f /* ty=float32 */, units=None, out_dtype="int32") /* ty=Tensor[(1, 16), int32] */;
+    %59 = nn.bias_add(%58, meta[relay.Constant][9] /* ty=Tensor[(16), int32] */) /* ty=Tensor[(1, 16), int32] */;
+    %60 = multiply(%59, meta[relay.Constant][10] /* ty=Tensor[(1, 16), int32] */) /* ty=Tensor[(1, 16), int32] */;
+    %61 = right_shift(%60, meta[relay.Constant][11] /* ty=Tensor[(1, 16), int32] */) /* ty=Tensor[(1, 16), int32] */;
+    %62 = clip(%61, a_min=0f, a_max=255f) /* ty=Tensor[(1, 16), int32] */;
+    cast(%62, dtype="uint8") /* ty=Tensor[(1, 16), uint8] */
+  } /* ty=fn (Tensor[(1, 16), uint8]) -> Tensor[(1, 16), uint8] */;
+  %63(%ti-npu_2_i0) /* ty=Tensor[(1, 16), uint8] */
+}
+
+def @tvmgen_ti_npu_main_3(%ti-npu_3_i0: Tensor[(1, 16), uint8] /* ty=Tensor[(1, 16), uint8] */, Compiler="ti-npu", Primitive=1, in_bitwidth=8, Inline=1, out_bitwidth=8, global_symbol="tvmgen_ti_npu_main_3") -> Tensor[(1, 4), int8] {
+  %69 = fn (%FunctionVar_0_0: Tensor[(1, 16), uint8] /* ty=Tensor[(1, 16), uint8] */, PartitionedFromPattern="qnn.dense_nn.bias_add_multiply_right_shift_clip_cast_", Composite="ti-npu.TINIE_fullyConnectedNHWC") -> Tensor[(1, 4), int8] {
+    %64 = qnn.dense(%FunctionVar_0_0, meta[relay.Constant][12] /* ty=Tensor[(4, 16), int8] */, 0 /* ty=int32 */, 0 /* ty=int32 */, 1f /* ty=float32 */, 1f /* ty=float32 */, units=None, out_dtype="int32") /* ty=Tensor[(1, 4), int32] */;
+    %65 = nn.bias_add(%64, meta[relay.Constant][13] /* ty=Tensor[(4), int32] */) /* ty=Tensor[(1, 4), int32] */;
+    %66 = multiply(%65, meta[relay.Constant][14] /* ty=Tensor[(1, 4), int32] */) /* ty=Tensor[(1, 4), int32] */;
+    %67 = right_shift(%66, meta[relay.Constant][15] /* ty=Tensor[(1, 4), int32] */) /* ty=Tensor[(1, 4), int32] */;
+    %68 = clip(%67, a_min=-128f, a_max=127f) /* ty=Tensor[(1, 4), int32] */;
+    cast(%68, dtype="int8") /* ty=Tensor[(1, 4), int8] */
+  } /* ty=fn (Tensor[(1, 16), uint8]) -> Tensor[(1, 4), int8] */;
+  %69(%ti-npu_3_i0) /* ty=Tensor[(1, 4), int8] */
+}
+
+/* For debugging purposes the metadata section has been omitted.
+ * If you would like to see the full metadata section you can set the 
+ * option to `True` when invoking `astext`. 
+ */

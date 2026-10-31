@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "manifest_sha256": "27029fe423755fbba42a2b49ff96f90bf201f27ce7c7ccd86afe88dfce79e6a7",
+  "files": 663,
+  "logical_bytes": 27902530,
+  "report_local_links": 30,
+  "all_manifest_hashes_rechecked": true,
+  "best": "C4",
+  "formal_runs": 15,
+  "detail_runs": 15,
+  "A_B_and_production_protection": "passed",
+  "unrelated_existing_changes_preserved": true
+}
