@@ -56,7 +56,7 @@ bool DAB_Control_start(void)
     bool accepted = false;
     bool masked = Interrupt_disableGlobal();
 #if defined(DAB_NPU_GENERATED_MODEL) && !DAB_NPU_POWER_CONTROL_APPROVED
-    if (true) g_startRejectReason = 7U; // NPU 候选仅供核对与计时；FC/PWCONV 均不能用板确认宏绕过精度验收。
+    if (true) g_startRejectReason = 7U; // NPU 候选仅供核对与计时；未经精度验收前不能放行功率输出。
 #else
     if (!DAB_BOARD_CONFIG_CONFIRMED) g_startRejectReason = 1U; // 未核对接线和硬件时拒绝功率输出；默认宏为 0。
 #endif

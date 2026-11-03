@@ -70,7 +70,7 @@ SECTIONS
 
 }
 
--l "E:/Software_Download/ti/c2000/C2000Ware_DigitalPower_SDK_5_05_01_00/c2000ware/driverlib/f28p55x/driverlib/ccs/Debug/driverlib.lib"
+-l "../device/driverlib/ccs/Debug/driverlib.lib"
 
 
 /*

@@ -19,8 +19,7 @@
 // Uncomment DAB_USE_HARDWARE_NPU when using the compiled TI NPU model (mod.a)
 //=============================================================================
 //#define DAB_USE_HARDWARE_NPU
-// 默认保留 FPU 基准。CPU1_LAUNCHXL_NPU_FLASH 使用已交付的 PWCONV 库。
-// CPU1_LAUNCHXL_FC_INT8_FLASH / FC_INT4_FLASH 使用隔离的原生三维输入 FC 库。
+// 默认保留 FPU 基准。CPU1_LAUNCHXL_FC_INT8_FLASH / FC_INT4_FLASH 使用原生三维输入 FC NPU 库。
 #if defined(DAB_NPU_FC_INT8) && defined(DAB_NPU_FC_INT4)
 #error "INT8 and INT4 FC models cannot be enabled together"
 #endif
@@ -29,9 +28,6 @@
 #define DAB_NPU_GENERATED_MODEL 1
 #ifndef DAB_USE_HARDWARE_NPU
 #error "FC NPU model requires DAB_USE_HARDWARE_NPU"
-#endif
-#ifdef DAB_NPU_DAB16_MODEL
-#error "FC test builds must not define DAB_NPU_DAB16_MODEL"
 #endif
 #ifdef DAB_NPU_FC_INT8
 #include "model/generated/fc_int8/dab_npu_contract.h"
@@ -44,23 +40,25 @@
 #error "INT4 FC adapter expects 8 float inputs and 4 float outputs"
 #endif
 #endif
-#elif defined(DAB_NPU_DAB16_MODEL)
-#define DAB_NPU_GENERATED_MODEL 1
-#ifndef DAB_USE_HARDWARE_NPU
-#error "DAB16 model requires DAB_USE_HARDWARE_NPU"
-#endif
-#include "model/generated/npu/dab_npu_contract.h"
-#if (DAB_NPU_RUNTIME_INPUT_DIM != 16U && DAB_NPU_RUNTIME_INPUT_DIM != 4U) || DAB_NPU_RUNTIME_OUTPUT_DIM != 4U
-#error "NPU model dimensions changed; review the adapter"
-#endif
 #endif
 
-// Model Matrix Dimensions (3 -> 29 -> 12 -> 6 -> 4)
+// Example FPU Model Matrix Dimensions (3 -> 8 -> 8 -> 4)
+// Replace with your trained model dimensions and weights when deploying.
 #define DAB_NN_INPUT_DIM        3
-#define DAB_NN_LAYER1_OUT       29
-#define DAB_NN_LAYER2_OUT       12
-#define DAB_NN_LAYER3_OUT       6
+#define DAB_NN_LAYER1_OUT       8
+#define DAB_NN_LAYER2_OUT       8
 #define DAB_NN_OUTPUT_DIM       4
+
+// Input Feature Normalization Placeholders (override per model training spec)
+#ifndef DAB_NN_INPUT0_CONST
+#define DAB_NN_INPUT0_CONST     0.0f
+#endif
+#ifndef DAB_NN_VIN_NORM_SCALE
+#define DAB_NN_VIN_NORM_SCALE   100.0f
+#endif
+#ifndef DAB_NN_INPUT2_CONST
+#define DAB_NN_INPUT2_CONST     0.0f
+#endif
 
 // Output index semantics:
 // output[0] = D1 (Primary internal phase shift)

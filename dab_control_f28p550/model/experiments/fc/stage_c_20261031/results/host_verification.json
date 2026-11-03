@@ -1,8 +1,0 @@
-{
-  "ok": true,
-  "variants": [
-    "C1A",
-    "C1B"
-  ],
-  "basis": "unchanged B1 network/parameters/instruction/runtime hashes plus actual compressed decoder replay"
-}

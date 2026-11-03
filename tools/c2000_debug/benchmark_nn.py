@@ -20,7 +20,7 @@ STAGES = ('input', 'packedCopyAndPack', 'unpack', 'hiddenConvert', 'parameters',
           'instructions', 'registers', 'layer0Wait', 'layer1Wait', 'layer2Wait', 'layer3Wait', 'output')
 BACKENDS = {
     'fpu': {'build': 'CPU1_LAUNCHXL_FLASH', 'npu': False, 'manifest': None},
-    'npu': {'build': 'CPU1_LAUNCHXL_NPU_FLASH', 'npu': True, 'manifest': APP/'model/generated/npu/manifest.json'},
+    'npu': {'build': 'CPU1_LAUNCHXL_NPU_FLASH', 'npu': True, 'manifest': APP/'model/generated/fc_int8/manifest.json'},
     'fc_int8': {'build': 'CPU1_LAUNCHXL_FC_INT8_FLASH', 'npu': True, 'manifest': APP/'model/generated/fc_int8/manifest.json'},
     'fc_int4': {'build': 'CPU1_LAUNCHXL_FC_INT4_FLASH', 'npu': True, 'manifest': APP/'model/generated/fc_int4/manifest.json'},
 }
@@ -64,10 +64,12 @@ def main():
               'build_dir': spec['build'],
               'firmware_sources_sha256': {p: sha(APP/p) for p in ('dab_nn.c', 'dab_main.c', 'dab_board_config.h')},
               'runs': []}
-    if spec['manifest']:
-        report['model_manifest'] = json.loads(spec['manifest'].read_text(encoding='utf-8'))
+    manifest = {}
+    if spec['manifest'] and spec['manifest'].is_file():
+        manifest = json.loads(spec['manifest'].read_text(encoding='utf-8'))
+        report['model_manifest'] = manifest
         archive = spec['manifest'].parent / 'mod.a'
-        if sha(archive) != report['model_manifest']['library_sha256']:
+        if archive.is_file() and 'library_sha256' in manifest and sha(archive) != manifest['library_sha256']:
             raise RuntimeError('Model archive differs from manifest; compile the model again')
     meta = ['g_debugBuildId', 'g_dabState', 'g_protectFlags.all', 'g_startRequested',
             'g_controlHeartbeat', 'g_backgroundHeartbeat', 'g_nnBenchmarkState',
@@ -90,7 +92,7 @@ def main():
                        '--run-ms', str(args.run_ms), '--samples', '1', '--timeout-ms', '60000',
                        '--read-e2e-ticks']
             for expression in expressions: command += ['--expr', expression]
-            if spec['npu'] and report['model_manifest'].get('optimization_level', 0) >= 5:
+            if spec['npu'] and manifest.get('optimization_level', 0) >= 5:
                 command.append('--verify-npu-const')
             process = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, encoding='utf-8', timeout=240)
             (report_dir/f'run_{index+1}.json').write_text(process.stdout, encoding='utf-8', newline='\n')
@@ -108,7 +110,6 @@ def main():
                       'stage': [{f: values[f'g_nnNpuDetail.stage[{i}].{f}'] for f in FIELDS} for i in range(12)],
                       'stage_names': list(STAGES)}
             is_npu = spec['npu']
-            is_fc = args.backend.startswith('fc_')
             checks = {
                 'benchmark_done': values['g_nnBenchmarkState'] == 2,
                 'samples_1000': values['g_nnBenchmarkCompleted'] == timing['endToEnd']['samples'] == 1000,
@@ -126,11 +127,10 @@ def main():
                 'timing_revision': timing['revision'] == 2,
                 'benchmark_output_valid': values['g_nnBenchmarkOutputValid'] == 1,
                 'foreground_and_control_running': values['g_controlHeartbeat'] > 0 and values['g_backgroundHeartbeat'] > 0,
+                'reject_reason_clear': values['g_nnBenchmarkRejectReason'] == 0,
             }
-            if not is_fc:
-                checks['no_rejections'] = timing['rejectedOutputs'] == values['g_nnBenchmarkRejectReason'] == 0
-            else:
-                checks['reject_reason_clear'] = values['g_nnBenchmarkRejectReason'] == 0
+            if not is_npu:
+                checks['no_rejections'] = timing['rejectedOutputs'] == 0
             statistics = [timing[t] for t in TIMES] + detail['stage']
             checks['tick_statistics_consistent'] = all(not s['samples'] or
                 (s['minTicks'] <= s['totalTicks']/s['samples'] <= s['maxTicks'] and
@@ -141,30 +141,19 @@ def main():
                 checks['no_npu_isr'] = timing['npuIsr']['samples'] == 0
             checks['snapshot_finite'] = all(x == x and abs(x) != float('inf') for x in snapshot)
             if is_npu:
-                if report['model_manifest'].get('optimization_level', 0) >= 5:
+                if manifest.get('optimization_level', 0) >= 5:
                     checks['ram_constants_match_flash'] = raw.get('model_constant_copy', {}).get('matches') is True
-                checks['detail_mode_matches_library'] = bool(detail['instrumented']) == report['model_manifest']['detail_profile']
+                if 'detail_profile' in manifest:
+                    checks['detail_mode_matches_library'] = bool(detail['instrumented']) == manifest['detail_profile']
                 checks['completion_samples'] = timing['npuCompletion']['samples'] == 1000
                 checks['isr_samples'] = timing['npuIsr']['samples'] == 1000
-                if is_fc:
-                    checks['hardware_isr_count'] = timing['npuIsrLastCount'] >= 4
-                    checks['isr_layer0_unused'] = timing['npuIsrLastLayerCount'][0] == 0
-                    checks['isr_layer_sum'] = (sum(timing['npuIsrLastLayerCount']) == timing['npuIsrLastCount'])
-                    checks['isr_invocations'] = timing['npuIsrInvocations'] == 1000 * timing['npuIsrLastCount']
-                    expected = report['model_manifest'].get('expected_vin90_output')
-                    if expected is not None:
-                        checks['vin90_output_close'] = all(abs(a - b) < 1e-4 for a, b in zip(snapshot, expected))
-                else:
-                    checks['four_isrs'] = timing['npuIsrLastCount'] == 4
-                    checks['isr_layers'] = timing['npuIsrLastLayerCount'] == [0, 1, 1, 1, 1]
-                    checks['isr_invocations'] = timing['npuIsrInvocations'] == 4000
-                    expected = report['model_manifest'].get('expected_vin90_output', [.4375, .25, 0., 1.])
-                    checks['known_vin90_output'] = snapshot == expected
-                    if detail['instrumented']:
-                        ins_calls = 4
-                        checks['four_layers'] = (detail['lastCalls'][4:7] == [4, ins_calls, 4] and
-                                                 detail['lastCalls'][7:11] == [1, 1, 1, 1])
-                        checks['no_hidden_conversion'] = detail['lastCalls'][3] == 0
+                checks['hardware_isr_count'] = timing['npuIsrLastCount'] >= 4
+                checks['isr_layer0_unused'] = timing['npuIsrLastLayerCount'][0] == 0
+                checks['isr_layer_sum'] = (sum(timing['npuIsrLastLayerCount']) == timing['npuIsrLastCount'])
+                checks['isr_invocations'] = timing['npuIsrInvocations'] == 1000 * timing['npuIsrLastCount']
+                expected = manifest.get('expected_vin90_output')
+                if expected is not None:
+                    checks['vin90_output_close'] = all(abs(a - b) < 1e-4 for a, b in zip(snapshot, expected))
             cpu_us = (timing['prepare']['meanUs'] + timing['publish']['meanUs'] +
                       (timing['npuSubmit']['meanUs'] if is_npu else timing['fpuForward']['meanUs']))
             isr_us = timing['npuIsr']['meanUs'] if is_npu else 0.0

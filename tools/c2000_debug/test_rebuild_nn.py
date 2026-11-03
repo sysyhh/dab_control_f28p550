@@ -9,11 +9,11 @@ import tempfile
 ROOT=Path(__file__).resolve().parents[2]
 
 def main():
-    with tempfile.TemporaryDirectory(prefix='nn_rebuild_',dir=ROOT/'review_20261003') as temp:
+    with tempfile.TemporaryDirectory(prefix='nn_rebuild_') as temp:
         project=Path(temp)
         source=project/'dab_nn.c'
         source.write_text('/* fixture */\n')
-        os.utime(source,(1,1))
+        os.utime(source,(86400,86400))
         build=project/'CPU1_RAM'; build.mkdir()
         target=build/(project.name+'.out'); target.write_bytes(b'stale output')
         (build/'makefile').write_text(f'all: {target.name}\n{target.name}: ../dab_nn.c\n\texit 1\n')

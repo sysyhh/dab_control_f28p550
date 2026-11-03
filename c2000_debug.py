@@ -67,7 +67,7 @@ def main():
     mode.add_argument('--run-test', action='store_true', help='Build, load RAM, run, halt and read two snapshots')
     mode.add_argument('--build-only', action='store_true')
     mode.add_argument('--attach-only', action='store_true', help='Halt/read current target with existing symbols; never build, reset, load or run')
-    parser.add_argument('--ccs', type=Path, default=Path(os.environ.get('CCS_ROOT', 'E:/Software_Download/ti/ccs2020/ccs')))
+    parser.add_argument('--ccs', type=Path, default=Path(os.environ.get('CCS_ROOT', 'C:/ti/ccs2020/ccs')))
     parser.add_argument('--project', type=Path, default=ROOT / 'dab_control_f28p550')
     parser.add_argument('--build-dir', default='CPU1_RAM', help='Existing CCS-generated build directory')
     parser.add_argument('--rebuild-nn', action='store_true',

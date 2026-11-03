@@ -1,7 +1,0 @@
-/host_tools/
-/host/
-/work/
-/__pycache__/
-/debug_cli.py
-/capture_cli.py
-/capture_worker.js
