@@ -91,7 +91,7 @@
 #define DAB_FAULT_RECOVERY_US 5000U // 正常恢复至少 5 ms，还要有效采样和人工清除；不会自动重启。
 // Numeric tolerance preserves the small negative D2 in the FLOAT baseline.
 // This is an interface sanity limit, not a certified training/safety domain.
-#define DAB_NN_PHASE_TOLERANCE 0.005f // 相对 T 的 0.5% 浮点容差，不能替代训练范围或电气允许区域。
+#define DAB_NN_PHASE_TOLERANCE 0.005f // 归一化相移 [0, 1] 边界的 0.5% 浮点容差，不能替代训练范围或电气允许区域。
 #define DAB_TELEMETRY_FRAME_TIMEOUT_US 20000U // 活动遥测帧堵塞 20 ms 后清 FIFO/队列，控制主循环不等待。
 #ifndef DAB_ENABLE_WATCHDOG
 #define DAB_ENABLE_WATCHDOG 1 // 默认启用进度监督；无输出调试可关闭，正式使用应恢复验证。

@@ -118,7 +118,7 @@ void DAB_Control_faultReason(Dab_FaultReason_e reason)
 #pragma CODE_SECTION(DAB_Control_step, ".TI.ramfunc")
 void DAB_Control_step(void)
 {
-    float outputs[DAB_NN_OUTPUT_DIM], ramp, target, error, integral, duty, invT;
+    float outputs[DAB_NN_OUTPUT_DIM], ramp, target, error, integral, duty;
     Dab_PwmParams_t params;
     if (DAB_Protect_checkFault()) { DAB_Control_fault(); return; }
     if (g_dabState != DAB_STATE_SOFT_START && g_dabState != DAB_STATE_RUN) return; // 待机只检测保护，不产生新的运行参数。
@@ -140,12 +140,11 @@ void DAB_Control_step(void)
 #endif
     g_piCtrl.fed = g_sensing.vout_n_ave; g_piCtrl.err = error;
     g_piCtrl.integral = integral; g_piCtrl.out = duty;
-    invT = 1.0f / outputs[DAB_NN_IDX_T];
-    // D1/D2 从 1 过渡到归一化相移减 PI，D0 从 0 过渡到归一化相移加 PI。
-    // 0.001/0.999 是当前数值边界，实际允许脉宽、相移和变化速度仍需功率板验证。 // NN 相移先除以 T 归一化，再加入 PI 修正；T 已在结果发布时检查范围。
-    params.D1 = (1.0f - ramp) + ramp * DAB_clamp(outputs[DAB_NN_IDX_D1] * invT - duty, 0.001f, 0.999f);
-    params.D2 = (1.0f - ramp) + ramp * DAB_clamp(outputs[DAB_NN_IDX_D2] * invT - duty, 0.001f, 0.999f);
-    params.D0 = ramp * DAB_clamp(outputs[DAB_NN_IDX_D0] * invT + duty, 0.0f, 0.999f); // 桥间相移随软启动增加，PI 对 D0 的修正方向与 D1/D2 相反。
+    // 示例基线映射：前馈输出归一化相移，PI 仅对原副边桥间主相移 D0 进行微调补偿。
+    // 0.001/0.999 是当前数值边界，实际允许脉宽、相移和变化速度仍需功率板验证。
+    params.D1 = (1.0f - ramp) + ramp * DAB_clamp(outputs[DAB_NN_IDX_D1], 0.001f, 0.999f);
+    params.D2 = (1.0f - ramp) + ramp * DAB_clamp(outputs[DAB_NN_IDX_D2], 0.001f, 0.999f);
+    params.D0 = ramp * DAB_clamp(outputs[DAB_NN_IDX_D0] + duty, 0.0f, 0.999f); // 桥间主相移随软启动增加，并叠加 PI 闭环修正量。
     params.D1_pha = 1.0f - params.D1; params.D2_pha = 1.0f - params.D2; // 互补比较位置，与另一比较值合成桥内相移波形。
     params.T_gain = 1.0f + ramp * (outputs[DAB_NN_IDX_T] - 1.0f); // 从基准周期渐变到模型周期，T 越大，开关频率越低。
     params.F_duty = duty;

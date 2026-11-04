@@ -65,9 +65,9 @@
 // output[1] = D0 (Primary-to-secondary phase shift)
 // output[2] = D2 (Secondary internal phase shift)
 // output[3] = T  (Period gain for variable-frequency control)
-#define DAB_NN_IDX_D1           0 // 原边桥内相移，控制映射先除以 T。
-#define DAB_NN_IDX_D0           1 // 原副边桥间相移，顺序不能和 D2 互换。
-#define DAB_NN_IDX_D2           2 // 副边桥内相移，允许 FLOAT 数值小负容差。
+#define DAB_NN_IDX_D1           0 // 原边桥内归一化相移。
+#define DAB_NN_IDX_D0           1 // 原副边桥间归一化相移，顺序不能和 D2 互换。
+#define DAB_NN_IDX_D2           2 // 副边桥内归一化相移，允许 FLOAT 数值小负容差。
 #define DAB_NN_IDX_T            3 // 周期比例；T 越大，开关频率越低。
 
 //=============================================================================

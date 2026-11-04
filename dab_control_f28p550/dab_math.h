@@ -36,9 +36,9 @@ static inline int DAB_nnOutputValid(const float *values)
     }
     if (values[3] < 0.5f || values[3] > 2.0f) return 0; // 第 4 项 T 限 0.5～2，对应当前开关周期允许范围。
     for (i = 0U; i < 3U; i++)
-        if (values[i] < -DAB_NN_PHASE_TOLERANCE * values[3] ||
-            values[i] > (1.0f + DAB_NN_PHASE_TOLERANCE) * values[3]) return 0;
-            // 前三项允许相对 T 的 0.5% 数值容差，保留旧 FLOAT 网络的小负 D2。
+        if (values[i] < -DAB_NN_PHASE_TOLERANCE ||
+            values[i] > (1.0f + DAB_NN_PHASE_TOLERANCE)) return 0;
+            // 前三项允许 [0, 1] 归一化范围附近 0.5% 的浮点数值容差。
             // 此检查只是数值合理性检查，不证明训练域、最小脉宽或功率电路安全。
     return 1;
 }
